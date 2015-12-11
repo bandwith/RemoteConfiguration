@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": ";AACA,4CAA4C;EACxC,MAAM,EAAE,OAAO;;AAGnB,OAAO;EACH,UAAU,EAAE,wCAAwC;EACpD,UAAU,EAAE,gDAAgD;EAC5D,UAAU,EAAE,2CAA2C;EACvD,UAAU,EAAE,6CAA6C;EACzD,UAAU,EAAE,wCAAwC;;AAGpD,4BAAa;EACT,KAAK,EAAE,KAAK",
+"sources": ["qrc.sass"],
+"names": [],
+"file": "qrc.css"
+}

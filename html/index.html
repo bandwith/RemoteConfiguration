@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html ng-app="qrc">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+        <meta charset="UTF-8">
+        <title>Qbic Remote Control Center</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Qbic Remote Control Center" />
+        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="statics/stylesheets/qrc.css">
+        <link rel="stylesheet" href="statics/stylesheets/sidebar.css">
+
+        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="bower_components/angular/angular.min.js"></script>
+        <script src="bower_components/angular-route/angular-route.min.js"></script>
+        <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+
+        <script src="statics/javascripts/angular/qrc.modules.js"></script>
+        <script src="statics/javascripts/angular/qrc.routes.js"></script>
+        <script src="statics/javascripts/angular/testing/testing.modules.js"></script>
+        <script src="statics/javascripts/angular/testing/controllers/testing.controller.js"></script>
+        <script src="statics/javascripts/angular/main/main.modules.js"></script>
+        <script src="statics/javascripts/angular/main/controllers/main.controller.js"></script>
+
+        <script src="statics/javascripts/script.js"></script>
+    </head>
+    <body>
+        <div class="page-container">
+            <!-- top navbar -->
+            <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".sidebar-nav">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#">Qbic Remote Control Center</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="row row-offcanvas row-offcanvas-left">
+                    <!-- sidebar -->
+                    <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar" role="navigation">
+                        <ul class="nav">
+                            <li class="active"><a href="#/">Home</a></li>
+                            <li><a href="#">Single Device</a></li>
+                            <li><a href="#/testing/">Testing</a></li>
+                            <li><a href="#">About</a></li>              
+                        </ul>
+                    </div>
+
+                    <!-- main area -->
+                    <div ng-view>
+                    </div>
+                </div><!--/.row-->
+            </div><!--/.container-->
+        </div><!--/.page-container-->
+    </body>
+</html>
+

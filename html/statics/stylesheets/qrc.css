@@ -1,0 +1,15 @@
+/* For angularjs-bootstrap */
+.nav, .pagination, .carousel, .panel-title a {
+  cursor: pointer; }
+
+.navbar {
+  background: linear-gradient(120deg, darkorange, red);
+  background: -webkit-linear-gradient(120deg, darkorange, red);
+  background: -o-linear-gradient(120deg, darkorange, red);
+  background: -moz-linear-gradient(120deg, darkorange, red);
+  background: linear-gradient(120deg, darkorange, red); }
+
+.navbar-header .navbar-brand {
+  color: black; }
+
+/*# sourceMappingURL=qrc.css.map */
