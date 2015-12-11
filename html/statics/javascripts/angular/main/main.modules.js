@@ -2,9 +2,9 @@
   'use strict';
 
   angular
-    .module('qrc.main', [
-      'qrc.main.controllers'
+    .module('qrc-center.main', [
+      'qrc-center.main.controllers'
     ]);
 
-  angular.module('qrc.main.controllers', []);
+  angular.module('qrc-center.main.controllers', []);
 })();

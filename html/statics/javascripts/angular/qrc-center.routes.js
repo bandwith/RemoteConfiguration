@@ -1,7 +1,7 @@
 (function() {
     'use strict';
-    angular.module('qrc.routes')
-    .config(config);
+    angular.module('qrc-center.routes')
+        .config(config);
 
     config.$inject = ['$routeProvider'];
 
@@ -15,6 +15,12 @@
             controllerAs: 'vm',
             templateUrl: 'sub_pages/testing.html',
             activeTab: 'testing'
+        }).when('/example/', {
+            controller: 'ExampleController',
+            controllerAs: 'vm',
+            templateUrl: 'sub_pages/example.html',
+            activeTab: 'login'
+
         }).when('/single_dev/', {
             controller: 'SingleDevController',
             controllerAs: 'vm',

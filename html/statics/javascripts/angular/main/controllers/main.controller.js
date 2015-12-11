@@ -2,7 +2,7 @@
   'use strict';
 
   angular
-    .module('qrc.main.controllers')
+    .module('qrc-center.main.controllers')
     .controller('MainController', MainController);
 
   MainController.$inject = [];

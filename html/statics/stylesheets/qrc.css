@@ -12,4 +12,13 @@
 .navbar-header .navbar-brand {
   color: black; }
 
+.result-msg {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  -ms-word-break: break-all;
+  word-break: break-all;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  hyphens: auto; }
+
 /*# sourceMappingURL=qrc.css.map */
