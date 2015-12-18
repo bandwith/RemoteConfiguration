@@ -188,7 +188,7 @@
             testSetSettingsByKey(FnName, nextCaseReadiness, "is_lcd_on", false);
         }
         function testSetSettingsByKey(fnName, nextCaseReadiness, key, value) {
-            QRC.setSettings(key, value).then(successFn, errorFn);
+            QRC.setSettings(key, value).then(successFn, commonErrorFn);
             function successFn(data) {
                 QRC.getSettings(key).then(successFn, errorFn);
                 function successFn(data) {
@@ -243,7 +243,7 @@
         function TestSetWifiState(nextCaseReadiness) {
             FnName = TestingUtils.getFnName();
             printAndAppendResult("Start testing " + FnName + "...");
-            QRC.setWifState(0).then(successFn, errorFn);
+            QRC.setWifState(0).then(successFn, commonErrorFn);
             function successFn(data) {
                 QRC.getWifiScanResults().then(successFn, commonErrorFn);
                 function successFn(data) {
@@ -368,12 +368,12 @@
             QRC.setSecurityPassword(password).then(successFn, commonErrorFn);
             function successFn(data) {
                 try {
-                    QRC.getToken(password).then(successFn1, errorFn);
+                    QRC.getToken(password).then(successFn1, commonErrorFn);
                     function successFn1(data) {
                         QRC.setTargetAuthToken(data.data.access_token);
                         QRCTesting.setTargetAuthToken(data.data.access_token);
                         // Restore original password back.
-                        QRC.setSecurityPassword(vm.test_password).then(successFn2, errorFn);
+                        QRC.setSecurityPassword(vm.test_password).then(successFn2, commonErrorFn);
                         function successFn2(data) {
                             printAndAppendResult(FnName + ": PASS", data);
                             nextTestReady(nextCaseReadiness);
@@ -398,9 +398,9 @@
                     if (origValue == volumeValue) {
                         volumeValue = 100;
                     }
-                    QRC.setAudioVolume(streamType, volumeValue).then(successFn1, errorFn);
+                    QRC.setAudioVolume(streamType, volumeValue).then(successFn1, commonErrorFn);
                     function successFn1(data) {
-                        QRC.listAudioVolume().then(successFn2, errorFn);
+                        QRC.listAudioVolume().then(successFn2, commonErrorFn);
                         function successFn2(data) {
                             if (data.data.results[streamType]== volumeValue) {
                                 printAndAppendResult(FnName + ": PASS", data);

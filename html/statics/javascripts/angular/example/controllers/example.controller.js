@@ -92,9 +92,13 @@
                 DoneExample();
             }
             function errFn(data) {
-                printErrorAndBreak("Error of running " + FnName +
-                                   "\nMaybe your password was changed to '" +
-                                   newPassword + "'?", data);
+                if (data && data.status == -1) {
+                    printErrorAndBreak("Cannot get response from the HTP request. Is target IP alive?");
+                } else {
+                    printErrorAndBreak("Error of running " + FnName +
+                                       "\nMaybe your password was changed to '" +
+                                       newPassword + "'?", data);
+                }
             }
         }
 
@@ -147,7 +151,11 @@
             DoneExample();
         }
         function commonErrorFn(data) {
-            printErrorAndBreak("Error of running " + FnName, data);
+            if (data && data.status == -1) {
+                printErrorAndBreak("Cannot get response from the HTP request. Is target IP alive?");
+            } else {
+                printErrorAndBreak("Error of running " + FnName, data);
+            }
         }
 
         function setupEnv() {
