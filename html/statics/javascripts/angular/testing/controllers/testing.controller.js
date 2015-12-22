@@ -449,19 +449,19 @@
         }
 
         function setupEnv() {
-            vm.isTesting = true;
-            clearResult();
-            QRC.setTargetIpAddress(vm.test_ip + ":8080");
-            QRCTesting.setTargetIpAddress(vm.test_ip + ":8080");
-            isTestBreak = false;
-            wifiScanRetried = false;
-
             cacheTestingData = {};
             cacheTestingData.test_ip = vm.test_ip;
             cacheTestingData.test_password = vm.test_password;
             cacheTestingData.model_id = vm.model_id;
 
             sessionStorage.cacheTestingData = angular.toJson(cacheTestingData);
+
+            vm.isTesting = true;
+            clearResult();
+            QRC.setTargetIpAddress(vm.test_ip);
+            QRCTesting.setTargetIpAddress(vm.test_ip);
+            isTestBreak = false;
+            wifiScanRetried = false;
         }
         function nextTestReady(nextCaseReadiness) {
             if (isSingleTest) {

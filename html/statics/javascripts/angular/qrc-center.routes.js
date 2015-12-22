@@ -20,6 +20,11 @@
             controllerAs: 'vm',
             templateUrl: 'sub_pages/example.html',
             activeTab: 'login'
+        }).when('/configuration/', {
+            controller: 'ConfigurationController',
+            controllerAs: 'vm',
+            templateUrl: 'sub_pages/configuration.html',
+            activeTab: 'login'
 
         }).when('/single_dev/', {
             controller: 'SingleDevController',

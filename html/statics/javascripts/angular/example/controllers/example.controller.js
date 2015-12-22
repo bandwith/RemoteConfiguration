@@ -159,12 +159,7 @@
         }
 
         function setupEnv() {
-            vm.isExampleRunning = true;
-            clearResult();
-            QRC.setTargetIpAddress(vm.example_ip + ":8080");
-            isExampleBreak = false;
-            wifiScanRetried = false;
-
+            var tmpToken;
             if (cacheExampleData) {
                 var tmpToken = cacheExampleData.accessToken;
             }
@@ -174,6 +169,12 @@
             cacheExampleData.accessToken = tmpToken;
 
             sessionStorage.cacheExampleData = angular.toJson(cacheExampleData);
+            
+            vm.isExampleRunning = true;
+            clearResult();
+            QRC.setTargetIpAddress(vm.example_ip);
+            isExampleBreak = false;
+            wifiScanRetried = false;
         }
 
         function printError(msg, data, error) {

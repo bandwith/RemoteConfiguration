@@ -3,6 +3,7 @@
     angular.module('qrc-center', [
         'qrc-center.routes',
         'qrc-center.main',
+        'qrc-center.configuration',
         'qrc-center.testing',
         'qrc-center.example',
         'qrc',

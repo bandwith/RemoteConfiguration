@@ -77,7 +77,7 @@
         function buildUrl(path) {
             var url = "";
             if (ipAddress != null) {
-                url = "http://" + ipAddress + path;
+                url = "http://" + ipAddress + ":8080" + path;
             } else {
                 throw new Error("ipAddress is not set!");
             }

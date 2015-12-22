@@ -17,6 +17,7 @@
             setTargetAuthToken: setTargetAuthToken,
 
             // Followings are QRC API
+            getPublicInfo: getPublicInfo,
             getToken: getToken,
             getInfo: getInfo,
 
@@ -34,6 +35,7 @@
 
             listAudioVolume: listAudioVolume,
             setAudioVolume: setAudioVolume,
+
         };
         return QRC;
 
@@ -50,7 +52,7 @@
             return hash;
         }
         function setTargetIpAddress(ip_address) {
-            ipAddress = ip_address;
+            ipAddress = ip_address + ":8080";
         }
 
         function setTargetAuthToken(token) {
@@ -60,10 +62,13 @@
 
         // Followings are QRC API
 
+        function getPublicInfo(key) {
+            var url = buildUrl("/v1/public/info?key=" + key);
+            return $http.get(url, defaultConfig);
+        }
         function getToken(password_input) {
             var url = buildUrl("/v1/oauth2/token");
             return $http.post(url, {
-                timeout: 100,
                 grant_type: "password",
                 username: "admin",
                 password: password_input},
