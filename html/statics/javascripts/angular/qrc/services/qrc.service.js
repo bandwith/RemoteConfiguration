@@ -2,12 +2,13 @@
     'use strict';
     angular.module('qrc.services').factory('QRC', QRC);
 
-    QRC.$inject = ['$http', '$q', 'QRCTokenInjector'];
-    function QRC($http, $q, QRCTokenInjector) {
-        var ipAddress = null;
-        var authToken = null;
+    QRC.$inject = ['$http', '$q'/*, 'QRCTokenInjector'*/];
+    function QRC($http, $q/*, QRCTokenInjector*/) {
+        var ipAddress = {};
+        var authToken = {};
+        var defaultTimeout = 5000; // shorten the http request timeout to 5 sec, it is long enough for LAN.
         var defaultConfig = {
-            timeout: 5000, // shorten the http request timeout to 5 sec, it is long enough for LAN.
+            timeout: 5000, 
         }
 
         var QRC = {
@@ -51,96 +52,114 @@
             }
             return hash;
         }
-        function setTargetIpAddress(ip_address) {
-            ipAddress = ip_address + ":8080";
+        function setTargetIpAddress(ip_address, idx) {
+            if (!idx) idx = 0;
+            ipAddress[idx] = ip_address + ":8080";
         }
 
-        function setTargetAuthToken(token) {
-            authToken = token;
-            QRCTokenInjector.setToken(token);
+        function setTargetAuthToken(token, idx) {
+            if (!idx) idx = 0;
+            authToken[idx] = token;
+            //QRCTokenInjector.setToken(token);
         }
+
 
         // Followings are QRC API
 
-        function getPublicInfo(key) {
-            var url = buildUrl("/v1/public/info?key=" + key);
-            return $http.get(url, defaultConfig);
+        function getPublicInfo(key, idx) {
+            var url = buildUrl("/v1/public/info?key=" + key, idx);
+            return $http.get(url, getConfig(idx, true));
         }
-        function getToken(password_input) {
-            var url = buildUrl("/v1/oauth2/token");
+        function getToken(password_input, idx) {
+            var url = buildUrl("/v1/oauth2/token", idx);
             return $http.post(url, {
                 grant_type: "password",
                 username: "admin",
                 password: password_input},
-                              defaultConfig);
+                              getConfig(idx, true));
         }
-        function getInfo() {
-            var url = buildUrl("/v1/info");
-            return $http.get(url, defaultConfig);
+        function getInfo(idx) {
+            var url = buildUrl("/v1/info", idx);
+            return $http.get(url, getConfig(idx));
         }
 
-        function listSettings() {
-            var url = buildUrl("/v1/settings");
-            return $http.get(url, defaultConfig);
+        function listSettings(idx) {
+            var url = buildUrl("/v1/settings", idx);
+            return $http.get(url, getConfig(idx));
         }
-        function setSettings(key, value) {
-            var url = buildUrl("/v1/settings/" + key);
+        function setSettings(key, value, idx) {
+            var url = buildUrl("/v1/settings/" + key, idx);
             return $http.post(url, {
-                "value": value}, defaultConfig);
-        }
-        function getSettings(key) {
-            var url = buildUrl("/v1/settings/" + key);
-            return $http.get(url, defaultConfig);
+                "value": value}, getConfig(idx));
         }
 
-        function getWifiScanResults() {
-            var url = buildUrl("/v1/wifi/scan_results");
-            return $http.get(url, defaultConfig);
+
+        function getSettings(key, idx) {
+            var url = buildUrl("/v1/settings/" + key, idx);
+            return $http.get(url, getConfig(idx));
         }
 
-        function setWifState(state) {
+        function getWifiScanResults(idx) {
+            var url = buildUrl("/v1/wifi/scan_results", idx);
+            return $http.get(url, getConfig(idx));
+        }
+
+        function setWifState(state, idx) {
             var stateStr = (state != 0)? "enabled" : "disabled";
-            var url = buildUrl("/v1/wifi/state");
+            var url = buildUrl("/v1/wifi/state", idx);
             return $http.post(url, {
-                "value": stateStr}, defaultConfig);
+                "value": stateStr}, getConfig(idx));
         }
 
-        function setProp(prop, value) {
-            var url = buildUrl("/v1/prop/" + prop);
+        function setProp(prop, value, idx) {
+            var url = buildUrl("/v1/prop/" + prop, idx);
             return $http.post(url, {
-                "value": value}, defaultConfig);
+                "value": value}, getConfig(idx));
         }
-        function listProp() {
-            var url = buildUrl("/v1/prop");
-            return $http.get(url, defaultConfig);
+        function listProp(idx) {
+            var url = buildUrl("/v1/prop", idx);
+            return $http.get(url, getConfig(idx));
         }
 
-        function setSecurityPassword(value) {
-            var url = buildUrl("/v1/user/password");
+        function setSecurityPassword(value, idx) {
+            var url = buildUrl("/v1/user/password", idx);
             return $http.post(url, {
-                "value": value}, defaultConfig);
+                "value": value}, getConfig(idx));
         }
 
-        function listAudioVolume() {
-            var url = buildUrl("/v1/audio/volume");
-            return $http.get(url, defaultConfig);
+        function listAudioVolume(idx) {
+            var url = buildUrl("/v1/audio/volume", idx);
+            return $http.get(url, getConfig(idx));
         }
 
-        function setAudioVolume(streamType, value) {
-            var url = buildUrl("/v1/audio/volume/" + streamType);
+        function setAudioVolume(streamType, value, idx) {
+            var url = buildUrl("/v1/audio/volume/" + streamType, idx);
             return $http.post(url, {
-                "value": value}, defaultConfig);
+                "value": value}, getConfig(idx));
         }
 
-        function buildUrl(path) {
+        function buildUrl(path, idx) {
             var url = "";
-            if (ipAddress != null) {
-                url = "http://" + ipAddress + path;
+            if (!idx) idx = 0;
+            if (ipAddress[idx] != null) {
+                url = "http://" + ipAddress[idx] + path;
+            } else {
+                console.error("Target ipAddress is null.");
             }
             return url;
         }
-    }
 
+        function getConfig(idx, noAuth) {
+            var config = {};
+            if (!idx) idx = 0;
+            if (!noAuth) {
+                config.headers = {'Authorization': "Bearer " + authToken[idx]};
+            }
+            config.timeout = defaultTimeout;
+            return config;
+        }
+    }
+    /*
     angular.module('qrc.services').factory('QRCTokenInjector', QRCTokenInjector);
     QRCTokenInjector.$inject = [];
     function QRCTokenInjector() {
@@ -159,6 +178,7 @@
         function setToken(token) {
             bearerToken = "Bearer " + token;
         }
+
     }
 
     angular.module('qrc.services').config(config);
@@ -166,4 +186,5 @@
     function config($httpProvider) {
         $httpProvider.interceptors.push('QRCTokenInjector');
     }
+    */
 })();

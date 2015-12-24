@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /* For angularjs-bootstrap */
 .nav, .pagination, .carousel, .panel-title a {
   cursor: pointer; }
@@ -20,5 +21,30 @@
   -webkit-hyphens: auto;
   -moz-hyphens: auto;
   hyphens: auto; }
+
+.pull-bottom {
+  float: none;
+  display: table-cell;
+  vertical-align: bottom; }
+
+.table-container {
+  overflow-y: scroll; }
+
+.st-selected {
+  background: #216eff !important;
+  color: white !important; }
+
+.st-sort-ascent:before {
+  content: "▲"; }
+
+.st-sort-descent:before {
+  content: "▼"; }
+
+.divider {
+  height: 1px;
+  width: 100%;
+  margin: 9px 1px;
+  overflow: hidden;
+  background-color: #e5e5e5; }
 
 /*# sourceMappingURL=qrc.css.map */

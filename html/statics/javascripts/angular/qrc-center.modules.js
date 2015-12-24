@@ -7,7 +7,9 @@
         'qrc-center.testing',
         'qrc-center.example',
         'qrc',
-        'ui.bootstrap'
+        'ui.bootstrap',
+        'smart-table',
+        'blockUI'
     ]);
 
     angular.module('qrc-center.routes', ['ngRoute']);
@@ -16,4 +18,8 @@
     function run($http) {
 
     }
+    angular.module('qrc-center').config(function(blockUIConfig){
+        blockUIConfig.autoBlock = false;
+        blockUIConfig.delay = 0;
+    });
 })();

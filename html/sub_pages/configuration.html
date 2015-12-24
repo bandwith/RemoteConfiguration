@@ -2,10 +2,10 @@
     <h1>Remote Configure Devices</h1>
 
     <uib-tabset>
-        <uib-tab heading="Scan Devices">
+        <uib-tab heading="Scan Devices" active="vm.tabScanActive">
             <h2></h2>
             <p >Please input ranges of the device's IP address and click SCAN to find devices.</p>
-            <form class="form-inline" role="form" ng-submit="vm.startScan()" name="StartScan">
+            <form class="form-inline" role="form" name="StartScan" ng-submit="vm.startScan();">
 
                 <div ng-repeat="item in vm.ipCandidates">
                     <div class="form-group">
@@ -21,60 +21,146 @@
                                ng-required="true" ng-model="item.range_end" />
                     </div>
                     <span ng-show="vm.isRemoveRangeBtnShowing" style="cursor:pointer" class="glyphicon glyphicon-remove-circle" ng-click="vm.removeRange(item);"></span>
-                    <br></br>
+                    <p></p>
                 </div>
-            <div style="margin-bottom:15px;" ng-show="!vm.isScanDisabled">
-                <span  style="cursor:pointer" class="glyphicon glyphicon-plus-sign" ng-click="vm.addNewRange();"></span> Add new IP range
-            </div>
-            <p ng-show="vm.isScanDisabled">Please wait for few seconds...</p>
-            <div>
+                <p></p>
+                <div style="margin-bottom:15px;" ng-show="!vm.isScanDisabled&&!vm.isScanning">
+                    <span style="cursor:pointer" class="glyphicon glyphicon-plus-sign" ng-click="vm.addNewRange();"></span> Add new IP range
+                </div>
+                <div style="margin-bottom:15px;" ng-show="vm.isScanning">
+                    Scanning...
+                </div>
+                <p ng-show="vm.isScanDisabled">Please wait for few seconds...</p>
+
                 <button type="submit" class="btn btn-primary" ng-disabled="vm.isScanDisabled">
                     <span ng-show="vm.isScanning">STOP</span>
                     <span ng-show="!vm.isScanning">SCAN</span>
                 </button>
-            </div>
+                <span ng-show="vm.scannedDevices.length || vm.isScanning">
+                    <span ng-show="vm.isScanning">It may take about {{vm.timeCostEstimate}} seconds.</span>
+                    {{vm.scannedDevices.length}} device<span ng-show="vm.scannedDevices.length>1">s</span> found<span ng-show="vm.isScanning">...</span>
+                </span>
+            </form>
+            <button style="margin-top:-35px;" ng-show="vm.isNextShow" class="btn btn-success pull-right" ng-click="vm.goConfigDev();">
+                NEXT<span class="glyphicon glyphicon-menu-right"></span>
+            </button>
+
+            <p></p>
+            <div ng-show="vm.deviceScanResult" class="alert alert-success result-msg">{{ vm.deviceScanResult }}</div>
+            <div ng-show="vm.deviceScanFailResult" class="alert alert-danger result-msg">{{ vm.deviceScanFailResult }}</div>
+        </uib-tab>
+
+
+
+
+
+
+
+        <uib-tab heading="Configurate Devices" active="vm.tabConfigDevActive">
+            <h2></h2>
+
+
+
+            <form block-ui="BlockUIForScanning" class="form-horizontal" role="form" name="StartConfigure">
+                <div block-ui="BlockUIForConfigure">
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <label class="control-label" for="configurate__target_devices" uib-tooltip="">Scanned Devices <span uib-tooltip="All scanned devices are shoing in the following table. Click devices to select them to do the configuration." class="glyphicon glyphicon-info-sign"></span></label>
+                            <div class="table-container" ng-style="vm.STableStyle">
+                                <table st-safe-src="vm.scannedDevices" st-table="vm.displayScannedDevices" class="table">
+                                    <col width="5%">
+                                    <col width="25%">
+                                    <col width="25%">
+                                    <col width="25%">
+                                    <col width="20%">
+                                    <thead>
+                                        <tr>
+                                            <th>Select</th>
+                                            <th st-sort="ip">IP</th>
+                                            <th st-sort="model_id">Model ID</th>
+                                            <th st-sort="player_name">Name</th>
+                                            <th st-sort="serial_number">Serial</th>
+                                        </tr>
+                                        <tr>
+                                            <th><input type="checkbox" ng-change="vm.onSTableAllChecked();" ng-model="vm.STableSelectAllDevices"/></th>
+                                            <th><input class="form-control" st-search="ip"/></th>
+                                            <th>
+                                                <select class="form-control" st-search="model_id">
+                                                    <option value="">All</option>
+                                                    <option ng-repeat="row in vm.scannedModelId" value="{{row}}">{{row}}</option>
+                                                </select>
+                                            </th>
+
+                                            <th><input class="form-control" st-search="player_name"/></th>
+                                            <th><input class="form-control" st-search="serial_number"/></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="row in vm.displayScannedDevices"
+                                            ng-click="vm.onSTableClick(row);" ng-class="{info: row.isSelected}">
+                                            <td><input type="checkbox" ng-change="vm.onSTableClick(row);"
+                                                       ng-model="row.isSelected"/></td>
+                                            <td>{{row.ip | uppercase}}</td>
+                                            <td>{{row.model_id}}</td>
+                                            <td>{{row.player_name}}</td>
+                                            <td>{{row.serial_number}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!--div class="form-group">
+<div class="col-sm-12">
+<label class="control-label">Extra Devices <span uib-tooltip="You can add extra IPs manually, separate eacho IP by comma" class="glyphicon glyphicon-info-sign"></span></label>
+</div>
+<div class="col-sm-12">
+<input class="form-control"
+placeholder="192.168.0.38,192.168.0.39"
+ng-model="vm.extraDevices" />
+</div>
+</div-->
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button ng-click="vm.clearInput();" type="submit" class="btn btn-default pull-right">
+                                Clear All Input
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Current Password</label>
+                        <div class="col-sm-9">
+                            <input class="form-control"
+                                   ng-required="true" ng-model="vm.current_password" />
+                        </div>
+                    </div>
+                    <hr class="divider"/>
+                    <h3>Settings</h3>
+
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" for="configurate__ip">Player Name</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" 
+                                   ng-model="vm.configure.PlayerName" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button ng-disabled="vm.isStartConfigureDisabled||vm.isConfiguring==2" ng-click="vm.startConfigure();" type="submit" class="btn btn-primary pull-right"><span ng-show="vm.isConfiguring">Stop Configuration</span><span ng-show="!vm.isConfiguring">Start Configuration</span></button>
+                    </div>
+                </div>
             </form>
 
+            <p></p>
+            <div ng-show="vm.deviceConfigureResult" class="alert alert-success result-msg">{{ vm.deviceConfigureResult }}</div>
+            <div ng-show="vm.deviceConfigureFailResult" class="alert alert-danger result-msg">{{ vm.deviceConfigureFailResult }}</div>
         </uib-tab>
-    <uib-tab heading="Configurate Devices">
-        <h2></h2>
-        <form class="form-horizontal" role="form" ng-submit="vm.startConfigure()" name="StartConfigure">
-            <div class="form-group">
-                <label class="col-sm-2 control-label" for="configurate__ip">IP Address</label>
-                <div class="col-sm-10">
-                    <input class="form-control" name="configurate__ip"
-                           placeholder="192.168.1.38"
-                           ng-required="true" ng-model="vm.configurate_ip" />
-                    <span ng-show="vm.configurate_ip">http://{{vm.configurate_ip}}:8080</span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-2 control-label" for="configurate__ip">Password</label>
-                <div class="col-sm-10">
-                    <input class="form-control" name="configurate__password"
-                           ng-required="true" ng-model="vm.configurate_password" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-2 control-label" for="configurate__configurate_cases">
-                    ExampleCase
-                </label>
-                <div class="col-sm-10">
-                    <select name="configurate_cases" class="form-control" ng-options="data for data in vm.configurateCasesArray" ng-model="vm.configurateCase" ng-change="vm.onExampleCaseChanged();">
-                    </select>
-                </div>
-            </div>
-            <div ng-show="vm.configurateCaseDescription" class="alert alert-info">{{ vm.configurateCaseDescription }}</div>
-            <button ng-disabled="vm.isExampleRunning" type="submit" class="btn btn-primary pull-right">Try it!</button>
-        </form>
-    </uib-tab>
 
     </uib-tabset>
-
-<br></br>
-<div ng-show="vm.configurate_result" class="alert alert-success result-msg">{{ vm.configurate_result }}</div>
-<div ng-show="vm.configurate_fail_result" class="alert alert-danger result-msg">{{ vm.configurate_fail_result }}</div>
-
 
 
 </div><!-- /.col-xs-12 main -->
