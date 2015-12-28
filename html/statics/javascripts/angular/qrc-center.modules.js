@@ -9,7 +9,8 @@
         'qrc',
         'ui.bootstrap',
         'smart-table',
-        'blockUI'
+        'blockUI',
+        'ngAnimate'
     ]);
 
     angular.module('qrc-center.routes', ['ngRoute']);

@@ -47,4 +47,13 @@
   overflow: hidden;
   background-color: #e5e5e5; }
 
+.panel-heading {
+  cursor: pointer; }
+
+.form-group .help-block {
+  display: none; }
+
+.form-group.has-error .help-block {
+  display: block; }
+
 /*# sourceMappingURL=qrc.css.map */

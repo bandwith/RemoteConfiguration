@@ -21,6 +21,7 @@
             "GetToken",
             "PlayerName",
             "Timezone",
+            "SecurityPassword", // Always put Password at last one config.
             "DoneConfig",
         ];
         var vm = this;
@@ -42,6 +43,9 @@
                 vm.current_password = cacheConfigurationData.current_password;
                 vm.configure = cacheConfigurationData.configure;
             }
+
+            vm.ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            // /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 
             // For scan tab
             vm.isScanDisabled = true;
@@ -65,6 +69,7 @@
             vm.onSTableClick = onSTableClick;
             vm.onSTableAllChecked = onSTableAllChecked;
             vm.clearInput = clearInput;
+            vm.setFormScope = setFormScope;
             vm.displayScannedDevices = [];
             vm.selectedScannedDevices = [];
             vm.selectedFinalDevices = [];
@@ -72,6 +77,7 @@
             vm.scannedModelId = [];
             vm.isStartConfigureDisabled = true;
             vm.isConfiguring = 0;
+            vm.isConfigClicked = false;
 
             calSTableHeight();
 
@@ -82,6 +88,7 @@
 
             watchScannedDevices();
         }
+
 
         // ---------- For Scan Tab ---------- 
 
@@ -153,8 +160,8 @@
             //Testing devices
             /*
             var ip_start = parseInt(range_start.match(/\.[\d]+$/)[0].replace(/\./,''));
-            for (var k=0;k<85;k++) {
-                appendScannedDevice({data:{results:{model_id:'FHD123',player_name:'ABCDE', serial_number:'210FDVB8'}}}, '192.168.1.35');
+            for (var k=0;k<5;k++) {
+                appendScannedDevice({data:{results:{model_id:'FHD123',player_name:'ABCDE', serial_number:'210FDVB8'}}}, '192.168.2.'+k);
             }*/
 
 
@@ -391,11 +398,13 @@
                 return;
             }
 
+            if (!validateConfigInput()) {
+                return;
+            }
             if (!checkReadyToConfigure()) {
                 printConfigureError("Unable to configure. Please select at leaset one device.");
                 return;
             }
-
             initStartConfigure();
 
             for (var devIdx in vm.scannedDevices) {
@@ -437,12 +446,49 @@
                 printAndAppendConfigureResult("Configuration Stop.");
                 vm.isConfiguring = 0;
             } else {
+                bui.stop();
                 bui.start("Stopping Configuration...");
                 vm.isConfiguring = 2;
             }
 
             isGlobalConfigureBreak = true;
 
+        }
+
+        function openAllConfigAccordion(open) {
+            for (var i in vm.accordion) {
+                vm.accordion[i] = open;
+            }
+        }
+
+        function validateConfigInput() {
+            vm.isConfigClicked = true;
+            var configForm = vm.formScope.ConfigForm;
+            if (configForm.$valid) {
+                return true;
+            }
+            $scope.$broadcast('show-errors-check-validity');
+            //openAllConfigAccordion(true);
+            //printConfigureError("Following input is invalid.");
+            for (var item in configForm) {
+                if (configForm[item] && configForm[item]["$invalid"]) {
+                    if (document.getElementsByName(item)[0]) {
+                        var parent = angular.element(document.getElementsByName(item)[0]).scope().$parent;
+                        if (parent && 
+                            typeof parent.isOpen != 'undefined' &&
+                            !parent.isOpen) {
+                            parent.isOpen = true;
+                        }
+                    }
+                    //printConfigureError(item);
+                }
+            }
+            return false;
+
+
+        }
+        function setFormScope(scope) {
+            vm.formScope = scope;
         }
 
         function checkReadyToConfigure() {
@@ -505,6 +551,10 @@
                 if (configKey == "PlayerName") {
                     QRC.setSettings("player_name",
                                     vm.configure[configKey], device.index)
+                        .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "SecurityPassword") {
+                    QRC.setSecurityPassword(
+                        vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "Timezone") {
                     // TODO
@@ -625,11 +675,13 @@
             return false;
         }
         function ValidateIPaddress(ipaddress) {
-            if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress)) {
+            var patt = new RegExp(vm.ipPattern);
+            if (patt.test(ipaddress)) {
                 return true;
             }
             return false;
         }
+
 
         function getLocalIp(getIpFn) {
             // NOTE: window.RTCPeerConnection is "not a constructor" in FF22/23
@@ -766,5 +818,6 @@
             return r;
         };
     });
+
 
 })();

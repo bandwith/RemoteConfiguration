@@ -1,23 +1,36 @@
-<div class="col-xs-12 col-sm-9">
+<!--config-input
+form-input="ConfigForm.ethernetGateway"
+name="ethernetGateway"
+model="vm.configure.Ethernet.gateway"
+placeholder="'192.168.x.1'"
+when="vm.configure.Ethernet.type=='static'"
+label="'Gateway Address'"
+pattern="vm.ipPattern"
+accordion-open="vm.accordion.ethernetOpen">
+</config-input-->
+
+<div class="col-xs-12 col-sm-9" name="div1">
     <h1>Remote Configure Devices</h1>
 
     <uib-tabset>
         <uib-tab heading="Scan Devices" active="vm.tabScanActive">
             <h2></h2>
             <p >Please input ranges of the device's IP address and click SCAN to find devices.</p>
-            <form class="form-inline" role="form" name="StartScan" ng-submit="vm.startScan();">
+            <form class="form-inline" name="StartScan" ng-submit="vm.startScan();">
 
                 <div ng-repeat="item in vm.ipCandidates">
                     <div class="form-group">
                         <label class="control-label" for="configurate__ip_start"></label>
                         <input class="form-control" name="configurate__ip_start"
                                placeholder="192.168.0.1"
+                               ng-pattern="vm.ipPattern"
                                ng-required="true" ng-model="item.range_start" />
                     </div>
                     <div class="form-group">
                         <label class="control-label" for="configurate__ip_end"> ~ </label>
                         <input class="form-control" name="configurate__ip_end"
                                placeholder="192.168.0.254"
+                               ng-pattern="vm.ipPattern"
                                ng-required="true" ng-model="item.range_end" />
                     </div>
                     <span ng-show="vm.isRemoveRangeBtnShowing" style="cursor:pointer" class="glyphicon glyphicon-remove-circle" ng-click="vm.removeRange(item);"></span>
@@ -57,11 +70,15 @@
 
 
         <uib-tab heading="Configurate Devices" active="vm.tabConfigDevActive">
-            <h2></h2>
 
 
 
-            <form block-ui="BlockUIForScanning" class="form-horizontal" role="form" name="StartConfigure">
+            <button ng-click="vm.clearInput();" class="btn btn-default pull-right">
+                Clear All Input
+            </button>
+            <h2>Configurate Scanned Devices</h2>
+            <form novalidate ng-submit="vm.startConfigure();" block-ui="BlockUIForScanning"
+                  class="form-horizontal" role="form" name="ConfigForm" ng-init="vm.setFormScope(this)">
                 <div block-ui="BlockUIForConfigure">
                     <div class="form-group">
                         <div class="col-sm-12">
@@ -122,36 +139,114 @@ placeholder="192.168.0.38,192.168.0.39"
 ng-model="vm.extraDevices" />
 </div>
 </div-->
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <button ng-click="vm.clearInput();" type="submit" class="btn btn-default pull-right">
-                                Clear All Input
-                            </button>
-                        </div>
-                    </div>
 
-                    <div class="form-group">
+
+                    <div show-errors class="form-group">
                         <label class="col-sm-3 control-label">Current Password</label>
                         <div class="col-sm-9">
-                            <input class="form-control"
-                                   ng-required="true" ng-model="vm.current_password" />
+                            <input name="currentPassword" class="form-control"
+                                   ng-required="true" ng-model="vm.current_password"
+                                   ng-minlength="4" ng-maxlength="16" />
+                            <div ng-show="ConfigForm.currentPassword.$error.required" class="help-block">* Required</div>
+                            <div ng-show="ConfigForm.currentPassword.$error.minlength" class="help-block">Too short</div>
+                            <div ng-show="ConfigForm.currentPassword.$error.maxlength" class="help-block">Too long</div>
                         </div>
                     </div>
                     <hr class="divider"/>
-                    <h3>Settings</h3>
 
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" for="configurate__ip">Player Name</label>
-                        <div class="col-sm-9">
-                            <input class="form-control" 
-                                   ng-model="vm.configure.PlayerName" />
+                    <uib-accordion close-others="false">
+                        <uib-accordion-group  is-open="vm.accordion.settingsOpen"
+                                             template-url="statics/templates/accordion-group.html">
+                            <uib-accordion-heading>
+                                Settings <i class="pull-right glyphicon"
+                                            ng-class="{'glyphicon-chevron-down': vm.accordion.settingsOpen, 'glyphicon-chevron-right': !vm.accordion.settingsOpen}"></i>
+                            </uib-accordion-heading>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Player Name</label>
+                                <div class="col-sm-9">
+                                    <input class="form-control" ng-model="vm.configure.PlayerName" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Security Password</label>
+                                <div class="col-sm-9">
+                                    <input maxlength="16" minlength="4" class="form-control" ng-model="vm.configure.SecurityPassword" />
+                                </div>
+                            </div>
+                        </uib-accordion-group>
+                        <uib-accordion-group name="ethernetGroup" is-open="vm.accordion.ethernetOpen"
+                                             template-url="statics/templates/accordion-group.html">
+                            <uib-accordion-heading>
+                                Ethernet <i class="pull-right glyphicon" 
+                                            ng-class="{'glyphicon-chevron-down': vm.accordion.ethernetOpen, 'glyphicon-chevron-right': !vm.accordion.ethernetOpen}"></i>
+                            </uib-accordion-heading>
+                            <div class="alert alert-warning">Remotely changing Ethernet configuration may cause error while configuring devices if the connection is lost. Never use this configuration if you're using Etherent for your target device.</div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Enable Ethernet</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" ng-model="vm.configure.Ethernet.enabled">
+                                        <option value=""></option>
+                                        <option value="enabled">enabled</option>
+                                        <option value="disabled">disabled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">IP Assigment</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" ng-model="vm.configure.Ethernet.type">
+                                        <option value=""></option>
+                                        <option value="dhcp">dhcp</option>
+                                        <option value="static">static</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.Ethernet.type=='static'">
+                                <label class="col-sm-3 control-label">IP Address</label>
+                                <div class="col-sm-9">
+                                    <input name="ethernetIp"
+                                           ng-required="vm.configure.Ethernet.type=='static'"
+                                           ng-pattern="vm.ipPattern"
+                                           placeholder="192.168.x.y"
+                                           class="form-control" 
+                                           ng-model="vm.configure.Ethernet.ip" />
+                                    <div ng-show="ConfigForm.ethernetIp.$error.required" class="help-block">* Required</div>
+                                    <div ng-show="ConfigForm.ethernetIp.$error.pattern" class="help-block">Format is incorrect</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.Ethernet.type=='static'">
+                                <label class="col-sm-3 control-label">Gateway Address</label>
+                                <div class="col-sm-9">
+                                    <input name="ethernetGateway"
+                                           ng-required="vm.configure.Ethernet.type=='static'"
+                                           ng-pattern="vm.ipPattern"
+                                           placeholder="192.168.x.1"
+                                           class="form-control"
+                                           ng-model="vm.configure.Ethernet.gateway" />
+                                    <div ng-show="ConfigForm.ethernetGateway.$error.required" class="help-block">* Required</div>
+                                    <div ng-show="ConfigForm.ethernetGateway.$error.pattern" class="help-block">Format is incorrect</div>
+                                </div>
+                            </div>
+                        </uib-accordion-group>
+                    </uib-accordion>
+
+
+                </div>
+                <div class="form-group" ng-class="{ 'has-error': vm.isConfigClicked&&ConfigForm.$invalid }">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button ng-disabled="vm.isStartConfigureDisabled||vm.isConfiguring==2" 
+                                type="submit" class="btn btn-primary pull-right"><span ng-show="vm.isConfiguring">Stop Configuration</span><span ng-show="!vm.isConfiguring">Start Configuration</span></button>
+
+                    </div>
+                    <div class="col-sm-12" ng-show="vm.isConfigClicked&&ConfigForm.$invalid" ng-class="has-error">
+                        <div class="pull-right help-block" >
+                            Please fix invalid inputs above to start configuration
                         </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button ng-disabled="vm.isStartConfigureDisabled||vm.isConfiguring==2" ng-click="vm.startConfigure();" type="submit" class="btn btn-primary pull-right"><span ng-show="vm.isConfiguring">Stop Configuration</span><span ng-show="!vm.isConfiguring">Start Configuration</span></button>
-                    </div>
+
+
                 </div>
             </form>
 
