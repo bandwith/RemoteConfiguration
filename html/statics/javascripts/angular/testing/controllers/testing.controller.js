@@ -465,7 +465,7 @@
                     if (data.data.red == ledType.red &&
                         data.data.green == ledType.green &&
                         data.data.blue == ledType.blue) {
-                        printAndAppendResult(FnName + ": PASS", data);
+                        printAndAppendResult(FnName + " " + key + ": PASS", data);
                         idx++;
                         if (idx < keyArray.length) {
                             testLedLoop(nextCaseReadiness, keyArray, idx);
