@@ -39,22 +39,34 @@
             "persist.sys.timezone": ["string", "=", "Asia/Taipei"],
             "persist.adb.tcp.port": ["string"],
         }
-
+        
+        var commonLed = {
+            led_bars: {red: 100, green: 200, blue: 15},
+            front_led: {red: 200, green: 15, blue: 100},
+        }
+        
         var commonData = {
             info: commonInfo,
             settings: commonSettings,
             prop: commonProp,
+            led: commonLed,
         };
 
         // For TD1050
-        var TD1050 = commonData;
+        var TD1050 = $.extend(true, {}, commonData);
         TD1050.info.model_id = ["string", "=", "TD-1050"];
 
+        // For FHD-100
+        var FHD100 = $.extend(true, {}, commonData);
+        FHD100.info.model_id = ["string", "=", "FHD-100"];
+        FHD100.settings.is_lcd_on = null;
+        FHD100.led = {};
         // ...
 
         var TestingData = {
             common: commonData,
             TD1050: TD1050,
+            FHD100: FHD100,
         };
         return TestingData;
     }

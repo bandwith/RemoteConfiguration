@@ -28,6 +28,8 @@
 
             TestAudioVolume: TestAudioVolume,
 
+            TestLed: TestLed,
+
             TestUnSupportPath: TestUnSupportPath,
 
             EndTest: EndTest,
@@ -184,6 +186,11 @@
         }
         function TestSetSettingsIsLcdOn(nextCaseReadiness) {
             FnName = TestingUtils.getFnName();
+            if (checkSkipTest(testingModelData.settings, "is_lcd_on")) {
+                printAndAppendResult(FnName + ": SKIP");
+                nextTestReady(nextCaseReadiness);
+                return;
+            }
             printAndAppendResult("Start testing " + FnName + "...");
             testSetSettingsByKey(FnName, nextCaseReadiness, "is_lcd_on", false);
         }
@@ -238,6 +245,13 @@
                 }
                 return true;
             }
+        }
+
+        function checkSkipTest(data, key) {
+            if (data[key] == null) {
+                return true;
+            }
+            return false;
         }
 
         function TestSetWifiState(nextCaseReadiness) {
@@ -412,6 +426,61 @@
                     printErrorAndBreak("Error of " + FnName, null, err);
                 }
             }
+        }
+
+        function TestLed(nextCaseReadiness) {
+            FnName = TestingUtils.getFnName();
+            QRC.listLed().then(successFn, commonErrorFn);
+            function successFn(data) {
+                try {
+                    var results = data.data.results;
+                    var key;
+                    var keyArray = [];
+                    for (key in testingModelData.led) {
+                        keyArray.push(key);
+                        if (results.hasOwnProperty(key)) {
+                            printErrorAndBreak("Error of " + FnName + ", result doesn't contain " +
+                                               testingModelData.led[key],
+                                               null);
+                        }
+                    }
+                    if (!key) {
+                        // if device doesn't have led, break;
+                        nextTestReady(nextCaseReadiness);
+                        return; 
+                    }
+                    testLedLoop(nextCaseReadiness, keyArray, 0);
+                } catch(err) {
+                    printErrorAndBreak("Error of " + FnName, null, err);
+                }                
+            }
+        }
+        function testLedLoop(nextCaseReadiness, keyArray, idx) {
+            var key = keyArray[idx];
+            var ledType = testingModelData.led[key];
+            QRC.setLed(key, ledType.red, ledType.green, ledType.blue).then(successFn1, commonErrorFn);
+            function successFn1(data) {
+                QRC.getLed(key).then(successFn2, commonErrorFn);
+                function successFn2(data) {
+                    if (data.data.red == ledType.red &&
+                        data.data.green == ledType.green &&
+                        data.data.blue == ledType.blue) {
+                        printAndAppendResult(FnName + ": PASS", data);
+                        idx++;
+                        if (idx < keyArray.length) {
+                            testLedLoop(nextCaseReadiness, keyArray, idx);
+                        } else {
+                            nextTestReady(nextCaseReadiness);
+                        }
+                    } else {
+                        printErrorAndBreak("Error of " + FnName + ", RGB doesn't as expect " +
+                                           "\nExpected: " + ledType.red + "," + ledType.green + "," + ledType.blue +
+                                           "\nBut got : " + data.data.red + "," + data.data.green + "," + data.data.blue,
+                                           null);
+                    }
+                }
+            }
+
         }
 
         // Corner Test

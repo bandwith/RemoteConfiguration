@@ -36,6 +36,10 @@
 
             listAudioVolume: listAudioVolume,
             setAudioVolume: setAudioVolume,
+            
+            listLed: listLed,
+            getLed: getLed,
+            setLed: setLed,
 
         };
         return QRC;
@@ -137,6 +141,24 @@
             return $http.post(url, {
                 "value": value}, getConfig(idx));
         }
+        
+        function listLed(idx) {
+            var url = buildUrl("/v1/led");
+            return $http.get(url, getConfig(idx));
+        }
+        
+        function  getLed(key, idx) {
+            var url = buildUrl("/v1/led/" + key);
+            return $http.get(url, getConfig(idx));
+        }
+        
+        function  setLed(key, r, g, b, idx) {
+            var url = buildUrl("/v1/led/" + key);
+            return $http.post(url, {
+                "red": r, "green": g, "blue": b}, getConfig(idx));
+        }
+        
+        // ------------------------------- Internal functions
 
         function buildUrl(path, idx) {
             var url = "";

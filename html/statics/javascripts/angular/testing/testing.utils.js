@@ -13,6 +13,9 @@
         return TestingUtils;
 
         function checkResults(result, expectData, key) {
+            if (expectData == null) {
+                return;
+            }
             if (typeof result === 'undefined' || result == null) {
                 throw new Error("result doesn't exist. Expect key:" + key);
             }
