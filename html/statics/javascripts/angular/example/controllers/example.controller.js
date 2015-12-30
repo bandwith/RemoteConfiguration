@@ -12,6 +12,7 @@
         var newTimeZone = "Europe/Amsterdam";
         var newAudioVolume = ["stream_system", 0];
         var newContentURL = "http://folk.uio.no/annembek/inf3210/examples/basic.smil";
+        var presenceDeviceIndex = 0;
 
         var ExampleCases = {
             ExampleGetAuth2Token: 
@@ -33,6 +34,19 @@
             ExampleSetContentUrl: 
             [ExampleSetContentUrl,
              "This example will set the content URL '" + newContentURL + "' into the SMIL player"],
+            
+            ExampleGetPresencePIR: 
+            [ExampleGetPresencePIR,
+             "This example will get PIR status (detected/undetected people, or unconnected/unknown) of the Presence Device index " + presenceDeviceIndex],
+            ExampleGetPresenceLight: 
+            [ExampleGetPresenceLight,
+             "This example will get Light status (red/green, or unconnected/unknown) of the Presence Device index " + presenceDeviceIndex],
+            ExampleSetPresenceLightToGreen: 
+            [ExampleSetPresenceLightToGreen,
+             "This example will set Presence Device's light color (index "+ presenceDeviceIndex +") to green"],
+            ExampleSetPresenceLightToRed: 
+            [ExampleSetPresenceLightToRed,
+             "This example will set Presence Device's light color (index "+ presenceDeviceIndex +") to red"],
         };
         var vm = this;
 
@@ -131,6 +145,34 @@
             QRC.setSettings("smil_content_url", newContentURL)
                 .then(commonSuccessFn, commonErrorFn);
         }
+        
+        function ExampleGetPresencePIR() {
+            FnName = getFnName();
+            printAndAppendResult("Start Example " + FnName + "...");
+            QRC.getPresenceStatus("pir", presenceDeviceIndex)
+                .then(commonSuccessFn, commonErrorFn);
+        }
+        
+        function ExampleGetPresenceLight() {
+            FnName = getFnName();
+            printAndAppendResult("Start Example " + FnName + "...");
+            QRC.getPresenceStatus("light", presenceDeviceIndex)
+                .then(commonSuccessFn, commonErrorFn);
+        }
+        
+        function ExampleSetPresenceLightToGreen() {
+            FnName = getFnName();
+            printAndAppendResult("Start Example " + FnName + "...");
+            QRC.setPresenceStatus("light", "green", presenceDeviceIndex)
+                .then(commonSuccessFn, commonErrorFn);
+        }
+        
+        function ExampleSetPresenceLightToRed() {
+            FnName = getFnName();
+            printAndAppendResult("Start Example " + FnName + "...");
+            QRC.setPresenceStatus("light", "red", presenceDeviceIndex)
+                .then(commonSuccessFn, commonErrorFn);
+        }
 
         // End of Example
         function DoneExample() {
@@ -169,7 +211,7 @@
             cacheExampleData.accessToken = tmpToken;
 
             sessionStorage.cacheExampleData = angular.toJson(cacheExampleData);
-            
+
             vm.isExampleRunning = true;
             clearResult();
             QRC.setTargetIpAddress(vm.example_ip);

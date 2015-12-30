@@ -40,6 +40,9 @@
             listLed: listLed,
             getLed: getLed,
             setLed: setLed,
+            
+            getPresenceStatus: getPresenceStatus,
+            setPresenceStatus: setPresenceStatus,
 
         };
         return QRC;
@@ -158,6 +161,19 @@
                 "red": r, "green": g, "blue": b}, getConfig(idx));
         }
         
+        function getPresenceStatus(type, index, idx) {
+            var url = buildUrl("/v1/presence/status/" + index + "/" + type);
+            return $http.get(url, getConfig(idx, false, 10000));
+        }
+        
+        function setPresenceStatus(type, value, index, idx) {
+            var url = buildUrl("/v1/presence/status/" + index);
+            var obj = {};
+            obj[type] = value;
+            return $http.post(url, obj, getConfig(idx, false, 10000));
+        }
+        
+        
         // ------------------------------- Internal functions
 
         function buildUrl(path, idx) {
@@ -171,13 +187,13 @@
             return url;
         }
 
-        function getConfig(idx, noAuth) {
+        function getConfig(idx, noAuth, timeout) {
             var config = {};
             if (!idx) idx = 0;
             if (!noAuth) {
                 config.headers = {'Authorization': "Bearer " + authToken[idx]};
             }
-            config.timeout = defaultTimeout;
+            config.timeout = timeout? timeout:defaultTimeout;
             return config;
         }
     }
