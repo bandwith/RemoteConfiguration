@@ -16,11 +16,12 @@
             TestSetSettingsRebootTime: TestSetSettingsRebootTime,
             TestSetSettingsIsRebootOptimized: TestSetSettingsIsRebootOptimized,
             TestSetSettingsIsLcdOn: TestSetSettingsIsLcdOn,
-            TestGetSettings: TestGetSettings,
+            
 
             TestGetWifiScanResults: TestGetWifiScanResults,
             TestSetWifiState: TestSetWifiState,
-
+            
+            
             TestSetProp: TestSetProp,
             testlistProp: testlistProp,
 
@@ -31,7 +32,10 @@
             TestLed: TestLed,
 
             TestUnSupportPath: TestUnSupportPath,
-
+			TestSetSettingsContentURL: TestSetSettingsContentURL,
+            TestSetSettingsADB: TestSetSettingsADB,
+            TestSetADBoverTCP: TestSetADBoverTCP,
+            TestGetSettings: TestGetSettings,
             EndTest: EndTest,
         };
         var vm = this;
@@ -336,6 +340,8 @@
 
         }
 
+        
+        
         function TestSetProp(nextCaseReadiness) {
             FnName = TestingUtils.getFnName();
             printAndAppendResult("Start testing " + FnName + "...");
@@ -420,6 +426,9 @@
                                 printAndAppendResult(FnName + ": PASS", data);
                                 nextTestReady(nextCaseReadiness);
                             }
+                            else{
++                                printErrorAndBreak("Error of " + FnName, data);
+                            }
                         }
                     }
                 } catch(err) {
@@ -496,6 +505,39 @@
                 }
             }
         }
+		
+        function TestSetSettingsContentURL(nextCaseReadiness) {
+             FnName = TestingUtils.getFnName();
+            printAndAppendResult("Start testing " + FnName + "...");
+            testSetSettingsByKey(FnName, nextCaseReadiness, "smil_content_url", "http://192.168.1.253/qa/Media/index_V.smil");
+        }
+        
+        function TestSetSettingsADB(nextCaseReadiness) {
+            FnName = TestingUtils.getFnName();
+            printAndAppendResult("Start testing " + FnName + "...");
+            testSetSettingsByKey(FnName, nextCaseReadiness, "adb_enabled", true);
+        }
+        
+        function TestSetADBoverTCP(nextCaseReadiness) {
+            FnName = TestingUtils.getFnName();
+            printAndAppendResult("Start testing " + FnName + "...");
+            QRC.setSettings("adb_enabled", false).then(successFn1, commonErrorFn);
+            function successFn1(data) {
+                QRC.setProp("persist.adb.tcp.port", "1234").then(successFn2, commonErrorFn);
+            }
+            function successFn2(data) {
+                QRC.setSettings("adb_enabled", true).then(successFn, commonErrorFn);
+            }
+            
+            function successFn(data) {
+                try {
+                    printAndAppendResult(FnName + ": PASS", data);
+                    nextTestReady(nextCaseReadiness);
+                } catch(err) {
+                    printErrorAndBreak("Error of " + FnName, null, err);
+                }
+            }
+        }		
 
         // More test case here...
 

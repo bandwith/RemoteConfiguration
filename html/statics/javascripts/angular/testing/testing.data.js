@@ -28,16 +28,17 @@
         };
         var commonSettings = {
             ntp_server:                ["string", "=", ""],
-            reboot_time:               ["string", "=", "4:00"], 
-            is_reboot_optimized:       ["boolean", "=", true],
+            reboot_time:               ["string", "=", "20:00"], 
+            is_reboot_optimized:       ["boolean", "=", false],
             is_lcd_on:                 ["boolean", "=", true],
-            smil_content_url:          ["string"],
+            smil_content_url:          ["string", "=", "http://www.google.com"],
             adb_enabled:               ["boolean", "=", true],
             player_name:               ["string"],
         }
         var commonProp = {
             "persist.sys.timezone": ["string", "=", "Asia/Taipei"],
-            "persist.adb.tcp.port": ["string"],
+            //"persist.adb.tcp.port": ["string","=", "1234"],
+            "persist.adb.tcp.port": ["string",""],
         }
         
         var commonLed = {
