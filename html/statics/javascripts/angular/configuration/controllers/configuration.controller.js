@@ -22,6 +22,8 @@
             "PlayerName",
             "Timezone",
             "SecurityPassword", // Always put Password at last one config.
+            "EthernetNetwork",
+            "EthernetState",
             "DoneConfig",
         ];
         var vm = this;
@@ -45,7 +47,6 @@
             }
 
             vm.ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-            // /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 
             // For scan tab
             vm.isScanDisabled = true;
@@ -547,6 +548,17 @@
             }
 
 
+            function netMaskToPrefixLength(mask) {
+                var maskNodes = mask.match(/(\d+)/g);
+                var cidr = 0;
+                for(var i in maskNodes)
+                {
+                    cidr += (((maskNodes[i] >>> 0).toString(2)).match(/1/g) || []).length;
+                }
+                return cidr;
+            }
+
+
             function runConfigureByKey(configKey, device) {
                 if (configKey == "PlayerName") {
                     QRC.setSettings("player_name",
@@ -558,6 +570,28 @@
                         .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "Timezone") {
                     // TODO
+                } else if (configKey == "EthernetState") {
+                    if (vm.configure.EthernetState == "enabled") {
+                        QRC.setEth0State(1, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        QRC.setEth0State(0, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    }
+                } else if (configKey == "EthernetNetwork") {
+                    if (vm.configure.EthernetNetwork.hasOwnProperty("ip_assignment")) {
+
+                        if (vm.configure.EthernetNetwork.ip_assignment == "dhcp") {
+                            var ethConfig = {ip_assignment: "dhcp"};
+                            QRC.setEth0Network(ethConfig, device.index)
+                                .then(successConfigFn, errorConfigFn);
+                        } else if (vm.configure.EthernetNetwork.ip_assignment == "static") {
+                            vm.configure.EthernetNetwork.network_prefix_length =
+                                netMaskToPrefixLength(vm.configure.EthernetNetwork.netMask);
+                            QRC.setEth0Network(vm.configure.EthernetNetwork, device.index)
+                                .then(successConfigFn, errorConfigFn);
+                        }
+                    }
                 } else {
                     printConfigureError("Un-recognized configKey:" + configKey);
                     return false;
@@ -681,6 +715,7 @@
             }
             return false;
         }
+
 
 
         function getLocalIp(getIpFn) {

@@ -1,9 +1,9 @@
 <!--config-input
 form-input="ConfigForm.ethernetGateway"
 name="ethernetGateway"
-model="vm.configure.Ethernet.gateway"
+model="vm.configure.EthernetNetwork.gateway"
 placeholder="'192.168.x.1'"
-when="vm.configure.Ethernet.type=='static'"
+when="vm.configure.EthernetNetwork.ip_assignment=='static'"
 label="'Gateway Address'"
 pattern="vm.ipPattern"
 accordion-open="vm.accordion.ethernetOpen">
@@ -145,6 +145,7 @@ ng-model="vm.extraDevices" />
                         <label class="col-sm-3 control-label">Current Password</label>
                         <div class="col-sm-9">
                             <input name="currentPassword" class="form-control"
+                                   type="password"
                                    ng-required="true" ng-model="vm.current_password"
                                    ng-minlength="4" ng-maxlength="16" />
                             <div ng-show="ConfigForm.currentPassword.$error.required" class="help-block">* Required</div>
@@ -180,11 +181,11 @@ ng-model="vm.extraDevices" />
                                 Ethernet <i class="pull-right glyphicon" 
                                             ng-class="{'glyphicon-chevron-down': vm.accordion.ethernetOpen, 'glyphicon-chevron-right': !vm.accordion.ethernetOpen}"></i>
                             </uib-accordion-heading>
-                            <div class="alert alert-warning">Remotely changing Ethernet configuration may cause error while configuring devices if the connection is lost. Never use this configuration if you're using Etherent for your target device.</div>
+                            <div class="alert alert-warning">Remotely changing Ethernet configuration may cause error while configuring devices if the connection is lost. Never use this configuration if you're using Etherent of your target device.</div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Enable Ethernet</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control" ng-model="vm.configure.Ethernet.enabled">
+                                    <select class="form-control" ng-model="vm.configure.EthernetState">
                                         <option value=""></option>
                                         <option value="enabled">enabled</option>
                                         <option value="disabled">disabled</option>
@@ -194,7 +195,7 @@ ng-model="vm.extraDevices" />
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">IP Assigment</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control" ng-model="vm.configure.Ethernet.type">
+                                    <select class="form-control" ng-model="vm.configure.EthernetNetwork.ip_assignment">
                                         <option value=""></option>
                                         <option value="dhcp">dhcp</option>
                                         <option value="static">static</option>
@@ -202,31 +203,74 @@ ng-model="vm.extraDevices" />
                                 </div>
                             </div>
                             <div show-errors class="form-group" 
-                                 ng-show="vm.configure.Ethernet.type=='static'">
+                                 ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
                                 <label class="col-sm-3 control-label">IP Address</label>
                                 <div class="col-sm-9">
                                     <input name="ethernetIp"
-                                           ng-required="vm.configure.Ethernet.type=='static'"
+                                           ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
                                            ng-pattern="vm.ipPattern"
-                                           placeholder="192.168.x.y"
+                                           placeholder="ex, 192.168.1.49"
                                            class="form-control" 
-                                           ng-model="vm.configure.Ethernet.ip" />
+                                           ng-model="vm.configure.EthernetNetwork.static_ip" />
                                     <div ng-show="ConfigForm.ethernetIp.$error.required" class="help-block">* Required</div>
                                     <div ng-show="ConfigForm.ethernetIp.$error.pattern" class="help-block">Format is incorrect</div>
                                 </div>
                             </div>
+
                             <div show-errors class="form-group"
-                                 ng-show="vm.configure.Ethernet.type=='static'">
+                                 ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
                                 <label class="col-sm-3 control-label">Gateway Address</label>
                                 <div class="col-sm-9">
                                     <input name="ethernetGateway"
-                                           ng-required="vm.configure.Ethernet.type=='static'"
+                                           ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
                                            ng-pattern="vm.ipPattern"
-                                           placeholder="192.168.x.1"
+                                           placeholder="ex, 192.168.1.1"
                                            class="form-control"
-                                           ng-model="vm.configure.Ethernet.gateway" />
+                                           ng-model="vm.configure.EthernetNetwork.gateway" />
                                     <div ng-show="ConfigForm.ethernetGateway.$error.required" class="help-block">* Required</div>
                                     <div ng-show="ConfigForm.ethernetGateway.$error.pattern" class="help-block">Format is incorrect</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
+                                <label class="col-sm-3 control-label">Net Mask</label>
+                                <div class="col-sm-9">
+                                    <input name="netMask"
+                                           ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
+                                           ng-pattern="vm.ipPattern"
+                                           placeholder="ex, 255.255.255.0"
+                                           class="form-control" 
+                                           ng-model="vm.configure.EthernetNetwork.netMask" />
+                                    <div ng-show="ConfigForm.ethernetIp.$error.required" class="help-block">* Required</div>
+                                    <div ng-show="ConfigForm.ethernetIp.$error.pattern" class="help-block">Format is incorrect</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
+                                <label class="col-sm-3 control-label">DNS</label>
+                                <div class="col-sm-9">
+                                    <input name="dns"
+                                           ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
+                                           ng-pattern="vm.ipPattern"
+                                           placeholder="ex, 8.8.8.8"
+                                           class="form-control" 
+                                           ng-model="vm.configure.EthernetNetwork.dns" />
+                                    <div ng-show="ConfigForm.ethernetIp.$error.required" class="help-block">* Required</div>
+                                    <div ng-show="ConfigForm.ethernetIp.$error.pattern" class="help-block">Format is incorrect</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
+                                <label class="col-sm-3 control-label">DNS2</label>
+                                <div class="col-sm-9">
+                                    <input name="dns2"
+                                           ng-pattern="vm.ipPattern"
+                                           placeholder="ex, 4.4.4.4"
+                                           class="form-control"
+                                           ng-init="null"
+                                           ng-model="vm.configure.EthernetNetwork.dns2" />
+                                    <div ng-show="ConfigForm.ethernetIp.$error.required" class="help-block">* Required</div>
+                                    <div ng-show="ConfigForm.ethernetIp.$error.pattern" class="help-block">Format is incorrect</div>
                                 </div>
                             </div>
                         </uib-accordion-group>

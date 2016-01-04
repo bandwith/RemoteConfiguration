@@ -8,7 +8,7 @@
         var authToken = {};
         var defaultTimeout = 5000; // shorten the http request timeout to 5 sec, it is long enough for LAN.
         var defaultConfig = {
-            timeout: 5000, 
+            timeout: defaultTimeout, 
         }
 
         var QRC = {
@@ -36,13 +36,18 @@
 
             listAudioVolume: listAudioVolume,
             setAudioVolume: setAudioVolume,
-            
+
             listLed: listLed,
             getLed: getLed,
             setLed: setLed,
-            
+
             getPresenceStatus: getPresenceStatus,
             setPresenceStatus: setPresenceStatus,
+
+            getEth0State: getEth0State,
+            setEth0State: setEth0State,
+            getEth0Network: getEth0Network,
+            setEth0Network: setEth0Network,
 
         };
         return QRC;
@@ -144,36 +149,55 @@
             return $http.post(url, {
                 "value": value}, getConfig(idx));
         }
-        
+
         function listLed(idx) {
-            var url = buildUrl("/v1/led");
+            var url = buildUrl("/v1/led", idx);
             return $http.get(url, getConfig(idx));
         }
-        
+
         function  getLed(key, idx) {
-            var url = buildUrl("/v1/led/" + key);
+            var url = buildUrl("/v1/led/" + key, idx);
             return $http.get(url, getConfig(idx));
         }
-        
+
         function  setLed(key, r, g, b, idx) {
-            var url = buildUrl("/v1/led/" + key);
+            var url = buildUrl("/v1/led/" + key, idx);
             return $http.post(url, {
                 "red": r, "green": g, "blue": b}, getConfig(idx));
         }
-        
+
         function getPresenceStatus(type, index, idx) {
-            var url = buildUrl("/v1/presence/status/" + index + "/" + type);
+            var url = buildUrl("/v1/presence/status/" + index + "/" + type, idx);
             return $http.get(url, getConfig(idx, false, 10000));
         }
-        
+
         function setPresenceStatus(type, value, index, idx) {
-            var url = buildUrl("/v1/presence/status/" + index);
+            var url = buildUrl("/v1/presence/status/" + index, idx);
             var obj = {};
             obj[type] = value;
             return $http.post(url, obj, getConfig(idx, false, 10000));
         }
-        
-        
+
+        function getEth0State(idx) {
+            var url = buildUrl("/v1/eth/0/state", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setEth0State(state, idx) {
+            var stateStr = (state != 0)? "enabled" : "disabled";
+            var url = buildUrl("/v1/eth/0/state", idx);
+            return $http.post(url, {
+                "value": stateStr}, getConfig(idx));
+        }
+        function getEth0Network(idx) {
+            var url = buildUrl("/v1/eth/0/network", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setEth0Network(ethConfig, idx) {
+            var url = buildUrl("/v1/eth/0/network", idx);
+            return $http.post(url, ethConfig, getConfig(idx));
+        }
+
+
         // ------------------------------- Internal functions
 
         function buildUrl(path, idx) {
