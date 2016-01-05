@@ -107,7 +107,7 @@
             }
             function errFn(data) {
                 if (data && data.status == -1) {
-                    printErrorAndBreak("Cannot get response from the HTP request. Is target IP alive?");
+                    printErrorAndBreak("Cannot get response from the HTTP request. Is target IP alive?");
                 } else {
                     printErrorAndBreak("Error of running " + FnName +
                                        "\nMaybe your password was changed to '" +
@@ -194,7 +194,7 @@
         }
         function commonErrorFn(data) {
             if (data && data.status == -1) {
-                printErrorAndBreak("Cannot get response from the HTP request. Is target IP alive?");
+                printErrorAndBreak("Cannot get response from the HTTP request. Is target IP alive?");
             } else {
                 printErrorAndBreak("Error of running " + FnName, data);
             }

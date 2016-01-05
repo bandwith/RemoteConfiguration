@@ -261,7 +261,7 @@
         function TestSetWifiState(nextCaseReadiness) {
             FnName = TestingUtils.getFnName();
             printAndAppendResult("Start testing " + FnName + "...");
-            QRC.setWifState(0).then(successFn, commonErrorFn);
+            QRC.setWifiState(0).then(successFn, commonErrorFn);
             function successFn(data) {
                 QRC.getWifiScanResults().then(successFn, commonErrorFn);
                 function successFn(data) {
@@ -276,7 +276,7 @@
                             return;
                         }
                         if (data.data.results.length == 0) {
-                            QRC.setWifState(1).then(function() {
+                            QRC.setWifiState(1).then(function() {
                                 wifiScanRetried = false;
                                 printAndAppendResult(FnName + ": PASS", data);
 
@@ -297,7 +297,7 @@
         function TestGetWifiScanResults(nextCaseReadiness) {
             FnName = TestingUtils.getFnName();
             printAndAppendResult("Start testing " + FnName + "...");
-            QRC.setWifState(1); // Make sure we enable wifi
+            QRC.setWifiState(1); // Make sure we enable wifi
             QRC.getWifiScanResults().then(successFn, commonErrorFn);
             function successFn(data) {
                 try {

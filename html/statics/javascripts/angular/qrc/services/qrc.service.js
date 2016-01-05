@@ -26,8 +26,11 @@
             setSettings: setSettings,
             getSettings: getSettings,
 
-            setWifState: setWifState,
             getWifiScanResults: getWifiScanResults,
+            getWifiState: getWifiState,
+            setWifiState: setWifiState,
+            getWifiNetwork: getWifiNetwork,
+            setWifiNetwork: setWifiNetwork,
 
             setProp: setProp,
             listProp: listProp,
@@ -116,11 +119,25 @@
             return $http.get(url, getConfig(idx));
         }
 
-        function setWifState(state, idx) {
+        function setWifiState(state, idx) {
             var stateStr = (state != 0)? "enabled" : "disabled";
             var url = buildUrl("/v1/wifi/state", idx);
             return $http.post(url, {
                 "value": stateStr}, getConfig(idx));
+        }
+        
+        function getWifiState(idx) {
+            var url = buildUrl("/v1/wifi/state", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        
+        function getWifiNetwork(idx) {
+            var url = buildUrl("/v1/wifi/network", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setWifiNetwork(wifiConfig, idx) {
+            var url = buildUrl("/v1/wifi/network", idx);
+            return $http.post(url, wifiConfig, getConfig(idx));
         }
 
         function setProp(prop, value, idx) {

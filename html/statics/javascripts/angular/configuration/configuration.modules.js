@@ -6,7 +6,9 @@
         'qrc-center.configuration.controllers',
         //'qrc-center.configuration.directives',
         //'qrc-center.configuration.config-input',
-        'qrc'
+        'qrc',
+        'rzModule',
+        'angular-timezone-selector'
     ]);
 
     angular.module('qrc-center.configuration.controllers', []);

@@ -19,9 +19,22 @@
 
         var configureCases = [
             "GetToken",
-            "PlayerName",
+            "SettingsPlayerName",
+            "SettingsNtpServer",
+            "SettingsSmilContentUrl",
+            "SettingsRebootTime",
+            "SettingsRebootTimeOptimized",
+            "AudioStreamMusic",
+            "AudioStreamNotification",
+            "AudioStreamAlarm",
             "Timezone",
+            "SettingsAdbOverTcp",
+            "TmpDisableAdb", // MUST after SettingsAdbOverTcp to restart adb server
+            "SettingsAdbEnabled",
             "SecurityPassword", // Always put Password at last one config.
+            "WifiNetwork",
+            "TmpRealWifiNetwork",
+            "WifiState",
             "EthernetNetwork",
             "EthernetState",
             "DoneConfig",
@@ -34,6 +47,7 @@
         function activate() {
             vm.current_password = "";
             vm.configure = {};
+            vm.useConfig = {};
 
             if (sessionStorage && sessionStorage.cacheConfigurationData) {
                 try {
@@ -44,6 +58,8 @@
                 }
                 vm.current_password = cacheConfigurationData.current_password;
                 vm.configure = cacheConfigurationData.configure;
+                convertConfiguration();
+                vm.useConfig = cacheConfigurationData.useConfig;
             }
 
             vm.ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
@@ -71,6 +87,11 @@
             vm.onSTableAllChecked = onSTableAllChecked;
             vm.clearInput = clearInput;
             vm.setFormScope = setFormScope;
+            vm.deleteConfig = deleteConfig;
+            vm.translateStreamVolume = translateStreamVolume;
+            vm.checkInitConfig = checkInitConfig;
+            vm.checkEthernetConfig = checkEthernetConfig;
+            vm.checkInitWifiConfig = checkInitWifiConfig;
             vm.displayScannedDevices = [];
             vm.selectedScannedDevices = [];
             vm.selectedFinalDevices = [];
@@ -88,6 +109,7 @@
             }
 
             watchScannedDevices();
+            watchSliders();
         }
 
 
@@ -351,6 +373,7 @@
         function clearInput() {
             vm.current_password = "";
             vm.configure = {};
+            vm.useConfig = {};
             sessionStorage.removeItem('cacheConfigurationData');
             cacheConfigurationData = {};
 
@@ -429,6 +452,7 @@
             cacheConfigurationData = {};
             cacheConfigurationData.current_password = vm.current_password;
             cacheConfigurationData.configure = vm.configure;
+            cacheConfigurationData.useConfig = vm.useConfig;
             sessionStorage.cacheConfigurationData = angular.toJson(cacheConfigurationData);
 
             isGlobalConfigureBreak = false;
@@ -538,7 +562,7 @@
                 printAndAppendConfigureResult("Done Config device " +
                                               deviceToString(device));
                 readyForNextConfig(device, nextCaseReadiness, true);
-            } else if (vm.configure[configKey]) {
+            } else if (vm.useConfig[configKey]) {
                 if (!runConfigureByKey(configKey, device)) {
                     readyForNextConfig(device, nextCaseReadiness, false);
                 }
@@ -560,18 +584,98 @@
 
 
             function runConfigureByKey(configKey, device) {
-                if (configKey == "PlayerName") {
+                if (configKey == "SettingsPlayerName") {
                     QRC.setSettings("player_name",
                                     vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "SettingsNtpServer") {
+                    QRC.setSettings("ntp_server",
+                                    vm.configure[configKey], device.index)
+                        .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "SettingsSmilContentUrl") {
+                    QRC.setSettings("smil_content_url",
+                                    vm.configure[configKey], device.index)
+                        .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "SettingsRebootTime") {
+                    var timeObj = vm.configure[configKey];
+                    if (!timeObj) {
+                        readyForNextConfig(device, nextCaseReadiness, true);
+                        return true;
+                    }
+                    var hour = timeObj.getHours();
+                    hour = hour>=10?hour:("0"+hour);
+                    var minute = timeObj.getMinutes();
+                    minute = minute>10?minute:("0"+minute);
+                    var timeStr = hour + ":" + minute;
+                    QRC.setSettings("reboot_time", timeStr, device.index)
+                        .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "SettingsRebootTimeOptimized") {
+                    if (vm.configure.SettingsRebootTimeOptimized == "enable") {
+                        QRC.setSettings("is_reboot_optimized", true, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        QRC.setSettings("is_reboot_optimized", false, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    }
+                } else if (configKey == "SettingsAdbOverTcp") {
+                    if (vm.configure.SettingsAdbOverTcp == "enable") {
+                        QRC.setProp("persist.adb.tcp.port", 5555, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        QRC.setProp("persist.adb.tcp.port", -1, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    }
+                    vm.useConfig.TmpDisableAdb = true;
+                    vm.useConfig.SettingsAdbEnabled = "enable";
+                } else if (configKey == "TmpDisableAdb") {
+                    delete vm.useConfig["TmpDisableAdb"];
+                    QRC.setSettings("adb_enabled", false, device.index)
+                        .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "SettingsAdbEnabled") {
+                    if (vm.configure.SettingsAdbEnabled == "enable") {
+                        QRC.setSettings("adb_enabled", true, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        QRC.setSettings("adb_enabled", false, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    }
                 } else if (configKey == "SecurityPassword") {
                     QRC.setSecurityPassword(
                         vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "Timezone") {
-                    // TODO
+                    if (!vm.configure[configKey]) {
+                        readyForNextConfig(device, nextCaseReadiness, true);
+                        return true;
+                    }
+                    QRC.setProp("persist.sys.timezone", vm.configure[configKey], device.index)
+                        .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "AudioStreamMusic") {
+                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                        readyForNextConfig(device, nextCaseReadiness, true);
+                        return true;
+                    }
+                    QRC.setAudioVolume(
+                        "stream_music", vm.configure[configKey], device.index)
+                        .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "AudioStreamNotification") {
+                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                        readyForNextConfig(device, nextCaseReadiness, true);
+                        return true;
+                    }
+                    QRC.setAudioVolume(
+                        "stream_notification", vm.configure[configKey], device.index)
+                        .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "AudioStreamAlarm") {
+                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                        readyForNextConfig(device, nextCaseReadiness, true);
+                        return true;
+                    }
+                    QRC.setAudioVolume(
+                        "stream_alarm", vm.configure[configKey], device.index)
+                        .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "EthernetState") {
-                    if (vm.configure.EthernetState == "enabled") {
+                    if (vm.configure.EthernetState == "enable") {
                         QRC.setEth0State(1, device.index)
                             .then(successConfigFn, errorConfigFn);
                     } else {
@@ -591,12 +695,70 @@
                             QRC.setEth0Network(vm.configure.EthernetNetwork, device.index)
                                 .then(successConfigFn, errorConfigFn);
                         }
+                    } else {
+                        readyForNextConfig(device, nextCaseReadiness, true);
+                        return true;
+                    }
+                } else if (configKey == "WifiState") {
+                    if (vm.configure.WifiState == "enable") {
+                        QRC.setWifiState(1, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        QRC.setWifiState(0, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    }
+                } else if (configKey == "WifiNetwork") {
+                    // Make sure wifi is enabled before config it,
+                    // otherwise configuration will not take effect.
+                    var retry = 0;
+                    var MAX_RETRY = 20;
+                    var RETRY_DELAY = 1000; //we give it 20 (20 * 1000ms) sec to retry wifi network setup
+                    QRC.getWifiState(device.index).then(success1stWifiFn, errorConfigFn);
+                    function success1stWifiFn(data) {
+                        if (data.data.value == "enabled") {
+                            realConfigWifiNetwork();
+                        } else {
+                            QRC.setWifiState(1, device.index);
+                            retry++;
+                            $timeout(tryConfigWifiNetwork, RETRY_DELAY);
+                        }
+                    }
+                    function tryConfigWifiNetwork() {
+                        QRC.getWifiState(device.index).then(successWifiFn, errorConfigFn);
+                        function successWifiFn(data) {
+                            if (data.data.value == "enabled") {
+                                realConfigWifiNetwork();
+                            } else if (retry >= MAX_RETRY) {
+                                printConfigureError("When configuring " + configureCases[caseIdx] +
+                                                    ", device " + deviceToString(device) +
+                                                    " Unable to enable Wifi");
+                                readyForNextConfig(device, nextCaseReadiness, false);
+                            } else {
+                                retry++;
+                                $timeout(tryConfigWifiNetwork, RETRY_DELAY);
+                            }
+                        }
+                    }
+
+                    function realConfigWifiNetwork() {
+                        if (vm.configure.WifiNetwork.hasOwnProperty("advanced")) {
+                            if (vm.configure.WifiNetwork.advanced.hasOwnProperty("ip_assignment") &&
+                                vm.configure.WifiNetwork.advanced.ip_assignment == "static") {
+                                vm.configure.WifiNetwork.advanced.network_prefix_length =
+                                    netMaskToPrefixLength(vm.configure.WifiNetwork.advanced.netMask);
+                            }
+                            // TODO: Set proxy
+                        }
+                        QRC.setWifiNetwork(vm.configure.WifiNetwork, device.index)
+                            .then(successConfigFn, errorConfigFn);
                     }
                 } else {
                     printConfigureError("Un-recognized configKey:" + configKey);
                     return false;
                 }
                 return true;
+
+
             }
             function successGetTokenFn(data) {
                 QRC.setTargetAuthToken(data.data.access_token, device.index);
@@ -695,8 +857,8 @@
 
         function deviceToString(device) {
             return device.ip + " " + 
-                device.model_id + " " +
-                device.player_name + " " +
+                device.model_id + " (" +
+                device.player_name + ") " +
                 device.serial_number;
         }
 
@@ -714,6 +876,9 @@
                 return true;
             }
             return false;
+        }
+        function convertConfiguration() {
+            vm.configure.SettingsRebootTime = new Date(vm.configure.SettingsRebootTime);
         }
 
 
@@ -805,12 +970,73 @@
             vm.isScanDisabled = false;
             checkRemoveRangeButton();
         }
+
+        function translateStreamVolume(value) {
+            if (value == -1 || isNaN(value)) {
+                return "";
+            }
+            return value;
+        }
+
+        function deleteConfig(configKey) {
+            delete vm.configure[configKey];
+        }
+        function checkInitConfig(configKey, isChecked, value, isInitRebootTime) {
+            if (isChecked) {
+                if (isInitRebootTime) {
+                    var d = new Date("January 1, 1972 04:00:00");
+                    vm.configure[configKey] = d;
+                } else if (typeof value == 'undefined') {
+                    vm.configure[configKey] = "";
+                } else {
+                    vm.configure[configKey] = value;
+                }
+            } else if (!isChecked && vm.configure.hasOwnProperty(configKey)) {
+                delete vm.configure[configKey];
+                if (isInitRebootTime) {
+                    vm.formScope.ConfigForm['rebootTime'].$setViewValue(undefined, true);
+                    vm.formScope.ConfigForm['rebootTime'].$render();
+                }
+            }
+        }
+        function checkEthernetConfig(isChecked, firstLvKey, configKey, value) {
+            if (isChecked) {
+                vm.configure.EthernetNetwork = {
+                    ip_assignment: 'dhcp'
+                }
+            } else {
+                if (vm.configure.hasOwnProperty('EthernetNetwork')){
+                    delete vm.configure['EthernetNetwork'];
+                }
+            }
+        }
+        function checkInitWifiConfig(isChecked) {
+            if (isChecked) {
+                vm.configure.WifiNetwork = {
+                    method: 'connect',
+                    security: 'none',
+                    ssid: '',
+                    advanced: {ip_assignment: 'dhcp'}
+                }
+            } else {
+                if (vm.configure.hasOwnProperty('WifiNetwork')) {
+                    delete vm.configure['WifiNetwork'];
+                }
+            }
+        }
         function watchScannedDevices() {
             $scope.$watch(
                 'vm.displayScannedDevices', function(newValue) {
                     checkAllDisplayDevicesSelected();
                 });
         }
+
+        function watchSliders() {
+            $scope.$watch('vm.accordion.audioOpen', function(newValue) {
+                $scope.$broadcast('rzSliderForceRender');
+            });
+        }
+
 
 
         function checkAllDisplayDevicesSelected() {

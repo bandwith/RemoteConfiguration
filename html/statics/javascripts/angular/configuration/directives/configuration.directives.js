@@ -45,22 +45,25 @@
 
                 // only apply the has-error class after the user leaves the text box
                 var blurred = false;
-                inputNgEl.bind('blur', function() {
-                    blurred = true;
-                    el.toggleClass('has-error', formCtrl[inputName].$invalid);
-                });
-
-                scope.$watch(function() {
-                    return formCtrl[inputName].$invalid
-                }, function(invalid) {
-                    // we only want to toggle the has-error class after the blur
-                    // event or if the control becomes valid
-                    if (!blurred && invalid) { return }
-                    el.toggleClass('has-error', invalid);
-                });
+                if (inputName && formCtrl[inputName]) {
+                    inputNgEl.bind('blur', function() {
+                        blurred = true;
+                        el.toggleClass('has-error', formCtrl[inputName].$invalid);
+                    });
+                    scope.$watch(function() {
+                        return formCtrl[inputName].$invalid
+                    }, function(invalid) {
+                        // we only want to toggle the has-error class after the blur
+                        // event or if the control becomes valid
+                        if (!blurred && invalid) { return }
+                        el.toggleClass('has-error', invalid);
+                    });
+                }
 
                 scope.$on('show-errors-check-validity', function() {
-                    el.toggleClass('has-error', formCtrl[inputName].$invalid);
+                    if (inputName && formCtrl[inputName]) {
+                        el.toggleClass('has-error', formCtrl[inputName].$invalid);
+                    }
                 });
 
                 scope.$on('show-errors-reset', function() {
