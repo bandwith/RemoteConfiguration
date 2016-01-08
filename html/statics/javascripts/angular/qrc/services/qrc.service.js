@@ -36,6 +36,7 @@
             listProp: listProp,
 
             setSecurityPassword: setSecurityPassword,
+            deleteSecurityPassword: deleteSecurityPassword,
 
             listAudioVolume: listAudioVolume,
             setAudioVolume: setAudioVolume,
@@ -155,6 +156,11 @@
             var url = buildUrl("/v1/user/password", idx);
             return $http.post(url, {
                 "value": value}, getConfig(idx));
+        }
+        
+        function deleteSecurityPassword(idx) {
+            var url = buildUrl("/v1/user/password", idx);
+            return $http.delete(url, getConfig(idx));
         }
 
         function listAudioVolume(idx) {

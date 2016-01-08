@@ -170,15 +170,35 @@
                             </div>
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
-                                    <input type="checkbox" ng-model="vm.useConfig.SecurityPassword"
-                                           ng-change="vm.checkInitConfig('SecurityPassword', vm.useConfig.SecurityPassword)">
+                                    <input type="checkbox" ng-model="vm.useConfig.SecurityPasswordEnabled"
+                                           ng-change="vm.checkInitConfig('SecurityPasswordEnabled', vm.useConfig.SecurityPasswordEnabled, 'enable');vm.deleteConfig('SecurityPassword');vm.useConfig.SecurityPassword=false">
+                                    Enable Password
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="enable"
+                                               ng-disabled="!vm.useConfig.SecurityPasswordEnabled"
+                                               ng-model="vm.configure.SecurityPasswordEnabled" >
+                                        enable
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="disable"
+                                               ng-disabled="!vm.useConfig.SecurityPasswordEnabled"
+                                               ng-change="vm.deleteConfig('SecurityPassword');vm.useConfig.SecurityPassword=false"
+                                               ng-model="vm.configure.SecurityPasswordEnabled">
+                                        disable
+                                    </label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" ng-show="vm.useConfig.SecurityPasswordEnabled&&vm.configure.SecurityPasswordEnabled=='enable'">
+
+                                <label class="col-xs-3 control-label-left">
                                     Security Password
                                 </label>
                                 <div class="col-xs-9">
                                     <input name="securityPassword" type="password"
                                            ng-maxlength="16" ng-minlength="4" class="form-control"
-                                           ng-required="vm.useConfig.SecurityPassword"
-                                           ng-disabled="!vm.useConfig.SecurityPassword"
+                                           ng-required="vm.useConfig.SecurityPasswordEnabled&&vm.configure.SecurityPasswordEnabled=='enable'"
                                            ng-model="vm.configure.SecurityPassword" />
                                     <div ng-show="ConfigForm.securityPassword.$error.required" class="help-block">* Required</div>
                                     <div ng-show="ConfigForm.securityPassword.$error.minlength" class="help-block">Too short</div>
@@ -594,7 +614,7 @@
                                              template-url="statics/templates/accordion-group.html">
                             <uib-accordion-heading>
                                 Audio Volume<i class="pull-right glyphicon"
-                                                   ng-class="{'glyphicon-chevron-down': vm.accordion.audioOpen, 'glyphicon-chevron-right': !vm.accordion.audioOpen}"></i>
+                                               ng-class="{'glyphicon-chevron-down': vm.accordion.audioOpen, 'glyphicon-chevron-right': !vm.accordion.audioOpen}"></i>
                             </uib-accordion-heading>
                             <div class="alert alert-warning">Audio volume you set is an approximate value, depend on the target device's volume granularity.</div>
                             <div show-errors class="form-group">
@@ -654,7 +674,7 @@
             <p></p>
             <div ng-show="vm.deviceConfigureFailResult" class="alert alert-danger result-msg">{{ vm.deviceConfigureFailResult }}</div>
             <div ng-show="vm.deviceConfigureResult" class="alert alert-success result-msg">{{ vm.deviceConfigureResult }}</div>
-            
+
         </uib-tab>
 
     </uib-tabset>
