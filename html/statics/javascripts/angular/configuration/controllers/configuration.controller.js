@@ -14,8 +14,15 @@
         var scanRequestCaller = [];
         var cacheConfigurationData = {};
         var isGlobalConfigureBreak = false;
-        var configuringNum = 0;
+        var isGlobalConfigureBreakDone = false;
+        var totalConfigureNum = 0;
         var configuringDoneNum = 0;
+
+        var selectedDevices = [];
+        var currentConfigDeviceIndex = 0;
+        var CONCURRENT_CONFIG_DEVICE = 10;
+
+        var configTimeStart;
 
         var configureCases = [
             "GetToken",
@@ -32,9 +39,8 @@
             "TmpDisableAdb", // MUST after SettingsAdbOverTcp to restart adb server
             "SettingsAdbEnabled",
             "SecurityPassword", // Always put Password at last one config.
-            "WifiNetwork",
-            "TmpRealWifiNetwork",
             "WifiState",
+            "WifiNetwork",
             "EthernetNetwork",
             "EthernetState",
             "DoneConfig",
@@ -94,8 +100,8 @@
             vm.checkInitWifiConfig = checkInitWifiConfig;
             vm.displayScannedDevices = [];
             vm.selectedScannedDevices = [];
-            vm.selectedFinalDevices = [];
-            vm.finalDevices = [];
+            //vm.selectedFinalDevices = [];
+            //vm.finalDevices = [];
             vm.scannedModelId = [];
             vm.isStartConfigureDisabled = true;
             vm.isConfiguring = 0;
@@ -181,11 +187,16 @@
             timeCost = 0;
 
             //Testing devices
-            /*
-            var ip_start = parseInt(range_start.match(/\.[\d]+$/)[0].replace(/\./,''));
-            for (var k=0;k<5;k++) {
-                appendScannedDevice({data:{results:{model_id:'FHD123',player_name:'ABCDE', serial_number:'210FDVB8'}}}, '192.168.2.'+k);
-            }*/
+
+
+            for (var k=0;k<51;k++) {
+                appendScannedDevice({data:{results:{model_id:'FHD123',player_name:'AAA', serial_number:'AAA'}}}, '192.168.1.131');
+                appendScannedDevice({data:{results:{model_id:'TD123',player_name:'BBB', serial_number:'BBB'}}}, '192.168.1.171');
+                appendScannedDevice({data:{results:{model_id:'TD123',player_name:'CCC', serial_number:'BBB'}}}, '192.168.1.172');
+                appendScannedDevice({data:{results:{model_id:'TD123',player_name:'DDD', serial_number:'BBB'}}}, '192.168.1.178');
+                appendScannedDevice({data:{results:{model_id:'TD123',player_name:'EEE', serial_number:'BBB'}}}, '192.168.1.183');
+            }
+
 
 
             j = 0;
@@ -429,21 +440,38 @@
                 printConfigureError("Unable to configure. Please select at leaset one device.");
                 return;
             }
+            configTimeStart = new Date();
             initStartConfigure();
-
             for (var devIdx in vm.scannedDevices) {
-                if (isGlobalConfigureBreak) break;
-                if (!vm.scannedDevices[devIdx].isSelected) continue;
-
-                vm.scannedDevices[devIdx].isConfigureBreak = false;
-                var caseReadyArray = [{ready:1, idx:0}];
-                var configCases = [];
-                configuringNum += configureCases.length;
-                for (var i = 0; i < configureCases.length; i++) {
-                    tryConfigureNext(caseReadyArray, i, vm.scannedDevices[devIdx]);
+                if (vm.scannedDevices[devIdx].isSelected) {
+                    selectedDevices.push(vm.scannedDevices[devIdx]);
+                    totalConfigureNum += configureCases.length;
                 }
             }
+            for (var i = 0; i < CONCURRENT_CONFIG_DEVICE + 1; i++) {
+                if (currentConfigDeviceIndex < selectedDevices.length) {
+                    tryConfigDevice(currentConfigDeviceIndex);
+                    currentConfigDeviceIndex++;
+                }
+            }
+        }
 
+        function configOneMoreDevice() {
+            if (currentConfigDeviceIndex < selectedDevices.length) {
+                tryConfigDevice(currentConfigDeviceIndex);
+                currentConfigDeviceIndex++;
+            }
+        }
+
+        function tryConfigDevice(devIdx) {
+            if (devIdx < selectedDevices.length) {
+                selectedDevices[devIdx].isConfigFailed = false;
+                selectedDevices[devIdx].isConfigComplete = false;
+                if (isGlobalConfigureBreak) return;
+
+                runConfigureCase(0, selectedDevices[devIdx]);
+
+            }            
         }
 
         function initStartConfigure() {
@@ -456,17 +484,22 @@
             sessionStorage.cacheConfigurationData = angular.toJson(cacheConfigurationData);
 
             isGlobalConfigureBreak = false;
+            isGlobalConfigureBreakDone = false;
             vm.isConfiguring = 1;
 
             clearConfigureResult();
 
-            configuringNum = 0;
+            totalConfigureNum = 0;
             configuringDoneNum = 0;
+
+            currentConfigDeviceIndex = 0;
+
+            selectedDevices = [];
         }
 
         function stopConfigure() {
             var bui = blockUI.instances.get('BlockUIForConfigure');
-            if (configuringNum == configuringDoneNum) {
+            if (totalConfigureNum == configuringDoneNum) {
                 bui.stop();
                 printAndAppendConfigureResult("Configuration Stop.");
                 vm.isConfiguring = 0;
@@ -477,7 +510,9 @@
             }
 
             isGlobalConfigureBreak = true;
-
+            var currentTime = new Date();
+            var timeDiff = currentTime - configTimeStart;
+            console.log("It took " + timeDiff/1000 + " seconds to configure devices.");
         }
 
         function openAllConfigAccordion(open) {
@@ -528,48 +563,48 @@
             return status;
         }
 
-
-        function tryConfigureNext(caseReadyArray, caseNumber, device) {
-            //if (isGlobalConfigureBreak) return;
-
-            if (!caseReadyArray[caseNumber+1]) {
-                caseReadyArray[caseNumber+1] = {ready: 0, idx:(caseNumber+1)};
-            }
-            if (caseReadyArray[caseNumber].ready == 1) {
-                runConfigureCase(caseReadyArray[caseNumber+1], caseNumber, device);
-                return;
-            }
-            $timeout(function(){
-                tryConfigureNext(caseReadyArray, caseNumber, device);
-            }, 100);
-        }
-
-        function runConfigureCase(nextCaseReadiness, caseIdx, device) {
-            if (isGlobalConfigureBreak || device.isConfigureBreak) {
-                if (configureCases[caseIdx] == "DoneConfig") {
-                    //printConfigureError("Configuration of Device " + deviceToString(device) + " is broken due to some error.");
-                }
-                readyForNextConfig(device, nextCaseReadiness, false);
-                return;
-            }
+        function runConfigureCase(caseIdx, device, isSimulate) {
+            var isRemoteRequest = false;
             var configKey = configureCases[caseIdx];
+            if (isGlobalConfigureBreak || device.isConfigFailed) {
+                readyForNextConfig(device, caseIdx, false);
+                if (configKey == "DoneConfig") {
+                    $timeout(configOneMoreDevice, 100);
+                }
+                return;
+            }
+
             if (configKey == "GetToken") {
-                QRC.setTargetIpAddress(device.ip, device.index);
-                QRC.getToken(vm.current_password, device.index)
-                    .then(successGetTokenFn, errorConfigFn);
+                isRemoteRequest = true;
+                if (!isSimulate) {
+                    QRC.setTargetIpAddress(device.ip, device.index);
+                    QRC.getToken(vm.current_password, device.index)
+                        .then(successGetTokenFn, errorConfigFn);
+                }
             } else if (configKey == "DoneConfig") {
-                //for (var k = 0; k < 1000000000; k++) {var c = 0;}
-                printAndAppendConfigureResult("Done Config device " +
-                                              deviceToString(device));
-                readyForNextConfig(device, nextCaseReadiness, true);
+                if (!isSimulate) {
+                    //for (var k = 0; k < 1000000000; k++) {var c = 0;}
+                    printAndAppendConfigureResult("Done Config device " +
+                                                  deviceToString(device));
+                    device.isConfigComplete = true;
+                    if (device.isConfigFailed) {
+                        consoel.error("What?!");
+                    }
+                    readyForNextConfig(device, caseIdx, true);
+                    $timeout(configOneMoreDevice, 100);
+                }
             } else if (vm.useConfig[configKey]) {
-                if (!runConfigureByKey(configKey, device)) {
-                    readyForNextConfig(device, nextCaseReadiness, false);
+                isRemoteRequest = true;
+                if (!isSimulate) {
+                    runConfigureByKey(configKey, caseIdx, device, isSimulate);
                 }
             } else {
-                // configKey doesn't exist, skip.
-                readyForNextConfig(device, nextCaseReadiness, true);
+                if (!isSimulate) {
+                    // configKey doesn't exist, skip.
+                    readyForNextConfig(device, caseIdx, true);
+                }
             }
+            return isRemoteRequest;
 
 
             function netMaskToPrefixLength(mask) {
@@ -583,11 +618,11 @@
             }
 
 
-            function runConfigureByKey(configKey, device) {
+            function runConfigureByKey(configKey, caseIdx, device) {
                 if (configKey == "SettingsPlayerName") {
-                    QRC.setSettings("player_name",
-                                    vm.configure[configKey], device.index)
-                        .then(successConfigFn, errorConfigFn);
+                        QRC.setSettings("player_name",
+                                        vm.configure[configKey], device.index)
+                            .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "SettingsNtpServer") {
                     QRC.setSettings("ntp_server",
                                     vm.configure[configKey], device.index)
@@ -599,8 +634,8 @@
                 } else if (configKey == "SettingsRebootTime") {
                     var timeObj = vm.configure[configKey];
                     if (!timeObj) {
-                        readyForNextConfig(device, nextCaseReadiness, true);
-                        return true;
+                        readyForNextConfig(device, caseIdx, true);
+                        return false;
                     }
                     var hour = timeObj.getHours();
                     hour = hour>=10?hour:("0"+hour);
@@ -626,7 +661,7 @@
                             .then(successConfigFn, errorConfigFn);
                     }
                     vm.useConfig.TmpDisableAdb = true;
-                    vm.useConfig.SettingsAdbEnabled = "enable";
+                    vm.useConfig.SettingsAdbEnabled = true;
                 } else if (configKey == "TmpDisableAdb") {
                     delete vm.useConfig["TmpDisableAdb"];
                     QRC.setSettings("adb_enabled", false, device.index)
@@ -645,31 +680,31 @@
                         .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "Timezone") {
                     if (!vm.configure[configKey]) {
-                        readyForNextConfig(device, nextCaseReadiness, true);
-                        return true;
+                        readyForNextConfig(device, caseIdx, true);
+                        return false;
                     }
                     QRC.setProp("persist.sys.timezone", vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "AudioStreamMusic") {
                     if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
-                        readyForNextConfig(device, nextCaseReadiness, true);
-                        return true;
+                        readyForNextConfig(device, caseIdx, true);
+                        return false;
                     }
                     QRC.setAudioVolume(
                         "stream_music", vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "AudioStreamNotification") {
                     if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
-                        readyForNextConfig(device, nextCaseReadiness, true);
-                        return true;
+                        readyForNextConfig(device, caseIdx, true);
+                        return false;
                     }
                     QRC.setAudioVolume(
                         "stream_notification", vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "AudioStreamAlarm") {
                     if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
-                        readyForNextConfig(device, nextCaseReadiness, true);
-                        return true;
+                        readyForNextConfig(device, caseIdx, true);
+                        return false;
                     }
                     QRC.setAudioVolume(
                         "stream_alarm", vm.configure[configKey], device.index)
@@ -696,8 +731,8 @@
                                 .then(successConfigFn, errorConfigFn);
                         }
                     } else {
-                        readyForNextConfig(device, nextCaseReadiness, true);
-                        return true;
+                        readyForNextConfig(device, caseIdx, true);
+                        return false;
                     }
                 } else if (configKey == "WifiState") {
                     if (vm.configure.WifiState == "enable") {
@@ -732,7 +767,7 @@
                                 printConfigureError("When configuring " + configureCases[caseIdx] +
                                                     ", device " + deviceToString(device) +
                                                     " Unable to enable Wifi");
-                                readyForNextConfig(device, nextCaseReadiness, false);
+                                readyForNextConfig(device, caseIdx, false);
                             } else {
                                 retry++;
                                 $timeout(tryConfigWifiNetwork, RETRY_DELAY);
@@ -754,69 +789,66 @@
                     }
                 } else {
                     printConfigureError("Un-recognized configKey:" + configKey);
-                    return false;
+                    readyForNextConfig(device, caseIdx, false);
                 }
-                return true;
-
-
             }
             function successGetTokenFn(data) {
                 QRC.setTargetAuthToken(data.data.access_token, device.index);
-                readyForNextConfig(device, nextCaseReadiness, true);
+                readyForNextConfig(device, caseIdx, true);
             }
             function successConfigFn(data) {
-                readyForNextConfig(device, nextCaseReadiness, true);
+                readyForNextConfig(device, caseIdx, true);
             }
             function errorConfigFn(data) {
                 printConfigureError("When configuring " + configureCases[caseIdx] + ", device " + deviceToString(device) + " Response error:",
                                     data);
-                readyForNextConfig(device, nextCaseReadiness, false);
+                readyForNextConfig(device, caseIdx, false);
             }
         }
 
 
-        function readyForNextConfig(device, nextCaseReadiness, isSuccess) {
+        function readyForNextConfig(device, caseIdx, isSuccess) {
             configuringDoneNum++;
-            if (configuringDoneNum == configuringNum) {
-                if (isGlobalConfigureBreak) {
-                    printConfigureError("Configuration Stopped.");
-                } else {
-                    var allDeviceComplete = true;
-                    var allDeviceFailed = true;
-                    for(var i in vm.scannedDevices) {
-                        if (vm.scannedDevices[i].isSelected) {
-                            if (vm.scannedDevices[i].isConfigureBreak) {
-                                allDeviceComplete = false;
-                            } else {
-                                allDeviceFailed = false;
-                            }
-                        }
-                    }
-                    if (allDeviceComplete) {
-                        printAndAppendConfigureResult("Good. All devices are done configuration.");
-                    } else {
-                        printConfigureError("\nFollowing devices are NOT completely configured:");
-                        if (!allDeviceFailed) {
-                            printAndAppendConfigureResult("\n Following device are completely configured:");
-                        }
-                        for(var i in vm.scannedDevices) {
-                            if (vm.scannedDevices[i].isSelected) {
-                                if (vm.scannedDevices[i].isConfigureBreak) {
-                                    printConfigureError(deviceToString(vm.scannedDevices[i]));
-                                } else {
-                                    printAndAppendConfigureResult(deviceToString(vm.scannedDevices[i]));
-                                }
-                            }
-                        }   
-                    }
+            if (!isSuccess) {
+                device.isConfigFailed = true;
+            }
+            //console.log("configuringDoneNum:" + configuringDoneNum);
+            if ((caseIdx+1) < configureCases.length) {
+                var isRemoteRequest = runConfigureCase(caseIdx+1, device, true);
+                var timeDelay = isRemoteRequest? 150:0;
+                $timeout(runConfigureCase, timeDelay, true, caseIdx+1, device);
+            }
 
+
+            if (configuringDoneNum == totalConfigureNum ||
+                (isGlobalConfigureBreak && !isGlobalConfigureBreakDone)) {
+                if (isGlobalConfigureBreak) {
+                    isGlobalConfigureBreakDone = true;
+                    configuringDoneNum = totalConfigureNum;
+                    printConfigureError("Configuration Stopped.");
                 }
+                var anyDeviceFailed = false;
+                for(var i in selectedDevices) {
+                    if (!selectedDevices[i].isConfigComplete) {
+                        anyDeviceFailed = true;
+                    }
+                }
+                if (anyDeviceFailed) {
+                    printConfigureError("\nFollowing devices are NOT completely configured:");
+                    for(var i in selectedDevices) {
+                        if (!selectedDevices[i].isConfigComplete) {
+                            printConfigureError(deviceToString(selectedDevices[i]));
+                        } else {
+                            printAndAppendConfigureResult(deviceToString(selectedDevices[i]));
+                        }
+                    }   
+                } else {
+                    printAndAppendConfigureResult("Good. All devices are done configuration.");
+                }
+
                 stopConfigure();
             }
-            nextCaseReadiness.ready = 1;
-            if (!isSuccess) {
-                device.isConfigureBreak = true;
-            }
+
         }
 
         function printConfigureError(msg, data, error) {
@@ -919,7 +951,7 @@
                     addrs["192.168." + i + ".43"] = true;
                 }
                 */
-                var timeoutHandler = $timeout(function(addrs) {getIpFn(addrs);}, 5000, true, null);
+                var timeoutHandler = $timeout(function(addrs) {getIpFn(addrs);}, 3000, true, null);
                 function updateDisplay(newAddr) {
                     if (!ValidateIPaddress(newAddr)) return;
                     if (newAddr in addrs) return;

@@ -6,7 +6,7 @@
     function QRC($http, $q/*, QRCTokenInjector*/) {
         var ipAddress = {};
         var authToken = {};
-        var defaultTimeout = 5000; // shorten the http request timeout to 5 sec, it is long enough for LAN.
+        var defaultTimeout = 10000; // shorten the http request timeout to 5 sec, it is long enough for LAN.
         var defaultConfig = {
             timeout: defaultTimeout, 
         }
@@ -44,6 +44,7 @@
             getLed: getLed,
             setLed: setLed,
 
+            setPresenceEnableState: setPresenceEnableState,
             getPresenceStatus: getPresenceStatus,
             setPresenceStatus: setPresenceStatus,
 
@@ -182,17 +183,23 @@
             return $http.post(url, {
                 "red": r, "green": g, "blue": b}, getConfig(idx));
         }
+        
+        function setPresenceEnableState(enableState, idx) {
+            var url = buildUrl("/v1/presence/enabled", idx);
+            var obj = {value: enableState};
+            return $http.post(url, obj, getConfig(idx, false, 60000));            
+        }
 
         function getPresenceStatus(type, index, idx) {
             var url = buildUrl("/v1/presence/status/" + index + "/" + type, idx);
-            return $http.get(url, getConfig(idx, false, 10000));
+            return $http.get(url, getConfig(idx, false, 60000));
         }
 
         function setPresenceStatus(type, value, index, idx) {
             var url = buildUrl("/v1/presence/status/" + index, idx);
             var obj = {};
             obj[type] = value;
-            return $http.post(url, obj, getConfig(idx, false, 10000));
+            return $http.post(url, obj, getConfig(idx, false, 60000));
         }
 
         function getEth0State(idx) {

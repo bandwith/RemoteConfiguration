@@ -34,7 +34,13 @@
             ExampleSetContentUrl: 
             [ExampleSetContentUrl,
              "This example will set the content URL '" + newContentURL + "' into the SMIL player"],
-            
+
+            ExampleEnablePresence: 
+            [ExampleEnablePresence,
+             "This example will enable Presence Device function"],
+            ExampleDisablePresence: 
+            [ExampleDisablePresence,
+             "This example will disable Presence Device function"],
             ExampleGetPresencePIR: 
             [ExampleGetPresencePIR,
              "This example will get PIR status (detected/undetected people, or unconnected/unknown) of the Presence Device index " + presenceDeviceIndex],
@@ -145,28 +151,42 @@
             QRC.setSettings("smil_content_url", newContentURL)
                 .then(commonSuccessFn, commonErrorFn);
         }
-        
+
+        function ExampleEnablePresence() {
+            FnName = getFnName();
+            printAndAppendResult("Start Example " + FnName + "...");
+            QRC.setPresenceEnableState(true)
+                .then(commonSuccessFn, commonErrorFn);
+        }
+
+        function ExampleDisablePresence() {
+            FnName = getFnName();
+            printAndAppendResult("Start Example " + FnName + "...");
+            QRC.setPresenceEnableState(false)
+                .then(commonSuccessFn, commonErrorFn);
+        }
+
         function ExampleGetPresencePIR() {
             FnName = getFnName();
             printAndAppendResult("Start Example " + FnName + "...");
             QRC.getPresenceStatus("pir", presenceDeviceIndex)
                 .then(commonSuccessFn, commonErrorFn);
         }
-        
+
         function ExampleGetPresenceLight() {
             FnName = getFnName();
             printAndAppendResult("Start Example " + FnName + "...");
             QRC.getPresenceStatus("light", presenceDeviceIndex)
                 .then(commonSuccessFn, commonErrorFn);
         }
-        
+
         function ExampleSetPresenceLightToGreen() {
             FnName = getFnName();
             printAndAppendResult("Start Example " + FnName + "...");
             QRC.setPresenceStatus("light", "green", presenceDeviceIndex)
                 .then(commonSuccessFn, commonErrorFn);
         }
-        
+
         function ExampleSetPresenceLightToRed() {
             FnName = getFnName();
             printAndAppendResult("Start Example " + FnName + "...");
