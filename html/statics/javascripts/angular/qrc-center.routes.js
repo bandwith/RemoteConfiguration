@@ -13,17 +13,17 @@
         $routeProvider.when('/testing/', {
             controller: 'TestingController',
             controllerAs: 'vm',
-            templateUrl: 'sub_pages/testing.html',
+            templateUrl: 'testing.html',
             activeTab: 'testing'
         }).when('/example/', {
             controller: 'ExampleController',
             controllerAs: 'vm',
-            templateUrl: 'sub_pages/example.html',
+            templateUrl: 'example.html',
             activeTab: 'login'
         }).when('/configuration/', {
             controller: 'ConfigurationController',
             controllerAs: 'vm',
-            templateUrl: 'sub_pages/configuration.html',
+            templateUrl: 'configuration.html',
             activeTab: 'login'
 
         }).when('/single_dev/', {
@@ -34,7 +34,7 @@
         }).when('/', {
             controller: 'MainController',
             controllerAs: 'vm',
-            templateUrl: 'sub_pages/main.html',
+            templateUrl: 'main.html',
             activeTab: 'main'
         });
     }

@@ -385,7 +385,9 @@
             vm.current_password = "";
             vm.configure = {};
             vm.useConfig = {};
-            sessionStorage.removeItem('cacheConfigurationData');
+            if (sessionStorage) {
+                sessionStorage.removeItem('cacheConfigurationData');
+            }
             cacheConfigurationData = {};
 
         }
@@ -481,7 +483,9 @@
             cacheConfigurationData.current_password = vm.current_password;
             cacheConfigurationData.configure = vm.configure;
             cacheConfigurationData.useConfig = vm.useConfig;
-            sessionStorage.cacheConfigurationData = angular.toJson(cacheConfigurationData);
+            if (sessionStorage) {
+                sessionStorage.cacheConfigurationData = angular.toJson(cacheConfigurationData);
+            }
 
             isGlobalConfigureBreak = false;
             isGlobalConfigureBreakDone = false;

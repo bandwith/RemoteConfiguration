@@ -6,14 +6,17 @@
         <title>Remote Configuration Center</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Remote Configuration Center" />
+
+        <!--link rel="stylesheet" href="build/qrc-v0.0.1.css"-->
         <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="bower_components/angular-block-ui/dist/angular-block-ui.min.css">
         <link rel="stylesheet" href="bower_components/angularjs-slider/dist/rzslider.min.css">
         <link rel="stylesheet" href="bower_components/angular-timezone-selector/dist/angular-timezone-selector.min.css">
-        
+
         <link rel="stylesheet" href="statics/stylesheets/qrc.css">
         <link rel="stylesheet" href="statics/stylesheets/sidebar.css">
 
+        <!--script src="build/qrc-v0.0.1.js.gz"></script-->
         <script src="bower_components/jquery/dist/jquery.min.js"></script>
         <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
         <script src="bower_components/angular/angular.min.js"></script>
@@ -28,11 +31,11 @@
         <script src="bower_components/chosen/chosen.jquery.min.js"></script>
         <script src="bower_components/lodash/lodash.min.js"></script>
         <script src="bower_components/angular-timezone-selector/dist/angular-timezone-selector.min.js"></script>
-        
+
         <script src="libs/lrInfiniteScroll/lrInfiniteScroll.js"></script>
 
         <script src="statics/javascripts/angular/qrc-center.modules.js"></script>
-        
+
         <script src="statics/javascripts/angular/testing/testing.modules.js"></script>
         <script src="statics/javascripts/angular/testing/services/qrc-testing.service.js"></script>
         <script src="statics/javascripts/angular/testing/controllers/testing.controller.js"></script>
@@ -49,7 +52,7 @@
         <script src="statics/javascripts/angular/qrc/qrc.modules.js"></script>
         <script src="statics/javascripts/angular/qrc/services/qrc.service.js"></script>
         <script src="statics/javascripts/angular/qrc/controllers/qrc.controller.js"></script>
-        
+
         <script src="statics/javascripts/angular/qrc-center.routes.js"></script>
 
         <script src="statics/javascripts/script.js"></script>
@@ -83,11 +86,909 @@
                     </div>
 
                     <!-- main area -->
+
+                    <!--div id="local_file_error" style="color:black; font-weight: bold;"></div-->
+                    <!--script>
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+if (xhttp.responseText) {
+$('#local_file_error').html("");
+}
+};
+try{
+var url = window.location.href;
+if (url.indexOf("file://") == 0) {
+$('#local_file_error').html("<p>Unable to access local html file. Please use Firefox Browser or Chrome Browser.</p> <p>For Chrome Browser, please enable local html access by adding the argument '-allow-file-access-from-files' when executing chrome. For more information please reference <a target='_blank' href='http://chrome-allow-file-access-from-file.blogspot.tw/'>here</a></p><p>For Firefox Browser, please goto the url 'about:config' and set 'security.fileuri.strict_origin_policy' to false. For more informatin please reference <a target='_blank' href='http://kb.mozillazine.org/Security.fileuri.strict_origin_policy'>here<a></p>");
+xhttp.open("GET", url, true);
+xhttp.send();
+if (xhttp.responseText) {
+$('#local_file_error').html("");
+}
+}
+} catch(err) {
+console.log(err);
+
+}
+</script-->
                     <div ng-view>
+
                     </div>
                 </div><!--/.row-->
             </div><!--/.container-->
         </div><!--/.page-container-->
     </body>
+
+
+
+
+
+    <!-- Templates -->
+    <script type="text/ng-template" id="main.html">
+        <div class="col-xs-12 col-sm-9">
+            <h1>Welcome to Remote Configuration Center Main Page</h1>
+            <p>Remote Configuration Center is a console to control devices remotely by <a href="TBD">Restful APIs</a>.</p>
+            <p>Please check <a href="#/example/">Example</a> to see how to use these APIs by the example code in <a target="_blank" href="https://angularjs.org/">AngularJS</a></p>
+            <p><strong>*** Please use Chrome Browser to get the best experience ***</strong></p>
+        </div><!-- /.col-xs-12 main -->
+    </script>
+    <script type="text/ng-template" id="configuration.html">
+        <div class="col-xs-12 col-sm-9" name="div1">
+            <h1>Remote Configure Devices</h1>
+
+            <uib-tabset>
+                <uib-tab heading="Scan Devices" active="vm.tabScanActive">
+                    <h2></h2>
+                    <p >Please input ranges of the device's IP address and click SCAN to find devices.</p>
+                    <form class="form-inline" name="StartScan" ng-submit="vm.startScan();">
+
+                        <div ng-repeat="item in vm.ipCandidates">
+                            <div class="form-group">
+                                <label class="control-label" for="configurate__ip_start"></label>
+                                <input class="form-control" name="configurate__ip_start"
+                                       placeholder="192.168.0.1"
+                                       ng-pattern="vm.ipPattern"
+                                       ng-required="true" ng-model="item.range_start" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="configurate__ip_end"> ~ </label>
+                                <input class="form-control" name="configurate__ip_end"
+                                       placeholder="192.168.0.254"
+                                       ng-pattern="vm.ipPattern"
+                                       ng-required="true" ng-model="item.range_end" />
+                            </div>
+                            <span ng-show="vm.isRemoveRangeBtnShowing" style="cursor:pointer" class="glyphicon glyphicon-remove-circle" ng-click="vm.removeRange(item);"></span>
+                            <p></p>
+                        </div>
+                        <p></p>
+                        <div style="margin-bottom:15px;" ng-show="!vm.isScanDisabled&&!vm.isScanning">
+                            <span style="cursor:pointer" class="glyphicon glyphicon-plus-sign" ng-click="vm.addNewRange();"></span> Add new IP range
+                        </div>
+                        <div style="margin-bottom:15px;" ng-show="vm.isScanning">
+                            Scanning...
+                        </div>
+                        <p ng-show="vm.isScanDisabled">Please wait for few seconds...</p>
+
+                        <button type="submit" class="btn btn-primary" ng-disabled="vm.isScanDisabled">
+                            <span ng-show="vm.isScanning">STOP</span>
+                            <span ng-show="!vm.isScanning">SCAN</span>
+                        </button>
+                        <span ng-show="vm.scannedDevices.length || vm.isScanning">
+                            <span ng-show="vm.isScanning">It may take about {{vm.timeCostEstimate}} seconds.</span>
+                            {{vm.scannedDevices.length}} device<span ng-show="vm.scannedDevices.length>1">s</span> found<span ng-show="vm.isScanning">...</span>
+                        </span>
+                    </form>
+                    <button style="margin-top:-35px;" ng-show="vm.isNextShow" class="btn btn-success pull-right" ng-click="vm.goConfigDev();">
+                        NEXT<span class="glyphicon glyphicon-menu-right"></span>
+                    </button>
+
+                    <p></p>
+                    <div ng-show="vm.deviceScanResult" class="alert alert-success result-msg">{{ vm.deviceScanResult }}</div>
+                    <div ng-show="vm.deviceScanFailResult" class="alert alert-danger result-msg">{{ vm.deviceScanFailResult }}</div>
+                </uib-tab>
+
+
+
+
+
+                <uib-tab heading="Configurate Devices" active="vm.tabConfigDevActive">
+
+
+
+                    <button ng-click="vm.clearInput();" class="btn btn-default pull-right">
+                        <span class="glyphicon glyphicon-remove-circle"></span> Clear All Inputs
+                    </button>
+                    <h2>Configurate Scanned Devices</h2>
+                    <form novalidate ng-submit="vm.startConfigure();" block-ui="BlockUIForScanning"
+                          class="form-horizontal" role="form" name="ConfigForm" ng-init="vm.setFormScope(this)">
+                        <div block-ui="BlockUIForConfigure">
+                            <div class="form-group">
+                                <div class="col-xs-12">
+                                    <label class="control-label" for="configurate__target_devices" uib-tooltip="">Scanned Devices <span uib-tooltip="All scanned devices are showing in the following table. Click devices to select them to do the configuration." class="glyphicon glyphicon-info-sign"></span></label>
+                                    <div class="table-container" ng-style="vm.STableStyle">
+                                        <table st-safe-src="vm.scannedDevices" st-table="vm.displayScannedDevices" class="table">
+                                            <col width="5%">
+                                            <col width="25%">
+                                            <col width="25%">
+                                            <col width="25%">
+                                            <col width="20%">
+                                            <thead>
+                                                <tr>
+                                                    <th>Select</th>
+                                                    <th st-sort="ip">IP</th>
+                                                    <th st-sort="model_id">Model ID</th>
+                                                    <th st-sort="player_name">Name</th>
+                                                    <th st-sort="serial_number">Serial</th>
+                                                </tr>
+                                                <tr>
+                                                    <th><input type="checkbox" ng-change="vm.onSTableAllChecked();" ng-model="vm.STableSelectAllDevices"/></th>
+                                                    <th><input class="form-control" st-search="ip"/></th>
+                                                    <th>
+                                                        <select class="form-control" st-search="model_id">
+                                                            <option value="">All</option>
+                                                            <option ng-repeat="row in vm.scannedModelId" value="{{row}}">{{row}}</option>
+                                                        </select>
+                                                    </th>
+
+                                                    <th><input class="form-control" st-search="player_name"/></th>
+                                                    <th><input class="form-control" st-search="serial_number"/></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="row in vm.displayScannedDevices"
+                                                    ng-click="vm.onSTableClick(row);" ng-class="{info: row.isSelected}">
+                                                    <td><input type="checkbox" ng-change="vm.onSTableClick(row);"
+                                                               ng-model="row.isSelected"/></td>
+                                                    <td>{{row.ip | uppercase}}</td>
+                                                    <td>{{row.model_id}}</td>
+                                                    <td>{{row.player_name}}</td>
+                                                    <td>{{row.serial_number}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label">Current Password</label>
+                                <div class="col-xs-9">
+                                    <input name="currentPassword" class="form-control"
+                                           type="password"
+                                           ng-required="true" ng-model="vm.current_password"
+                                           ng-minlength="4" ng-maxlength="16" />
+                                    <div ng-show="ConfigForm.currentPassword.$error.required" class="help-block">* Required</div>
+                                    <div ng-show="ConfigForm.currentPassword.$error.minlength" class="help-block">Too short</div>
+                                    <div ng-show="ConfigForm.currentPassword.$error.maxlength" class="help-block">Too long</div>
+                                </div>
+                            </div>
+                            <hr class="divider"/>
+
+                            <uib-accordion close-others="false">
+                                <uib-accordion-group  is-open="vm.accordion.settingsOpen"
+                                                     template-url="accordion-group.html">
+                                    <uib-accordion-heading>
+                                        Settings <i class="pull-right glyphicon"
+                                                    ng-class="{'glyphicon-chevron-down': vm.accordion.settingsOpen, 'glyphicon-chevron-right': !vm.accordion.settingsOpen}"></i>
+                                    </uib-accordion-heading>
+                                    <div show-errors class="form-group">
+
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.Timezone"
+                                                   ng-change="vm.checkInitConfig('Timezone', vm.useConfig.Timezone, 'Europe/Amsterdam')">
+                                            Time Zone
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <timezone-selector name="Timezone" class="form-control"
+                                                               ng-required="vm.useConfig.Timezone"
+                                                               ng-disabled="!vm.useConfig.Timezone"
+                                                               width="100%" ng-model="vm.configure.Timezone">
+                                            </timezone-selector>
+                                            <div ng-show="ConfigForm.Timezone.$error.required" class="help-block">* Required</div>
+                                        </div>
+                                    </div>
+
+                                    <div show-errors class="form-group">
+
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SettingsPlayerName"
+                                                   ng-change="vm.checkInitConfig('SettingsPlayerName', vm.useConfig.SettingsPlayerName)">
+                                            Player Name
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <input ng-disabled="!vm.useConfig.SettingsPlayerName"
+                                                   class="form-control" ng-model="vm.configure.SettingsPlayerName" />
+                                        </div>
+
+                                    </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SecurityPasswordEnabled"
+                                                   ng-change="vm.checkInitConfig('SecurityPasswordEnabled', vm.useConfig.SecurityPasswordEnabled, 'enable');vm.deleteConfig('SecurityPassword');vm.useConfig.SecurityPassword=false">
+                                            Enable Password
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <label class="radio-inline">
+                                                <input type="radio" value="enable"
+                                                       ng-disabled="!vm.useConfig.SecurityPasswordEnabled"
+                                                       ng-model="vm.configure.SecurityPasswordEnabled" >
+                                                enable
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" value="disable"
+                                                       ng-disabled="!vm.useConfig.SecurityPasswordEnabled"
+                                                       ng-change="vm.deleteConfig('SecurityPassword');vm.useConfig.SecurityPassword=false"
+                                                       ng-model="vm.configure.SecurityPasswordEnabled">
+                                                disable
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group" ng-show="vm.useConfig.SecurityPasswordEnabled&&vm.configure.SecurityPasswordEnabled=='enable'">
+
+                                        <label class="col-xs-3 control-label-left">
+                                            Security Password
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <input name="securityPassword" type="password"
+                                                   ng-maxlength="16" ng-minlength="4" class="form-control"
+                                                   ng-required="vm.useConfig.SecurityPasswordEnabled&&vm.configure.SecurityPasswordEnabled=='enable'"
+                                                   ng-model="vm.configure.SecurityPassword" />
+                                            <div ng-show="ConfigForm.securityPassword.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.securityPassword.$error.minlength" class="help-block">Too short</div>
+                                            <div ng-show="ConfigForm.securityPassword.$error.maxlength" class="help-block">Too long</div>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SettingsNtpServer"
+                                                   ng-change="vm.checkInitConfig('SettingsNtpServer', vm.useConfig.SettingsNtpServer)">
+                                            NTP Server
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <input
+                                                   placeholder="ex, 0.fr.pool.ntp.org"
+                                                   ng-disabled="!vm.useConfig.SettingsNtpServer"
+                                                   class="form-control" ng-model="vm.configure.SettingsNtpServer" />
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SettingsSmilContentUrl"
+                                                   ng-change="vm.checkInitConfig('SettingsSmilContentUrl', vm.useConfig.SettingsSmilContentUrl)">
+                                            SMIL Player URL
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <input
+                                                   placeholder="ex, http://folk.uio.no/annembek/inf3210/examples/basic.smil"
+                                                   ng-disabled="!vm.useConfig.SettingsSmilContentUrl"
+                                                   class="form-control"
+                                                   ng-model="vm.configure.SettingsSmilContentUrl" />
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SettingsAdbEnabled"
+                                                   ng-change="vm.checkInitConfig('SettingsAdbEnabled', vm.useConfig.SettingsAdbEnabled, 'enable');vm.deleteConfig('SettingsAdbOverTcp');vm.useConfig.SettingsAdbOverTcp=false">
+                                            ADB Enable
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <label class="radio-inline">
+                                                <input type="radio" value="enable"
+                                                       ng-disabled="!vm.useConfig.SettingsAdbEnabled"
+                                                       ng-model="vm.configure.SettingsAdbEnabled" >
+                                                enable
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" value="disable"
+                                                       ng-disabled="!vm.useConfig.SettingsAdbEnabled"
+                                                       ng-change="vm.deleteConfig('SettingsAdbOverTcp');vm.useConfig.SettingsAdbOverTcp=false"
+                                                       ng-model="vm.configure.SettingsAdbEnabled">
+                                                disable
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SettingsAdbOverTcp"
+                                                   ng-disabled="vm.configure.SettingsAdbEnabled!='enable'"
+                                                   ng-change="vm.checkInitConfig('SettingsAdbOverTcp', vm.useConfig.SettingsAdbOverTcp, 'disable')">
+                                            ADB Over TCP-IP
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <label class="radio-inline">
+                                                <input type="radio" value="enable"
+                                                       ng-disabled="!vm.useConfig.SettingsAdbOverTcp"
+                                                       ng-model="vm.configure.SettingsAdbOverTcp" >
+                                                enable (Port: 5555)
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" value="disable"
+                                                       ng-disabled="!vm.useConfig.SettingsAdbOverTcp"
+                                                       ng-model="vm.configure.SettingsAdbOverTcp">
+                                                disable
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SettingsRebootTime"
+                                                   ng-change="vm.checkInitConfig('SettingsRebootTime', vm.useConfig.SettingsRebootTime, null, true)">
+                                            Reboot Time
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <input ng-disabled="!vm.useConfig.SettingsRebootTime"
+                                                   ng-required="vm.useConfig.SettingsRebootTime"
+                                                   type="time" name="rebootTime"
+                                                   class="form-control" ng-model="vm.configure.SettingsRebootTime" />
+                                            <div ng-show="ConfigForm.rebootTime.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.rebootTime.$error.time" class="help-block">Invalid time format</div>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SettingsRebootTimeOptimized"
+                                                   ng-change="vm.checkInitConfig('SettingsRebootTimeOptimized', vm.useConfig.SettingsRebootTimeOptimized, 'enable')">
+                                            Optimize Reboot Time
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <label class="radio-inline">
+                                                <input type="radio" value="enable"
+                                                       ng-disabled="!vm.useConfig.SettingsRebootTimeOptimized"
+                                                       ng-model="vm.configure.SettingsRebootTimeOptimized" >
+                                                enable
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" value="disable"
+                                                       ng-disabled="!vm.useConfig.SettingsRebootTimeOptimized"
+                                                       ng-model="vm.configure.SettingsRebootTimeOptimized">
+                                                disable
+                                            </label>
+                                        </div>
+                                    </div>
+                                </uib-accordion-group>
+                                <uib-accordion-group name="ethernetGroup" is-open="vm.accordion.ethernetOpen"
+                                                     template-url="accordion-group.html">
+                                    <uib-accordion-heading>
+                                        Ethernet <i class="pull-right glyphicon" 
+                                                    ng-class="{'glyphicon-chevron-down': vm.accordion.ethernetOpen, 'glyphicon-chevron-right': !vm.accordion.ethernetOpen}"></i>
+                                    </uib-accordion-heading>
+                                    <div class="alert alert-warning">Remotely changing Ethernet configuration may cause error while configuring devices if the connection is lost. Never use this configuration if you're using Etherent of your target device.</div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.EthernetState"
+                                                   ng-change="vm.checkInitConfig('EthernetState', vm.useConfig.EthernetState, 'enable')">
+                                            Enable Ethernet
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <label class="radio-inline">
+                                                <input type="radio" value="enable"
+                                                       ng-disabled="!vm.useConfig.EthernetState"
+                                                       ng-model="vm.configure.EthernetState" >
+                                                enable
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" value="disable"
+                                                       ng-disabled="!vm.useConfig.EthernetState"
+                                                       ng-model="vm.configure.EthernetState">
+                                                disable
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.EthernetNetwork"
+                                                   ng-change="vm.checkEthernetConfig(vm.useConfig.EthernetNetwork)">
+                                            IP Settings
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <label class="radio-inline">
+                                                <input type="radio" value="dhcp"
+                                                       ng-disabled="!vm.useConfig.EthernetNetwork"
+                                                       ng-model="vm.configure.EthernetNetwork.ip_assignment" >
+                                                DHCP
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" value="static"
+                                                       ng-disabled="!vm.useConfig.EthernetNetwork"
+                                                       ng-model="vm.configure.EthernetNetwork.ip_assignment">
+                                                Static
+                                            </label>
+                                        </div>
+
+                                    </div>
+                                    <div show-errors class="form-group" 
+                                         ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">IP Address</label>
+                                        <div class="col-xs-9">
+                                            <input name="ethernetIp"
+                                                   ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 192.168.1.49"
+                                                   class="form-control" 
+                                                   ng-model="vm.configure.EthernetNetwork.static_ip" />
+                                            <div ng-show="ConfigForm.ethernetIp.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.ethernetIp.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+
+                                    <div show-errors class="form-group"
+                                         ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">Gateway Address</label>
+                                        <div class="col-xs-9">
+                                            <input name="ethernetGateway"
+                                                   ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 192.168.1.1"
+                                                   class="form-control"
+                                                   ng-model="vm.configure.EthernetNetwork.gateway" />
+                                            <div ng-show="ConfigForm.ethernetGateway.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.ethernetGateway.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group" 
+                                         ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">Net Mask</label>
+                                        <div class="col-xs-9">
+                                            <input name="netMask"
+                                                   ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 255.255.255.0"
+                                                   class="form-control" 
+                                                   ng-model="vm.configure.EthernetNetwork.netMask" />
+                                            <div ng-show="ConfigForm.netMask.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.netMask.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group" 
+                                         ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">DNS</label>
+                                        <div class="col-xs-9">
+                                            <input name="dns"
+                                                   ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 8.8.8.8"
+                                                   class="form-control" 
+                                                   ng-model="vm.configure.EthernetNetwork.dns" />
+                                            <div ng-show="ConfigForm.dns.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.dns.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group" 
+                                         ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">DNS2</label>
+                                        <div class="col-xs-9">
+                                            <input name="dns2"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 4.4.4.4"
+                                                   class="form-control"
+                                                   ng-init="null"
+                                                   ng-model="vm.configure.EthernetNetwork.dns2" />
+                                            <div ng-show="ConfigForm.dns2.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.dns2.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+                                </uib-accordion-group>
+
+
+
+
+                                <uib-accordion-group name="wifiGroup" is-open="vm.accordion.wifiOpen"
+                                                     template-url="accordion-group.html">
+                                    <uib-accordion-heading>
+                                        Wifi <i class="pull-right glyphicon" 
+                                                ng-class="{'glyphicon-chevron-down': vm.accordion.wifiOpen, 'glyphicon-chevron-right': !vm.accordion.wifiOpen}"></i>
+                                    </uib-accordion-heading>
+                                    <div class="alert alert-warning">Remotely changing Wifi configuration may cause error while configuring devices if the connection is lost. Never use this configuration if you're using Wifi of your target device.</div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.WifiState"
+                                                   ng-change="vm.checkInitConfig('WifiState', vm.useConfig.WifiState, 'enable');vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false">
+                                            Enable Wifi
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <label class="radio-inline">
+                                                <input type="radio" value="enable"
+                                                       ng-disabled="!vm.useConfig.WifiState"
+                                                       ng-model="vm.configure.WifiState" >
+                                                enable
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" value="disable"
+                                                       ng-change="vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false"
+                                                       ng-disabled="!vm.useConfig.WifiState"
+                                                       ng-model="vm.configure.WifiState">
+                                                disable
+                                            </label>
+                                        </div>
+                                    </div>
+
+
+                                    <div show-errors class="form-group" >
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.WifiNetwork"
+                                                   ng-disabled="vm.configure.WifiState!='enable'"
+                                                   ng-change="vm.checkInitWifiConfig(vm.useConfig.WifiNetwork)">
+                                            SSID
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <input name="ssid"
+                                                   class="form-control"
+                                                   ng-disabled="!vm.useConfig.WifiNetwork"
+                                                   ng-model="vm.configure.WifiNetwork.ssid" />
+                                        </div>
+                                    </div>
+                                    <div show-errors ng-show="vm.useConfig.WifiNetwork" class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            Security
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <select class="form-control" ng-init="vm.configure.WifiNetwork.security=vm.configure.WifiNetwork.security?vm.configure.WifiNetwork.security:'none'" ng-model="vm.configure.WifiNetwork.security">
+                                                <option value="none">None</option>
+                                                <option value="wep">WEP</option>
+                                                <option value="psk">WPA/WPA2 PSK</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div ng-show="vm.configure.WifiNetwork.security && vm.configure.WifiNetwork.security!='none'"show-errors class="form-group" >
+                                        <label class="col-xs-3 control-label-left">
+                                            Password
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <input name="wifiPassword"
+                                                   type="password"
+                                                   class="form-control"
+                                                   ng-required="vm.configure.WifiNetwork.security &&vm.configure.WifiNetwork.security!='none'"
+                                                   ng-minLength="vm.configure.WifiNetwork.security=='wep'?1:8"
+                                                   ng-disabled="!vm.useConfig.WifiNetwork"
+                                                   ng-model="vm.configure.WifiNetwork.password" />
+                                            <div ng-show="ConfigForm.wifiPassword.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.wifiPassword.$error.minlength" class="help-block">Too short</div>
+                                        </div>
+                                    </div>
+                                    <div show-errors ng-show="vm.useConfig.WifiNetwork" class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            IP Settings
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <label class="radio-inline">
+                                                <input type="radio" value="dhcp"
+                                                       ng-disabled="!vm.useConfig.WifiNetwork"
+                                                       ng-init="vm.configure.WifiNetwork.advanced.ip_assignment=vm.configure.WifiNetwork.advanced.ip_assignment?vm.configure.WifiNetwork.advanced.ip_assignment:'dhcp'"
+                                                       ng-model="vm.configure.WifiNetwork.advanced.ip_assignment">
+                                                DHCP
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" value="static"
+                                                       ng-disabled="!vm.useConfig.WifiNetwork"
+                                                       ng-model="vm.configure.WifiNetwork.advanced.ip_assignment">
+                                                Static
+                                            </label>
+                                        </div>
+
+                                    </div>
+                                    <div show-errors class="form-group" 
+                                         ng-show="vm.configure.WifiNetwork.advanced.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">IP Address</label>
+                                        <div class="col-xs-9">
+                                            <input name="wifiIp"
+                                                   ng-required="vm.configure.WifiNetwork.advanced.ip_assignment=='static'"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 192.168.1.49"
+                                                   class="form-control" 
+                                                   ng-model="vm.configure.WifiNetwork.advanced.static_ip" />
+                                            <div ng-show="ConfigForm.wifiIp.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.wifiIp.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+
+                                    <div show-errors class="form-group"
+                                         ng-show="vm.configure.WifiNetwork.advanced.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">Gateway Address</label>
+                                        <div class="col-xs-9">
+                                            <input name="wifiGateway"
+                                                   ng-required="vm.configure.WifiNetwork.advanced.ip_assignment=='static'"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 192.168.1.1"
+                                                   class="form-control"
+                                                   ng-model="vm.configure.WifiNetwork.advanced.gateway" />
+                                            <div ng-show="ConfigForm.wifiGateway.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.wifiGateway.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group" 
+                                         ng-show="vm.configure.WifiNetwork.advanced.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">Net Mask</label>
+                                        <div class="col-xs-9">
+                                            <input name="wifiNetMask"
+                                                   ng-required="vm.configure.WifiNetwork.advanced.ip_assignment=='static'"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 255.255.255.0"
+                                                   class="form-control" 
+                                                   ng-model="vm.configure.WifiNetwork.advanced.netMask" />
+                                            <div ng-show="ConfigForm.wifiNetMask.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.wifiNetMask.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group" 
+                                         ng-show="vm.configure.WifiNetwork.advanced.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">DNS</label>
+                                        <div class="col-xs-9">
+                                            <input name="wifiDns"
+                                                   ng-required="vm.configure.WifiNetwork.advanced.ip_assignment=='static'"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 8.8.8.8"
+                                                   class="form-control" 
+                                                   ng-model="vm.configure.WifiNetwork.advanced.dns" />
+                                            <div ng-show="ConfigForm.wifiDns.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.wifiDns.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group" 
+                                         ng-show="vm.configure.WifiNetwork.advanced.ip_assignment=='static'">
+                                        <label class="col-xs-3 control-label-left">DNS2</label>
+                                        <div class="col-xs-9">
+                                            <input name="wifiDns2"
+                                                   ng-pattern="vm.ipPattern"
+                                                   placeholder="ex, 4.4.4.4"
+                                                   class="form-control"
+                                                   ng-init="null"
+                                                   ng-model="vm.configure.WifiNetwork.advanced.dns2" />
+                                            <div ng-show="ConfigForm.wifiDns2.$error.required" class="help-block">* Required</div>
+                                            <div ng-show="ConfigForm.wifiDns2.$error.pattern" class="help-block">Format is incorrect</div>
+                                        </div>
+                                    </div>
+                                </uib-accordion-group>
+
+
+
+
+                                <uib-accordion-group  is-open="vm.accordion.audioOpen"
+                                                     template-url="accordion-group.html">
+                                    <uib-accordion-heading>
+                                        Audio Volume<i class="pull-right glyphicon"
+                                                       ng-class="{'glyphicon-chevron-down': vm.accordion.audioOpen, 'glyphicon-chevron-right': !vm.accordion.audioOpen}"></i>
+                                    </uib-accordion-heading>
+                                    <div class="alert alert-warning">Audio volume you set is an approximate value, depend on the target device's volume granularity.</div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-slider">
+                                            <input type="checkbox" ng-model="vm.useConfig.AudioStreamMusic"
+                                                   ng-change="vm.checkInitConfig('AudioStreamMusic', vm.useConfig.AudioStreamMusic, 50)">
+                                            Media
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <rzslider rz-slider-options="{floor: 0, ceil: 100, translate:vm.translateStreamVolume, disabled:!vm.useConfig.AudioStreamMusic}"
+                                                      rz-slider-model="vm.configure.AudioStreamMusic"></rzslider>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-slider">
+                                            <input type="checkbox" ng-model="vm.useConfig.AudioStreamAlarm"
+                                                   ng-change="vm.checkInitConfig('AudioStreamAlarm', vm.useConfig.AudioStreamAlarm, 50)">
+                                            Alarm
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <rzslider rz-slider-options="{floor: 0, ceil: 100, translate:vm.translateStreamVolume, disabled:!vm.useConfig.AudioStreamAlarm}"
+                                                      rz-slider-model="vm.configure.AudioStreamAlarm"></rzslider>
+                                        </div>
+                                    </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-slider">
+                                            <input type="checkbox" ng-model="vm.useConfig.AudioStreamNotification"
+                                                   ng-change="vm.checkInitConfig('AudioStreamNotification', vm.useConfig.AudioStreamNotification, 50)">
+                                            Notification
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <rzslider rz-slider-options="{floor: 0, ceil: 100, translate:vm.translateStreamVolume, disabled:!vm.useConfig.AudioStreamNotification}"
+                                                      rz-slider-model="vm.configure.AudioStreamNotification"></rzslider>
+                                        </div>
+                                    </div>
+                                </uib-accordion-group>
+                            </uib-accordion>
+
+
+                        </div>
+                        <div class="form-group" ng-class="{ 'has-error': vm.isConfigClicked&&ConfigForm.$invalid }">
+                            <div class="col-xs-offset-2 col-xs-10">
+                                <button ng-disabled="vm.isStartConfigureDisabled||vm.isConfiguring==2" 
+                                        type="submit" class="btn btn-primary pull-right"><span ng-show="vm.isConfiguring">Stop Configuration</span><span ng-show="!vm.isConfiguring">Start Configuration</span></button>
+
+                            </div>
+                            <div class="col-xs-12" ng-show="vm.isConfigClicked&&ConfigForm.$invalid" ng-class="has-error">
+                                <div class="pull-right help-block" >
+                                    Please fix invalid inputs above to start configuration
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </form>
+
+                    <p></p>
+                    <div ng-show="vm.deviceConfigureFailResult" class="alert alert-danger result-msg">{{ vm.deviceConfigureFailResult }}</div>
+                    <div ng-show="vm.deviceConfigureResult" class="alert alert-success result-msg">{{ vm.deviceConfigureResult }}</div>
+
+                </uib-tab>
+
+            </uib-tabset>
+
+
+        </div><!-- /.col-xs-12 main -->
+    </script>
+    <script type="text/ng-template" id="example.html">
+        <div class="col-xs-12 col-sm-9">
+            <h1>Remote Configuration Example</h1>
+
+            <uib-tabset>
+                <uib-tab heading="Single Example">
+                    <h2>Example</h2>
+                    <form class="form-horizontal" role="form" ng-submit="vm.startExample()" name="SingleExample">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="example__ip">IP Address</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" name="example__ip"
+                                       placeholder="192.168.1.38"
+                                       ng-required="true" ng-model="vm.example_ip" />
+                                <span ng-show="vm.example_ip">http://{{vm.example_ip}}:8080</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="example__ip">Password</label>
+                            <div class="col-sm-10">
+                                <input type="password"
+                                       class="form-control" name="example__password"
+                                       ng-required="true" ng-model="vm.example_password" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="example__example_cases">
+                                ExampleCase
+                            </label>
+                            <div class="col-sm-10">
+                                <select name="example_cases" class="form-control" ng-options="data for data in vm.exampleCasesArray" ng-model="vm.exampleCase" ng-change="vm.onExampleCaseChanged();">
+                                </select>
+                            </div>
+                        </div>
+                        <div ng-show="vm.exampleCaseDescription" class="alert alert-info">{{ vm.exampleCaseDescription }}</div>
+                        <button ng-disabled="vm.isExampleRunning" type="submit" class="btn btn-primary pull-right">Try it!</button>
+                    </form>
+                </uib-tab>
+
+            </uib-tabset>
+
+            <br/><br/>
+            <div ng-show="vm.example_result" class="alert alert-success result-msg">{{ vm.example_result }}</div>
+            <div ng-show="vm.example_fail_result" class="alert alert-danger result-msg">{{ vm.example_fail_result }}</div>
+
+
+
+        </div><!-- /.col-xs-12 main -->
+    </script>
+
+    <script type="text/ng-template" id="accordion-group.html">
+        <div class="panel {{panelClass || 'panel-default'}}">
+            <div class="panel-heading" ng-click="toggleOpen()">
+                <h4 class="panel-title">
+                    <a href tabindex="0" class="accordion-toggle" uib-accordion-transclude="heading"><span
+                                                                                                           ng-class="{'text-muted': isDisabled}">{{heading}}</span></a>
+                </h4>
+            </div>
+            <div class="panel-collapse collapse" uib-collapse="!isOpen">
+                <div class="panel-body" ng-transclude></div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="testing.html">
+        <div class="col-xs-12 col-sm-9">
+            <h1>Remote Configuration Test</h1>
+
+            <uib-tabset>
+                <uib-tab heading="Single Test">
+                    <h2>Single Test</h2>
+                    <form class="form-horizontal" role="form" ng-submit="vm.testSingle()" name="SingleTest">
+                        <div class="form-group">
+
+                            <label class="col-sm-2 control-label" for="test__model_id">Model ID</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" ng-change="vm.modelChange();" ng-options="id for id in vm.models" ng-model="vm.model_id"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="test__ip">IP Address</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" name="test__ip"
+                                       placeholder="192.168.1.38"
+                                       ng-required="true" ng-model="vm.test_ip" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="test__ip">Password</label>
+                            <div class="col-sm-10">
+                                <input type="password"
+                                       class="form-control" name="test__password"
+                                       ng-required="true" ng-model="vm.test_password" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="test__model_id">
+                                Test By
+                            </label>
+                            <div class="col-sm-10">
+                                <label class="radio-inline">
+                                    <input type="radio" name="optradio" ng-model="vm.testMethod" value="0">
+                                    Test Cases
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="optradio" ng-model="vm.testMethod" value="1">
+                                    URL
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group" ng-show="vm.testMethod==0">
+                            <label class="col-sm-2 control-label" for="test__model_id">
+                                TestCase
+                            </label>
+                            <div class="col-sm-10">
+                                <select class="form-control" ng-options="data for data in vm.testCasesArray" ng-model="vm.testCase">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" ng-show="vm.testMethod==1">
+                            <label class="col-sm-2 control-label" for="test__ip">URL Path</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" name="test__path" ng-disabled="vm.testMethod!=1"
+                                       placeholder="/v1/oauth2/token"
+                                       ng-required="vm.testMethod==0" ng-model="vm.test_path" />
+                            </div>
+                        </div>
+                        <span ng-show="vm.test_ip"><b>Test Address:</b> http://{{vm.test_ip}}:8080{{ vm.test_path }}</span>
+                        <button ng-disabled="vm.isTesting" type="submit" class="btn btn-primary pull-right">Test</button>
+                    </form>
+                </uib-tab>
+                <uib-tab heading="Full Test">
+                    <h2>Full Test</h2>
+                    <form class="form-horizontal" role="form" ng-submit="vm.testAll()" name="FullTest">
+                        <div class="form-group">
+
+                            <label class="col-sm-2 control-label" for="test__model_id">Model ID</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" ng-change="vm.modelChange();" ng-options="id for id in vm.models" ng-model="vm.model_id"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+
+                            <label class="col-sm-2 control-label" for="test__ip">IP Address</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" name="test__ip"
+                                       placeholder="192.168.1.38"
+                                       ng-required="true" ng-model="vm.test_ip" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="test__ip">Password</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" name="test__password"
+                                       type="password"
+                                       ng-required="true" ng-model="vm.test_password" />
+                            </div>
+                        </div>
+                        <span ng-show="vm.test_ip"><b>Test URL:</b> http://{{vm.test_ip}}</span>
+                        <button ng-disabled="vm.isTesting" type="submit" class="btn btn-primary pull-right">Test All</button>
+
+                    </form>
+                </uib-tab>
+
+            </uib-tabset>
+
+            <br></br>
+        <div ng-show="vm.test_result" class="alert alert-success result-msg">{{ vm.test_result }}</div>
+        <div ng-show="vm.test_fail_result" class="alert alert-danger result-msg">{{ vm.test_fail_result }}</div>
+
+
+
+        </div><!-- /.col-xs-12 main -->
+    </script>
 </html>
 
