@@ -16,12 +16,12 @@
             TestSetSettingsRebootTime: TestSetSettingsRebootTime,
             TestSetSettingsIsRebootOptimized: TestSetSettingsIsRebootOptimized,
             TestSetSettingsIsLcdOn: TestSetSettingsIsLcdOn,
-            
+
 
             TestGetWifiScanResults: TestGetWifiScanResults,
             TestSetWifiState: TestSetWifiState,
-            
-            
+
+
             TestSetProp: TestSetProp,
             testlistProp: testlistProp,
 
@@ -32,7 +32,7 @@
             TestLed: TestLed,
 
             TestUnSupportPath: TestUnSupportPath,
-			TestSetSettingsContentURL: TestSetSettingsContentURL,
+            TestSetSettingsContentURL: TestSetSettingsContentURL,
             TestSetSettingsADB: TestSetSettingsADB,
             TestSetADBoverTCP: TestSetADBoverTCP,
             TestGetSettings: TestGetSettings,
@@ -340,8 +340,8 @@
 
         }
 
-        
-        
+
+
         function TestSetProp(nextCaseReadiness) {
             FnName = TestingUtils.getFnName();
             printAndAppendResult("Start testing " + FnName + "...");
@@ -389,18 +389,19 @@
             function successFn(data) {
                 try {
                     QRC.getToken(password).then(successFn1, commonErrorFn);
-                    function successFn1(data) {
-                        QRC.setTargetAuthToken(data.data.access_token);
-                        QRCTesting.setTargetAuthToken(data.data.access_token);
-                        // Restore original password back.
-                        QRC.setSecurityPassword(vm.test_password).then(successFn2, commonErrorFn);
-                        function successFn2(data) {
-                            printAndAppendResult(FnName + ": PASS", data);
-                            nextTestReady(nextCaseReadiness);
-                        }
-                    }
+
                 } catch(err) {
                     printErrorAndBreak("Error of " + FnName, null, err);
+                }
+            }
+            function successFn1(data) {
+                QRC.setTargetAuthToken(data.data.access_token);
+                QRCTesting.setTargetAuthToken(data.data.access_token);
+                // Restore original password back.
+                QRC.setSecurityPassword(vm.test_password).then(successFn2, commonErrorFn);
+                function successFn2(data) {
+                    printAndAppendResult(FnName + ": PASS", data);
+                    nextTestReady(nextCaseReadiness);
                 }
             }
         }
@@ -419,20 +420,21 @@
                         volumeValue = 100;
                     }
                     QRC.setAudioVolume(streamType, volumeValue).then(successFn1, commonErrorFn);
-                    function successFn1(data) {
-                        QRC.listAudioVolume().then(successFn2, commonErrorFn);
-                        function successFn2(data) {
-                            if (data.data.results[streamType]== volumeValue) {
-                                printAndAppendResult(FnName + ": PASS", data);
-                                nextTestReady(nextCaseReadiness);
-                            }
-                            else{
-+                                printErrorAndBreak("Error of " + FnName, data);
-                            }
-                        }
-                    }
+
                 } catch(err) {
                     printErrorAndBreak("Error of " + FnName, null, err);
+                }
+            }
+            function successFn1(data) {
+                QRC.listAudioVolume().then(successFn2, commonErrorFn);
+                function successFn2(data) {
+                    if (data.data.results[streamType]== volumeValue) {
+                        printAndAppendResult(FnName + ": PASS", data);
+                        nextTestReady(nextCaseReadiness);
+                    }
+                    else{
+                        printErrorAndBreak("Error of " + FnName, data);
+                    }
                 }
             }
         }
@@ -505,19 +507,19 @@
                 }
             }
         }
-		
+
         function TestSetSettingsContentURL(nextCaseReadiness) {
-             FnName = TestingUtils.getFnName();
+            FnName = TestingUtils.getFnName();
             printAndAppendResult("Start testing " + FnName + "...");
             testSetSettingsByKey(FnName, nextCaseReadiness, "smil_content_url", "http://192.168.1.253/qa/Media/index_V.smil");
         }
-        
+
         function TestSetSettingsADB(nextCaseReadiness) {
             FnName = TestingUtils.getFnName();
             printAndAppendResult("Start testing " + FnName + "...");
             testSetSettingsByKey(FnName, nextCaseReadiness, "adb_enabled", true);
         }
-        
+
         function TestSetADBoverTCP(nextCaseReadiness) {
             FnName = TestingUtils.getFnName();
             printAndAppendResult("Start testing " + FnName + "...");
@@ -528,7 +530,7 @@
             function successFn2(data) {
                 QRC.setSettings("adb_enabled", true).then(successFn, commonErrorFn);
             }
-            
+
             function successFn(data) {
                 try {
                     printAndAppendResult(FnName + ": PASS", data);

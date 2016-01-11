@@ -20,7 +20,7 @@
 
         var selectedDevices = [];
         var currentConfigDeviceIndex = 0;
-        var CONCURRENT_CONFIG_DEVICE = 10;
+        var CONCURRENT_CONFIG_DEVICE = 20;
 
         var configTimeStart;
 
@@ -195,7 +195,7 @@
                 appendScannedDevice({data:{results:{model_id:'TD123',player_name:'BBB', serial_number:'BBB'}}}, '192.168.1.171');
                 appendScannedDevice({data:{results:{model_id:'TD123',player_name:'CCC', serial_number:'BBB'}}}, '192.168.1.172');
                 appendScannedDevice({data:{results:{model_id:'TD123',player_name:'DDD', serial_number:'BBB'}}}, '192.168.1.178');
-                appendScannedDevice({data:{results:{model_id:'TD123',player_name:'EEE', serial_number:'BBB'}}}, '192.168.1.183');
+                appendScannedDevice({data:{results:{model_id:'TD123',player_name:'EEE', serial_number:'BBB'}}}, '192.168.1.209');
             }
             */
 
