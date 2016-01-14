@@ -623,7 +623,7 @@
 
 
             function runConfigureByKey(configKey, caseIdx, device) {
-                var retry = 0;
+                var retryWifi = 0;
                 var MAX_RETRY = 20;
                 var RETRY_DELAY = 1000; //we give it 20 (20 * 1000ms) sec to retry wifi network setup
                 if (configKey == "SettingsPlayerName") {
@@ -768,29 +768,29 @@
                     printConfigureError("Un-recognized configKey:" + configKey);
                     readyForNextConfig(device, caseIdx, false);
                 }
-            }
-            function success1stWifiFn(data) {
-                if (data.data.value == "enabled") {
-                    realConfigWifiNetwork();
-                } else {
-                    QRC.setWifiState(1, device.index);
-                    retry++;
-                    $timeout(tryConfigWifiNetwork, RETRY_DELAY);
-                }
-            }
-            function tryConfigWifiNetwork() {
-                QRC.getWifiState(device.index).then(successWifiFn, errorConfigFn);
-                function successWifiFn(data) {
+                function success1stWifiFn(data) {
                     if (data.data.value == "enabled") {
                         realConfigWifiNetwork();
-                    } else if (retry >= MAX_RETRY) {
-                        printConfigureError("When configuring " + configureCases[caseIdx] +
-                                            ", device " + deviceToString(device) +
-                                            " Unable to enable Wifi");
-                        readyForNextConfig(device, caseIdx, false);
                     } else {
-                        retry++;
+                        QRC.setWifiState(1, device.index);
+                        retryWifi++;
                         $timeout(tryConfigWifiNetwork, RETRY_DELAY);
+                    }
+                }
+                function tryConfigWifiNetwork() {
+                    QRC.getWifiState(device.index).then(successWifiFn, errorConfigFn);
+                    function successWifiFn(data) {
+                        if (data.data.value == "enabled") {
+                            realConfigWifiNetwork();
+                        } else if (retryWifi >= MAX_RETRY) {
+                            printConfigureError("When configuring " + configureCases[caseIdx] +
+                                                ", device " + deviceToString(device) +
+                                                " Unable to enable Wifi");
+                            readyForNextConfig(device, caseIdx, false);
+                        } else {
+                            retryWifi++;
+                            $timeout(tryConfigWifiNetwork, RETRY_DELAY);
+                        }
                     }
                 }
             }
@@ -820,7 +820,6 @@
                 readyForNextConfig(device, caseIdx, false);
             }
         }
-
 
         function readyForNextConfig(device, caseIdx, isSuccess) {
             configuringDoneNum++;
