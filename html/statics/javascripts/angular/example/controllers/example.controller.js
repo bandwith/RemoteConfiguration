@@ -5,9 +5,12 @@
         .module('qrc-center.example.controllers')
         .controller('ExampleController', ExampleController);
 
-    ExampleController.$inject = ['QRC', '$scope', '$injector'];
 
-    function ExampleController(QRC, $scope, $injector) {
+
+    ExampleController.$inject = ['QRC', '$scope', '$injector', '$timeout'];
+
+    function ExampleController(QRC, $scope, $injector, $timeout) {
+
         var newPassword = "abcde";
         var newTimeZone = "Europe/Amsterdam";
         var newAudioVolume = ["stream_system", 0];
@@ -17,46 +20,83 @@
         var ExampleCases = {
             ExampleGetAuth2Token: 
             [ExampleGetAuth2Token, 
-             "This example will get an access token if password you set is correct. Almost all APIs need access token to do the request. This example will get an access token then insert this token into http header as an Authentication token for following examle you try. So please always run this example to get access token before running other examples. "],
+             "This example will get an access token if password you set is correct. Almost all APIs need access token to do the request. This example will get an access token then insert this token into http header as an Authentication token for following examle you try. So please always run this example to get access token before running other examples. ",
+             ExampleGetAuth2Token.toString(),
+             QRC.getToken.toString(),
+            ],
             ExampleSetSecurityPassword:
             [ExampleSetSecurityPassword,
-             "This example will set the target device's security password to '" + newPassword + "'"],
+             "This example will set the target device's security password to '" + newPassword + "'",
+             ExampleSetSecurityPassword.toString(),
+             QRC.setSecurityPassword.toString(),
+            ],
             ExampleDisableWifi: 
             [ExampleDisableWifi,
-             "This example will disable wifi"],
+             "This example will disable wifi",
+             ExampleDisableWifi.toString(),
+             QRC.setWifiState.toString(),
+            ],
             ExampleChangeTimeZone:
             [ExampleChangeTimeZone,
-             "This example will set the target device's time zone to '" + newTimeZone + "'"],
+             "This example will set the target device's time zone to '" + newTimeZone + "'",
+             ExampleChangeTimeZone.toString(),
+             QRC.setProp.toString(),
+            ],
 
             ExampleSetAudioVolume: 
             [ExampleSetAudioVolume,
-             "This example will set the audio volume of type '" + newAudioVolume[0] + "' to " + newAudioVolume[1]],
+             "This example will set the audio volume of type '" + newAudioVolume[0] + "' to " + newAudioVolume[1],
+             ExampleSetAudioVolume.toString(),
+             QRC.setAudioVolume.toString(),
+            ],
             ExampleSetContentUrl: 
             [ExampleSetContentUrl,
-             "This example will set the content URL '" + newContentURL + "' into the SMIL player"],
+             "This example will set the content URL '" + newContentURL + "' into the SMIL player",
+             ExampleSetContentUrl.toString(),
+             QRC.setSettings.toString(),
+            ],
 
-            ExampleEnablePresence: 
+            ExampleEnablePresence:
             [ExampleEnablePresence,
-             "This example will enable Presence Device function"],
+             "This example will enable Presence Device function",
+             ExampleEnablePresence.toString(),
+             QRC.setPresenceEnableState.toString(),
+            ],
             ExampleDisablePresence: 
             [ExampleDisablePresence,
-             "This example will disable Presence Device function"],
+             "This example will disable Presence Device function",
+             ExampleDisablePresence.toString(),
+             QRC.setPresenceEnableState.toString(),
+            ],
             ExampleGetPresencePIR: 
             [ExampleGetPresencePIR,
-             "This example will get PIR status (detected/undetected people, or unconnected/unknown) of the Presence Device index " + presenceDeviceIndex],
-            ExampleGetPresenceLight: 
+             "This example will get PIR status (detected/undetected people, or unconnected/unknown) of the Presence Device index " + presenceDeviceIndex,
+             ExampleGetPresencePIR.toString(),
+             QRC.getPresenceStatus.toString(),
+            ],
+            ExampleGetPresenceLight:
             [ExampleGetPresenceLight,
-             "This example will get Light status (red/green, or unconnected/unknown) of the Presence Device index " + presenceDeviceIndex],
-            ExampleSetPresenceLightToGreen: 
+             "This example will get Light status (red/green, or unconnected/unknown) of the Presence Device index " + presenceDeviceIndex,
+             ExampleGetPresenceLight.toString(),
+             QRC.getPresenceStatus.toString(),
+            ],
+            ExampleSetPresenceLightToGreen:
             [ExampleSetPresenceLightToGreen,
-             "This example will set Presence Device's light color (index "+ presenceDeviceIndex +") to green"],
-            ExampleSetPresenceLightToRed: 
+             "This example will set Presence Device's light color (index "+ presenceDeviceIndex +") to green",
+             ExampleSetPresenceLightToGreen.toString(),
+             QRC.setPresenceStatus.toString(),
+            ],
+            ExampleSetPresenceLightToRed:
             [ExampleSetPresenceLightToRed,
-             "This example will set Presence Device's light color (index "+ presenceDeviceIndex +") to red"],
+             "This example will set Presence Device's light color (index "+ presenceDeviceIndex +") to red",
+             ExampleSetPresenceLightToRed.toString(),
+             QRC.setPresenceStatus.toString(),
+            ],
         };
+
         var vm = this;
 
-        var isExampleBreak = false;        
+        var isExampleBreak = false;
         var wifiScanRetried = false;
         var cacheExampleData = null;
         var FnName = null;
@@ -89,6 +129,13 @@
             }
             vm.exampleCase = vm.exampleCasesArray[0];
             vm.exampleCaseDescription = ExampleCases[vm.exampleCase][1];
+            $timeout(function(){
+                var element = angular.element('#exampleCode');
+                element.html(prettyPrintOne(ExampleCases[vm.exampleCase][2]?ExampleCases[vm.exampleCase][2]:""));
+                var element2 = angular.element('#exampleQRCCode');
+                element2.html(prettyPrintOne(ExampleCases[vm.exampleCase][3]?ExampleCases[vm.exampleCase][3]:""));
+            });
+
             vm.onExampleCaseChanged = onExampleCaseChanged;
         }
 
@@ -130,7 +177,7 @@
         function ExampleDisableWifi() {
             FnName = getFnName();
             printAndAppendResult("Start Example " + FnName + "...");
-            QRC.setWifState(0).then(commonSuccessFn, commonErrorFn);
+            QRC.setWiifState(0).then(commonSuccessFn, commonErrorFn);
         }
         function ExampleChangeTimeZone() {
             FnName = getFnName();
@@ -267,6 +314,7 @@
                 vm.example_result = vm.example_result + "\n" + JSON.stringify(data.data, null, 2);
             }
         }
+
         function clearResult() {
             vm.example_result = "";
             vm.example_fail_result = "";
@@ -274,8 +322,11 @@
 
         function onExampleCaseChanged() {
             vm.exampleCaseDescription = ExampleCases[vm.exampleCase][1];
+            var element = angular.element('#exampleCode');
+            element.html(prettyPrintOne(ExampleCases[vm.exampleCase][2]?ExampleCases[vm.exampleCase][2]:""));
+            var element2 = angular.element('#exampleQRCCode');
+            element2.html(prettyPrintOne(ExampleCases[vm.exampleCase][3]?ExampleCases[vm.exampleCase][3]:""));
         }
-
         function getFnName() {
             var callerName;
             try { throw new Error(); }
@@ -286,6 +337,5 @@
             }
             return callerName;
         };
-
     }
 })();

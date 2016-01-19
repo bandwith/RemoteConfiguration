@@ -13,6 +13,8 @@
         <link rel="stylesheet" href="bower_components/angularjs-slider/dist/rzslider.min.css">
         <link rel="stylesheet" href="bower_components/angular-timezone-selector/dist/angular-timezone-selector.min.css">
 
+        <link rel="stylesheet" href="libs/google-code-prettify/prettify.css">
+
         <link rel="stylesheet" href="statics/stylesheets/qrc.css">
         <link rel="stylesheet" href="statics/stylesheets/sidebar.css">
 
@@ -33,6 +35,7 @@
         <script src="bower_components/angular-timezone-selector/dist/angular-timezone-selector.min.js"></script>
 
         <script src="libs/lrInfiniteScroll/lrInfiniteScroll.js"></script>
+        <script src="libs/google-code-prettify/prettify.js"></script>
 
         <script src="statics/javascripts/angular/qrc-center.modules.js"></script>
 
@@ -852,6 +855,12 @@ console.log(err);
                             </div>
                         </div>
                         <div ng-show="vm.exampleCaseDescription" class="alert alert-info">{{ vm.exampleCaseDescription }}</div>
+                        <div>Example code:</div>
+                        <pre class="prettyprint" id='exampleCode'></pre>
+                        <div><li>
+                            <strong>QRC</strong> is an <a href="https://angularjs.org/" target="_blank">AngularJS</a> service implemented in statics/javascripts/angular/qrc/services/qrc.service.js, following function is called by this example:
+                            </li></div>
+                        <pre class="prettyprint" id='exampleQRCCode'></pre>
                         <button ng-disabled="vm.isExampleRunning" type="submit" class="btn btn-primary pull-right">Try it!</button>
                     </form>
                 </uib-tab>
