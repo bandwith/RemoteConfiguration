@@ -116,8 +116,7 @@
                     printErrorAndBreak("Cannot get response from the HTTP request. Is target IP alive?");
                 } else {
                     printErrorAndBreak("Error of running " + FnName +
-                                       "\nMaybe your password was changed to '" +
-                                       newPassword + "'?", data);
+                                       "\nMaybe your password is incorrect?", data);
                 }
             }
         }
@@ -215,6 +214,8 @@
         function commonErrorFn(data) {
             if (data && data.status == -1) {
                 printErrorAndBreak("Cannot get response from the HTTP request. Is target IP alive?");
+            } else if (data && data.status == 401) {
+                printErrorAndBreak("Unauthorized, please make sure you run 'ExampleGetAuth2Token' in advnace, in order to get access token", data);
             } else {
                 printErrorAndBreak("Error of running " + FnName, data);
             }
