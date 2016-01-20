@@ -92,6 +92,12 @@
              ExampleSetPresenceLightToRed.toString(),
              QRC.setPresenceStatus.toString(),
             ],
+            ExampleRebootDevice:
+            [ExampleRebootDevice,
+             "This example will reboot device",
+             ExampleRebootDevice.toString(),
+             QRC.rebootDevice.toString(),
+            ],
         };
 
         var vm = this;
@@ -237,6 +243,13 @@
             FnName = getFnName();
             printAndAppendResult("Start Example " + FnName + "...");
             QRC.setPresenceStatus("light", "red", presenceDeviceIndex)
+                .then(commonSuccessFn, commonErrorFn);
+        }
+
+        function ExampleRebootDevice() {
+            FnName = getFnName();
+            printAndAppendResult("Start Example " + FnName + "...");
+            QRC.rebootDevice("", presenceDeviceIndex)
                 .then(commonSuccessFn, commonErrorFn);
         }
 

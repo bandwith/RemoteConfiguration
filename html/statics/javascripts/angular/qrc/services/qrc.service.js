@@ -54,6 +54,7 @@
             getEth0Network: getEth0Network,
             setEth0Network: setEth0Network,
 
+            rebootDevice: rebootDevice,
         };
         return QRC;
 
@@ -225,6 +226,10 @@
         function setEth0Network(ethConfig, idx) {
             var url = buildUrl("/v1/eth/0/network", idx);
             return $http.post(url, ethConfig, getConfig(idx));
+        }
+        function rebootDevice(reasonStr, idx) {
+            var url = buildUrl("/v1/reboot", idx);
+            return $http.post(url, {"reason": reasonStr}, getConfig(idx));
         }
 
 
