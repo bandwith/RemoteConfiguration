@@ -31,6 +31,7 @@
             "SettingsSmilContentUrl",
             "SettingsRebootTime",
             "SettingsRebootTimeOptimized",
+            "SettingsScreenOrientation",
             "AudioStreamMusic",
             "AudioStreamNotification",
             "AudioStreamAlarm",
@@ -659,6 +660,9 @@
                         QRC.setSettings("is_reboot_optimized", false, device.index)
                             .then(successConfigFn, errorConfigFn);
                     }
+                } else if (configKey == "SettingsScreenOrientation") {
+                    QRC.setSettings("screen_orientation", vm.configure.SettingsScreenOrientation, device.index)
+                        .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "SettingsAdbOverTcp") {
                     if (vm.configure.SettingsAdbOverTcp == "enable") {
                         QRC.setProp("persist.adb.tcp.port", 5555, device.index)
