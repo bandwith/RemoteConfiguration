@@ -699,7 +699,7 @@
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
-                    QRC.setProp("persist.sys.timezone", vm.configure[configKey], device.index)
+                    QRC.setSettings("timezone", vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "AudioStreamMusic") {
                     if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
