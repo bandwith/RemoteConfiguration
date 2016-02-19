@@ -32,6 +32,7 @@
             "SettingsRebootTime",
             "SettingsRebootTimeOptimized",
             "SettingsScreenOrientation",
+            "SettingsOtaXmlUrl",
             "AudioStreamMusic",
             "AudioStreamNotification",
             "AudioStreamAlarm",
@@ -662,6 +663,10 @@
                     }
                 } else if (configKey == "SettingsScreenOrientation") {
                     QRC.setSettings("screen_orientation", vm.configure.SettingsScreenOrientation, device.index)
+                        .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "SettingsOtaXmlUrl") {
+                    QRC.setSettings("ota_xml_url",
+                                    vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
                 } else if (configKey == "SettingsAdbOverTcp") {
                     if (vm.configure.SettingsAdbOverTcp == "enable") {

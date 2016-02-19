@@ -484,6 +484,19 @@ console.log(err);
                                             </label>
                                         </div>
                                     </div>
+                                    <div show-errors class="form-group">
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SettingsOtaXmlUrl"
+                                                   ng-change="vm.checkInitConfig('SettingsOtaXmlUrl', vm.useConfig.SettingsOtaXmlUrl)">
+                                            OTA Xml Url
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <input
+                                                   placeholder="ex, http://192.168.1.3/ota/deivcename-v9.9.9-2001_01_01.xml"
+                                                   ng-disabled="!vm.useConfig.SettingsOtaXmlUrl"
+                                                   class="form-control" ng-model="vm.configure.SettingsOtaXmlUrl" />
+                                        </div>
+                                    </div>
                                 </uib-accordion-group>
                                 <uib-accordion-group name="ethernetGroup" is-open="vm.accordion.ethernetOpen"
                                                      template-url="accordion-group.html">
