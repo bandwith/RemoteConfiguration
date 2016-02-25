@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Usb Configuration</title>
+ <script src="angular.min.js"></script>
+ <script src="jquery.min.js"></script>
+ <script>
+(function(angular) {
+  'use strict';
+angular.module('usbConfig', [])
+  .controller('UsbConfigController', ['$scope', function($scope) {
+    var exprs = $scope.exprs = [];
+    var color_black = {"color":"black"};
+    var color_red = {"color":"red"};
+    var configIdx = 0;
+    var exportConfigs = [];
+    $scope.result = {};
+    $scope.result.err = false;
+    $scope.result.btn = "";
+    $scope.result.complete = false;
+    $scope.closeForm = function() {
+        console.log("closeForm");
+        closeWindow();
+    };
+
+
+     $(document).ready(function() {
+        $.ajaxSetup({ cache: false });
+        $.getJSON('UsbConfigure.json', function(data) {
+
+        })
+        .done(readdone)
+        .fail(failConfig);
+    });
+
+    function successConfig(data) {
+        printResult("success!");
+        //printResult(data);
+        runNextConfig();
+    }
+
+    function display_count(cnt) {
+        var scope = angular.element(document.getElementById('MainControl')).scope();
+        scope.$apply(function() {
+            scope.result.btn = "(" + cnt + ")"
+        })
+    }
+
+    function closeWindow() {
+        console.log("closeWindow");
+        JavaApi.closeForm();
+    }
+
+    function countdown() {
+        var DELAY_TIME = 1000;
+        var count_sec = 10;
+        display_count(count_sec);
+        setTimeout(count_display, DELAY_TIME);
+
+        function count_display() {
+            count_sec--;
+            display_count(count_sec);
+            if(count_sec > 0) {
+                setTimeout(count_display, DELAY_TIME);
+            } else {
+                //time up!
+                closeWindow();
+            }
+        }
+    }
+
+    function configComplete() {
+        var scope = angular.element(document.getElementById('MainControl')).scope();
+        if(scope.result.err == true) {
+            printErrResult("Run configuration error, please refer to red error log");
+        } else {
+            printResult("Run configuration Complete");
+            countdown();
+        }
+        scope.$apply(function() {
+            scope.result.complete = true;
+        });
+    }
+
+    function failConfig(data) {
+        printErrResult("fail:" + JSON.stringify(data));
+        runNextConfig();
+    }
+
+    function runNextConfig() {
+        //printResult("runNextConfig");
+        configIdx++;
+        if((configIdx > 0) && (configIdx < exportConfigs.length)) {
+            setTimeout(function(){ runConfigCase(configIdx); }, 150);
+        } else if(configIdx == exportConfigs.length) {
+            configComplete();
+        }
+    }
+
+    function ajaxRequest(a_url, a_param, a_method) {
+        console.log("run " + configIdx + " " + a_url + " " + JSON.stringify(a_param) + " " + "method:" + a_method);
+        $.ajax({
+            url: a_url,
+            method: a_method,
+            dataType :"text",
+            contentType:"application/json",
+            data: JSON.stringify(a_param)
+        }
+        )
+        .done(successConfig)
+        .fail(failConfig);
+    }
+
+    function printErrResult(str) {
+        var scope = angular.element(document.getElementById('MainControl')).scope();
+        scope.$apply(function() {
+            scope.result.err = true;
+            scope.exprs.push(
+                {
+                    color:color_red,
+                    content:str
+                }
+            );
+        });
+    }
+
+    function printResult(str) {
+        var scope = angular.element(document.getElementById('MainControl')).scope();
+        scope.$apply(function() {
+            scope.exprs.push(
+                {content:str}
+            );
+        });
+    }
+
+    function getWifiStatus() {
+        var RETRY_DELAY = 1000;
+        var MAX_RETRY = 20;
+
+        $.ajax({
+            url: "http://localhost:8080/v1/wifi/state",
+            method: "GET",
+            contentType:"application/json",
+            dataType: 'json',
+        })
+        .done(success1stWifiFn)
+        .fail(failConfig)
+
+        function realConfigWifiNetwork() {
+            if(exportConfigs[configIdx].key == "WifiNetwork") {
+                printResult("wifi is enabled, try config wifi");
+                var meth = (exportConfigs[configIdx].delete == true)? "DELETE":"POST";
+                ajaxRequest(exportConfigs[configIdx].url, exportConfigs[configIdx].param, meth);
+            } else {
+                printErrResult("fail:" + "config wifi fail for Idx is incorrect");
+                runNextConfig();
+            }
+        }
+
+        function success1stWifiFn(data) {
+            printResult("success1stWifiFn:" + JSON.stringify(data));
+            if (data.value == "enabled") {
+                //Wifi is enabled and then setup wifi network
+                realConfigWifiNetwork();
+            } else {
+                //Enable Wifi
+                printResult("wifi is disable, try enable wifi first...");
+                $.ajax({
+                    url: "http://localhost:8080//v1/wifi/state",
+                    method: "POST",
+                    dataType :"text",
+                    contentType:"application/json",
+                    data: {"value": "enabled"}
+                })
+                .done(function() {
+                    printResult("enable wifi command success");
+                    retryWifi++;
+                    setTimeout(tryConfigWifiNetwork, RETRY_DELAY);
+                })
+                .fail(failConfig)
+            }
+        }
+
+        function tryConfigWifiNetwork() {
+            $.ajax({
+            url: "http://localhost:8080//v1/wifi/state",
+            method: "GET",
+            contentType:"application/json",
+            dataType: 'json',
+            })
+            .done(successWifiFn)
+            .fail(failConfig)
+
+            function successWifiFn(data) {
+                printResult("successWifiFn");
+                if (data.data.value == "enabled") {
+                    realConfigWifiNetwork();
+                } else if (retryWifi >= MAX_RETRY) {
+                    printErrResult("Get wifi status fail: over MAX_ERTRY");
+                    runNextConfig();
+                } else {
+                    retryWifi++;
+                    setTimeout(tryConfigWifiNetwork, RETRY_DELAY);
+                }
+            }
+        }
+    }
+
+    function runConfigCase() {
+        if(exportConfigs[configIdx].key == "WifiNetwork") {
+            //Get wifi state and enable it before configuration
+            printResult("Run config case:" + exportConfigs[configIdx].key);
+            getWifiStatus();
+        } else {
+            var meth = (exportConfigs[configIdx].delete == true)? "DELETE":"POST";
+            printResult("Run config case:" + exportConfigs[configIdx].key);
+            ajaxRequest(exportConfigs[configIdx].url, exportConfigs[configIdx].param, meth);
+        }
+    }
+
+    function readdone(data) {
+            console.log("readdone");
+            var num;
+            for (num in data.exportConfig) {
+                if(data.exportConfig.hasOwnProperty(num)) {
+                    exportConfigs.push(data.exportConfig[num]);
+                }
+            }
+
+            if(exportConfigs.length > 0) {
+                runConfigCase();
+            }
+
+            var scope = angular.element(document.getElementById('MainControl')).scope();
+    }
+  }]);
+})(window.angular);
+ </script>
+</head>
+<body ng-app="usbConfig">
+<div id="MainControl" ng-controller="UsbConfigController" class="expressions">
+  <h2>&nbsp;&nbsp;&nbsp;&nbsp;Usb Configuration</h2>
+  <ul>
+   <li ng-repeat="expr in exprs track by $index" ng-style="exprs[$index].color">
+     <code>{{expr.content}}</code>
+    </li>
+  </ul>
+  <div>
+    &nbsp;&nbsp;&nbsp;&nbsp;<button ng-show="(result.complete == true)" ng-click="closeForm()" style="width:80px;height:35px"><b>Close&nbsp;&nbsp;{{ result.btn }}</b></button>
+  </div>
+</div>
+</body>
+</html>

@@ -57,6 +57,7 @@
             vm.current_password = "";
             vm.configure = {};
             vm.useConfig = {};
+            vm.exportConfig = {};
 
             if (sessionStorage && sessionStorage.cacheConfigurationData) {
                 try {
@@ -101,6 +102,7 @@
             vm.checkInitConfig = checkInitConfig;
             vm.checkEthernetConfig = checkEthernetConfig;
             vm.checkInitWifiConfig = checkInitWifiConfig;
+            vm.changeExportMethod = changeExportMethod;
             vm.displayScannedDevices = [];
             vm.selectedScannedDevices = [];
             //vm.selectedFinalDevices = [];
@@ -109,6 +111,7 @@
             vm.isStartConfigureDisabled = true;
             vm.isConfiguring = 0;
             vm.isConfigClicked = false;
+            vm.startConfigString = 'Start Configuration';
 
             calSTableHeight();
 
@@ -440,23 +443,36 @@
             if (!validateConfigInput()) {
                 return;
             }
-            if (!checkReadyToConfigure()) {
+            if (!checkReadyToConfigure()&&vm.remote_or_export=='remote') {
                 printConfigureError("Unable to configure. Please select at leaset one device.");
                 return;
             }
             configTimeStart = new Date();
             initStartConfigure();
-            for (var devIdx in vm.scannedDevices) {
-                if (vm.scannedDevices[devIdx].isSelected) {
-                    selectedDevices.push(vm.scannedDevices[devIdx]);
-                    totalConfigureNum += configureCases.length;
+
+            if (vm.remote_or_export=='remote') {
+                // For remotely configure
+                for (var devIdx in vm.scannedDevices) {
+                    if (vm.scannedDevices[devIdx].isSelected) {
+                        selectedDevices.push(vm.scannedDevices[devIdx]);
+                        totalConfigureNum += configureCases.length;
+                    }
                 }
-            }
-            for (var i = 0; i < CONCURRENT_CONFIG_DEVICE + 1; i++) {
-                if (currentConfigDeviceIndex < selectedDevices.length) {
-                    tryConfigDevice(currentConfigDeviceIndex);
-                    currentConfigDeviceIndex++;
+                for (var i = 0; i < CONCURRENT_CONFIG_DEVICE + 1; i++) {
+                    if (currentConfigDeviceIndex < selectedDevices.length) {
+                        tryConfigDevice(currentConfigDeviceIndex);
+                        currentConfigDeviceIndex++;
+                    }
                 }
+            } else {
+                // For export to USB
+                //create a dummy device for export configuraiton
+                var result = {model_id:'LocalDev',player_name:'configBot', serial_number:'123'};
+                result.ip = 'localhost';
+                result.index = 0;
+                selectedDevices.push(result);
+                totalConfigureNum += configureCases.length;
+                tryConfigDevice(currentConfigDeviceIndex);
             }
         }
 
@@ -475,7 +491,7 @@
 
                 runConfigureCase(0, selectedDevices[devIdx]);
 
-            }            
+            }
         }
 
         function initStartConfigure() {
@@ -531,6 +547,7 @@
             if (configForm.$valid) {
                 return true;
             }
+
             $scope.$broadcast('show-errors-check-validity');
             //openAllConfigAccordion(true);
             //printConfigureError("Following input is invalid.");
@@ -581,17 +598,55 @@
             }
 
             if (configKey == "GetToken") {
-                isRemoteRequest = true;
-                if (!isSimulate) {
+                if (!isSimulate && vm.remote_or_export=='remote') {
+                    isRemoteRequest = true;
                     QRC.setTargetIpAddress(device.ip, device.index);
                     QRC.getToken(vm.current_password, device.index)
                         .then(successGetTokenFn, errorConfigFn);
+                } else {
+                    QRC.setTargetIpAddress(device.ip, device.index);
+                    readyForNextConfig(device, caseIdx, true);
                 }
             } else if (configKey == "DoneConfig") {
-                if (!isSimulate) {
+                if (!isSimulate ) {
                     //for (var k = 0; k < 1000000000; k++) {var c = 0;}
-                    printAndAppendConfigureResult("Done Config device " +
-                                                  deviceToString(device));
+                    if(vm.remote_or_export=='remote') {
+                        printAndAppendConfigureResult("Done Config device " +
+                              deviceToString(device));
+                    } else {
+                        //Finish log the export config
+                        var zip = new JSZip();
+                        console.log("show str2:" + JSON.stringify(vm.exportConfig));
+                        var outJson =
+                            {
+                                configure: vm.configure,
+                                useConfig: vm.useConfig,
+                                exportConfig: vm.exportConfig
+                            };
+
+                        zip.file("UsbConfigure.json", JSON.stringify(outJson));
+                        $.when(
+                            $.get("usbconf.html", function(result){
+                                zip.file("usbconf.html", result);
+                            }),
+                            $.get("bower_components/jquery/dist/jquery.min.js", function(result){
+                                zip.file("jquery.min.js", result);
+                            }),
+                            $.get("bower_components/angular/angular.min.js", function(result){
+                                zip.file("angular.min.js", result);
+                            })
+                        ).then(function() {
+                            var content = zip.generate({type:"blob"});
+                            saveAs(content, "usbconf.zip");}
+                            , function() {
+                                var a = document.createElement('a');
+                                a.href = 'data:attachment/json,' + JSON.stringify(outJson);
+                                a.target      = '_blank';
+                                a.download    = 'UsbConfigure.json';
+                                a.click();}
+                        );
+                    }
+
                     device.isConfigComplete = true;
                     if (device.isConfigFailed) {
                         consoel.error("What?!");
@@ -600,7 +655,9 @@
                     $timeout(configOneMoreDevice, 100);
                 }
             } else if (vm.useConfig[configKey]) {
-                isRemoteRequest = true;
+                if(vm.remote_or_export=='remote') {
+                    isRemoteRequest = true;
+                }
                 if (!isSimulate) {
                     runConfigureByKey(configKey, caseIdx, device, isSimulate);
                 }
@@ -629,17 +686,38 @@
                 var MAX_RETRY = 20;
                 var RETRY_DELAY = 1000; //we give it 20 (20 * 1000ms) sec to retry wifi network setup
                 if (configKey == "SettingsPlayerName") {
-                    QRC.setSettings("player_name",
-                                    vm.configure[configKey], device.index)
-                        .then(successConfigFn, errorConfigFn);
+                    if (vm.remote_or_export=='remote') {
+                        QRC.setSettings("player_name",
+                        vm.configure[configKey], device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/player_name", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {key:configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "SettingsNtpServer") {
-                    QRC.setSettings("ntp_server",
-                                    vm.configure[configKey], device.index)
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("ntp_server",
+                        vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/ntp_server", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {key:configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "SettingsSmilContentUrl") {
-                    QRC.setSettings("smil_content_url",
-                                    vm.configure[configKey], device.index)
-                        .then(successConfigFn, errorConfigFn);
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("smil_content_url",
+                                        vm.configure[configKey], device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/smil_content_url", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "SettingsRebootTime") {
                     var timeObj = vm.configure[configKey];
                     if (!timeObj) {
@@ -651,44 +729,96 @@
                     var minute = timeObj.getMinutes();
                     minute = minute>10?minute:("0"+minute);
                     var timeStr = hour + ":" + minute;
-                    QRC.setSettings("reboot_time", timeStr, device.index)
-                        .then(successConfigFn, errorConfigFn);
-                } else if (configKey == "SettingsRebootTimeOptimized") {
-                    if (vm.configure.SettingsRebootTimeOptimized == "enable") {
-                        QRC.setSettings("is_reboot_optimized", true, device.index)
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("reboot_time", timeStr, device.index)
                             .then(successConfigFn, errorConfigFn);
                     } else {
-                        QRC.setSettings("is_reboot_optimized", false, device.index)
-                            .then(successConfigFn, errorConfigFn);
+                        var url = QRC.buildUrl("/v1/settings/reboot_time", device.index);
+                        var param = {"value": timeStr};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsRebootTimeOptimized") {
+                    var rebootOpt;
+                    if (vm.configure.SettingsRebootTimeOptimized == "enable") {
+                        rebootOpt = true;
+                    } else {
+                        rebootOpt = false;
+                    }
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("is_reboot_optimized", rebootOpt, device.index)
+                        .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/reboot_time", device.index);
+                        var param = {"value": rebootOpt};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "SettingsScreenOrientation") {
-                    QRC.setSettings("screen_orientation", vm.configure.SettingsScreenOrientation, device.index)
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("screen_orientation", vm.configure.SettingsScreenOrientation, device.index)
                         .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/screen_orientation", device.index);
+                        var param = {"value": vm.configure.SettingsScreenOrientation};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "SettingsOtaXmlUrl") {
-                    QRC.setSettings("ota_xml_url",
-                                    vm.configure[configKey], device.index)
-                        .then(successConfigFn, errorConfigFn);
-                } else if (configKey == "SettingsAdbOverTcp") {
-                    if (vm.configure.SettingsAdbOverTcp == "enable") {
-                        QRC.setProp("persist.adb.tcp.port", 5555, device.index)
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("ota_xml_url",
+                                        vm.configure[configKey], device.index)
                             .then(successConfigFn, errorConfigFn);
                     } else {
-                        QRC.setProp("persist.adb.tcp.port", -1, device.index)
-                            .then(successConfigFn, errorConfigFn);
+                        var url = QRC.buildUrl("/v1/settings/ota_xml_url", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsAdbOverTcp") {
+                    var port;
+                    if (vm.configure.SettingsAdbOverTcp == "enable") {
+                        port = 5555;
+                    } else {
+                        port = -1;
+                    }
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setProp("persist.adb.tcp.port", port, device.index)
+                        .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/prop/persist.adb.tcp.port", device.index);
+                        var param = {"value": port};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
                     }
                     vm.useConfig.TmpDisableAdb = true;
                     vm.useConfig.SettingsAdbEnabled = true;
                 } else if (configKey == "TmpDisableAdb") {
                     delete vm.useConfig["TmpDisableAdb"];
-                    QRC.setSettings("adb_enabled", false, device.index)
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("adb_enabled", false, device.index)
                         .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/adb_enabled", device.index);
+                        var param = {"value": false};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "SettingsAdbEnabled") {
+                    var enable;
                     if (vm.configure.SettingsAdbEnabled == "enable") {
-                        QRC.setSettings("adb_enabled", true, device.index)
+                        enable = true;
+                    } else {
+                        enable = false;
+                    }
+                    if(vm.remote_or_export=='remote') {
+                         QRC.setSettings("adb_enabled", enable, device.index)
                             .then(successConfigFn, errorConfigFn);
                     } else {
-                        QRC.setSettings("adb_enabled", false, device.index)
-                            .then(successConfigFn, errorConfigFn);
+                        var url = QRC.buildUrl("/v1/settings/adb_enabled", device.index);
+                        var param = {"value": enable};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "SecurityPasswordEnabled") {
                     if (vm.configure.SecurityPasswordEnabled == "enable") {
@@ -696,83 +826,167 @@
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     } else {
-                        QRC.deleteSecurityPassword(device.index)
+                        if(vm.remote_or_export=='remote') {
+                            QRC.deleteSecurityPassword(device.index)
                             .then(successConfigFn, errorConfigFn);
+                        } else {
+                            var url = QRC.buildUrl("/v1/user/password", device.index);
+                            vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "delete":true};
+                            readyForNextConfig(device, caseIdx, true);
+                        }
                     }
                 } else if (configKey == "SecurityPassword") {
-                    QRC.setSecurityPassword(
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSecurityPassword(
                         vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/user/password", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "Timezone") {
                     if (!vm.configure[configKey]) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
-                    QRC.setSettings("timezone", vm.configure[configKey], device.index)
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("timezone", vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/timezone", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+
                 } else if (configKey == "AudioStreamMusic") {
                     if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
-                    QRC.setAudioVolume(
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setAudioVolume(
                         "stream_music", vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/audio/volume/stream_music", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "AudioStreamNotification") {
                     if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
-                    QRC.setAudioVolume(
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setAudioVolume(
                         "stream_notification", vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/audio/volume/stream_notification", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "AudioStreamAlarm") {
                     if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
-                    QRC.setAudioVolume(
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setAudioVolume(
                         "stream_alarm", vm.configure[configKey], device.index)
                         .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/audio/volume/stream_alarm", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "EthernetState") {
+                    var state;
                     if (vm.configure.EthernetState == "enable") {
-                        QRC.setEth0State(1, device.index)
+                        state = 1;
+                    } else {
+                        state = 0;
+                    }
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setEth0State(state, device.index)
                             .then(successConfigFn, errorConfigFn);
                     } else {
-                        QRC.setEth0State(0, device.index)
-                            .then(successConfigFn, errorConfigFn);
+                        var stateStr = (state != 0)? "enabled" : "disabled";
+                        var url = QRC.buildUrl("/v1/eth/0/state", device.index);
+                        var param = {"value": stateStr};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "EthernetNetwork") {
                     if (vm.configure.EthernetNetwork.hasOwnProperty("ip_assignment")) {
-
                         if (vm.configure.EthernetNetwork.ip_assignment == "dhcp") {
                             var ethConfig = {ip_assignment: "dhcp"};
-                            QRC.setEth0Network(ethConfig, device.index)
+                            if(vm.remote_or_export=='remote') {
+                                QRC.setEth0Network(ethConfig, device.index)
                                 .then(successConfigFn, errorConfigFn);
+                            } else {
+                                var url = QRC.buildUrl("/v1/eth/0/network", device.index);
+                                vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":ethConfig};
+                                readyForNextConfig(device, caseIdx, true);
+                            }
                         } else if (vm.configure.EthernetNetwork.ip_assignment == "static") {
                             vm.configure.EthernetNetwork.network_prefix_length =
                                 netMaskToPrefixLength(vm.configure.EthernetNetwork.netMask);
-                            QRC.setEth0Network(vm.configure.EthernetNetwork, device.index)
+                            if(vm.remote_or_export=='remote') {
+                                QRC.setEth0Network(vm.configure.EthernetNetwork, device.index)
                                 .then(successConfigFn, errorConfigFn);
+                            } else {
+                                var url = QRC.buildUrl("/v1/eth/0/network", device.index);
+                                vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":vm.configure.EthernetNetwork};
+                                readyForNextConfig(device, caseIdx, true);
+                            }
                         }
                     } else {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
                 } else if (configKey == "WifiState") {
+                    var wifistate;
                     if (vm.configure.WifiState == "enable") {
-                        QRC.setWifiState(1, device.index)
+                        wifistate = 1;
+                    } else {
+                        wifistate = 0;
+                    }
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setWifiState(wifistate, device.index)
                             .then(successConfigFn, errorConfigFn);
                     } else {
-                        QRC.setWifiState(0, device.index)
-                            .then(successConfigFn, errorConfigFn);
+                        var stateStr = (state != 0)? "enabled" : "disabled";
+                        var url = QRC.buildUrl("/v1/wifi/state", device.index);
+                        var param = {"value": stateStr};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "WifiNetwork") {
                     // Make sure wifi is enabled before config it,
                     // otherwise configuration will not take effect.
-
-                    QRC.getWifiState(device.index).then(success1stWifiFn, errorConfigFn);
-
+                    if(vm.remote_or_export=='remote') {
+                        QRC.getWifiState(device.index).then(success1stWifiFn, errorConfigFn);
+                    } else {
+                        if (vm.configure.WifiNetwork.hasOwnProperty("advanced")) {
+                            if (vm.configure.WifiNetwork.advanced.hasOwnProperty("ip_assignment") &&
+                                vm.configure.WifiNetwork.advanced.ip_assignment == "static") {
+                                vm.configure.WifiNetwork.advanced.network_prefix_length =
+                                    netMaskToPrefixLength(vm.configure.WifiNetwork.advanced.netMask);
+                            }
+                            // TODO: Set proxy
+                            var url = QRC.buildUrl("/v1/wifi/network", device.index);
+                            var param = vm.configure.WifiNetwork;
+                            vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                            readyForNextConfig(device, caseIdx, true);
+                        }
+                    }
                 } else {
                     printConfigureError("Un-recognized configKey:" + configKey);
                     readyForNextConfig(device, caseIdx, false);
@@ -906,14 +1120,14 @@
             vm.deviceConfigureResult = "";
             vm.deviceConfigureFailResult = "";
         }
-        // ---------- End of For Configure Tab ---------- 
+        // ---------- End of For Configure Tab ----------
 
 
-        // ---------- Utils ---------- 
+        // ---------- Utils ----------
 
 
         function deviceToString(device) {
-            return device.ip + " " + 
+            return device.ip + " " +
                 device.model_id + " (" +
                 device.player_name + ") " +
                 device.serial_number;
@@ -981,8 +1195,8 @@
                     if (!ValidateIPaddress(newAddr)) return;
                     if (newAddr in addrs) return;
                     else addrs[newAddr] = true;
-                    var displayAddrs = Object.keys(addrs).filter(function (k) { 
-                        return addrs[k]; 
+                    var displayAddrs = Object.keys(addrs).filter(function (k) {
+                        return addrs[k];
                     });
                     $timeout.cancel(timeoutHandler);
                     timeoutHandler = $timeout(function(addrs) {getIpFn(addrs);}, 1000, true, displayAddrs);
@@ -1080,6 +1294,16 @@
                     delete vm.configure['WifiNetwork'];
                 }
             }
+        }
+        function changeExportMethod() {
+            if (vm.remote_or_export=='remote') {
+                vm.startConfigString = 'Start Configuration';
+                vm.current_password = "";
+            } else {
+                vm.startConfigString = 'Export for USB';
+                vm.current_password = "12345678";
+            }
+            console.log("changeExportMethod:" + vm.remote_or_export);
         }
         function watchScannedDevices() {
             $scope.$watch(

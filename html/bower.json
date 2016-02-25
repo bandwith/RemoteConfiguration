@@ -11,9 +11,10 @@
     "angular-block-ui": "~0.2.2",
     "angular-animate": "~1.4.8",
     "angularjs-slider": "~2.4.0",
-    "angular-timezone-selector": "1.4.3"
+    "angular-timezone-selector": "1.4.3",
+    "jszip": "~2.5.0"
   },
   "resolutions": {
-      "angular": "1.4.8"
+    "angular": "1.4.8"
   }
 }

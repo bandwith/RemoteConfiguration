@@ -25,12 +25,6 @@
             controllerAs: 'vm',
             templateUrl: 'configuration.html',
             activeTab: 'login'
-
-        }).when('/single_dev/', {
-            controller: 'SingleDevController',
-            controllerAs: 'vm',
-            templateUrl: 'sub_pages/single_dev.html',
-            activeTab: 'login'
         }).when('/', {
             controller: 'MainController',
             controllerAs: 'vm',

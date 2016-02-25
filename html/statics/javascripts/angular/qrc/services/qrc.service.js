@@ -53,7 +53,8 @@
             setEth0State: setEth0State,
             getEth0Network: getEth0Network,
             setEth0Network: setEth0Network,
-
+            buildUrl: buildUrl,
+            postConfig: postConfig,
             rebootDevice: rebootDevice,
         };
         return QRC;
@@ -111,6 +112,10 @@
                 "value": value}, getConfig(idx));
         }
 
+        function postConfig(url, param, idx) {
+            console.log("url:" + url + " param:" + JSON.stringify(param));
+            return $http.post(url, param, getConfig(idx));
+        }
 
         function getSettings(key, idx) {
             var url = buildUrl("/v1/settings/" + key, idx);
@@ -232,9 +237,6 @@
             return $http.post(url, {"reason": reasonStr}, getConfig(idx));
         }
 
-
-        // ------------------------------- Internal functions
-
         function buildUrl(path, idx) {
             var url = "";
             if (!idx) idx = 0;
@@ -245,6 +247,8 @@
             }
             return url;
         }
+
+        // ------------------------------- Internal functions
 
         function getConfig(idx, noAuth, timeout) {
             var config = {};
