@@ -48,6 +48,8 @@
             setPresenceEnableState: setPresenceEnableState,
             getPresenceStatus: getPresenceStatus,
             setPresenceStatus: setPresenceStatus,
+            getPresenceGearing: getPresenceGearing,
+            setPresenceGearing: setPresenceGearing,
 
             getEth0State: getEth0State,
             setEth0State: setEth0State,
@@ -208,6 +210,18 @@
         }
 
         function setPresenceStatus(type, value, index, idx) {
+            var url = buildUrl("/v1/presence/status/" + index, idx);
+            var obj = {};
+            obj[type] = value;
+            return $http.post(url, obj, getConfig(idx, false, 60000));
+        }
+
+        function getPresenceGearing(type, index, idx) {
+            var url = buildUrl("/v1/presence/status/" + index + "/" + type, idx);
+            return $http.get(url, getConfig(idx, false, 60000));
+        }
+
+        function setPresenceGearing(type, value, index, idx) {
             var url = buildUrl("/v1/presence/status/" + index, idx);
             var obj = {};
             obj[type] = value;

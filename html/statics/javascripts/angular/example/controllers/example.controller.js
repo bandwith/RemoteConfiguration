@@ -92,6 +92,18 @@
              ExampleSetPresenceLightToRed.toString(),
              QRC.setPresenceStatus.toString(),
             ],
+            ExampleGetPresenceLightGearing:
+            [ExampleGetPresenceLightGearing,
+             "This example will get Light gearing status (enable/disable, or unknown) of the Presence Device index " + presenceDeviceIndex,
+             ExampleGetPresenceLightGearing.toString(),
+             QRC.getPresenceGearing.toString(),
+            ],
+            ExampleSetPresenceLightGearing:
+            [ExampleSetPresenceLightGearing,
+             "This example will set Presence Device's light color (index "+ presenceDeviceIndex +") according to PIR status",
+             ExampleSetPresenceLightGearing.toString(),
+             QRC.setPresenceGearing.toString(),
+            ],
             ExampleRebootDevice:
             [ExampleRebootDevice,
              "This example will reboot device",
@@ -243,6 +255,20 @@
             FnName = getFnName();
             printAndAppendResult("Start Example " + FnName + "...");
             QRC.setPresenceStatus("light", "red", presenceDeviceIndex)
+                .then(commonSuccessFn, commonErrorFn);
+        }
+
+        function ExampleGetPresenceLightGearing() {
+            FnName = getFnName();
+            printAndAppendResult("Start Example " + FnName + "...");
+            QRC.getPresenceGearing("gearing", presenceDeviceIndex)
+                .then(commonSuccessFn, commonErrorFn);
+        }
+
+        function ExampleSetPresenceLightGearing() {
+            FnName = getFnName();
+            printAndAppendResult("Start Example " + FnName + "...");
+            QRC.setPresenceGearing("gearing", "enable", presenceDeviceIndex)
                 .then(commonSuccessFn, commonErrorFn);
         }
 
