@@ -27,12 +27,30 @@ angular.module('usbConfig', [])
 
      $(document).ready(function() {
         $.ajaxSetup({ cache: false });
-        $.getJSON('UsbConfigure.json', function(data) {
-
-        })
-        .done(readdone)
-        .fail(failConfig);
+        var dat = getParameterByName('json');
+        if(isEmpty(dat)) {
+            $.getJSON('UsbConfigure.json', function(data) {
+            })
+                .done(readdone)
+                .fail(failConfig);
+        } else {
+            readdone(JSON.parse(dat));
+        }
     });
+
+    function isEmpty(str) {
+        return (!str || 0 === str.length);
+    }
+
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
 
     function successConfig(data) {
         printResult("success!");

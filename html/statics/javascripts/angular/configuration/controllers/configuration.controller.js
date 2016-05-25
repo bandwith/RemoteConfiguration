@@ -27,6 +27,7 @@
         var configureCases = [
             "GetToken",
             "SettingsPlayerName",
+            "SettingsPlayGroup",
             "SettingsNtpServer",
             "SettingsSmilContentUrl",
             "SettingsRebootTime",
@@ -696,7 +697,20 @@
                         vm.exportConfig[caseIdx] = {key:configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
                     }
-                } else if (configKey == "SettingsNtpServer") {
+                }
+                else if (configKey == "SettingsPlayGroup") {
+                    if (vm.remote_or_export=='remote') {
+                        QRC.setSettings("play_group",
+                        vm.configure[configKey], device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/play_group", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {key:configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                }
+                else if (configKey == "SettingsNtpServer") {
                     if(vm.remote_or_export=='remote') {
                         QRC.setSettings("ntp_server",
                         vm.configure[configKey], device.index)

@@ -309,6 +309,19 @@ console.log(err);
 
                                     </div>
                                     <div show-errors class="form-group">
+
+                                        <label class="col-xs-3 control-label-left">
+                                            <input type="checkbox" ng-model="vm.useConfig.SettingsPlayGroup"
+                                                   ng-change="vm.checkInitConfig('SettingsPlayGroup', vm.useConfig.SettingsPlayGroup)">
+                                            Player Group
+                                        </label>
+                                        <div class="col-xs-9">
+                                            <input ng-disabled="!vm.useConfig.SettingsPlayGroup"
+                                                   class="form-control" ng-model="vm.configure.SettingsPlayGroup" />
+                                        </div>
+
+                                    </div>
+                                    <div show-errors class="form-group">
                                         <label class="col-xs-3 control-label-left">
                                             <input type="checkbox" ng-model="vm.useConfig.SecurityPasswordEnabled"
                                                    ng-change="vm.checkInitConfig('SecurityPasswordEnabled', vm.useConfig.SecurityPasswordEnabled, 'enable');vm.deleteConfig('SecurityPassword');vm.useConfig.SecurityPassword=false">
