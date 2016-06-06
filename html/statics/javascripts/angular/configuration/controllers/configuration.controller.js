@@ -126,6 +126,7 @@
             vm.checkLastResults = checkLastResults;
             vm.onRemoveClick = onRemoveClick;
             vm.onRemoveAllClick = onRemoveAllClick;
+            vm.saveScannedResult = saveScannedResult;
             vm.lastScannedSerialNum = {};
             vm.localStorageName = 'lastResults';
             vm.hasLastScannedResults = false;
@@ -141,7 +142,8 @@
                                 dev.status = 'offline';
                                 vm.scannedDevices.push(dev);
                             }
-                            vm.lastScannedSerialNum = storage.lastScannedSerialNum;
+                            vm.ipCandidates = (storage.ipCandidates||[])
+                            vm.lastScannedSerialNum = (storage.lastScannedSerialNum||{});
                             vm.hasLastScannedResults = true;
                         }
                     }
@@ -193,7 +195,7 @@
             var responseNum = 0;
             var timeCost = 0;
             var NUM_IN_ROUND = 255;//50;
-            var SCAN_TIMEOUT = 5000;//30000;
+            var SCAN_TIMEOUT = 1000;//30000;
             var RETRY_TIMES = 3;
             var DELAY_PER_ROUND_MS = SCAN_TIMEOUT;//2500;
             var j = 0;
@@ -314,6 +316,9 @@
                         if (targetIP in scannedIPs) continue;
                         scannedIPs[targetIP] = 0;
 
+                        var dev = getDeviceByIp(targetIP);
+                        if (dev) dev.status = 'processing';
+
                         var req = $timeout(function(scanIp) {
                             var caller = $q.defer();
 
@@ -407,6 +412,11 @@
                 vm.isNextShow = true;
             }
 
+            for (var i=vm.scannedDevices.length-1; 0<=i; i--) {
+                var dev = vm.scannedDevices[i];
+                if (dev.status !== 'online') dev.status = 'offline';
+            }
+
             printAndAppendScanResult("Stop Scaning.");
             saveScannedResult();
         }
@@ -423,13 +433,17 @@
             scanRequestsTimer = [];
             scanRequestCaller = [];
 
-            for (var serial_number in vm.lastScannedSerialNum) {
-                vm.scannedDevices[vm.lastScannedSerialNum[serial_number]].status = 'processing';
-            }
-
             vm.isStartConfigureDisabled = true;
             calSTableHeight();
             clearScanResult();
+        }
+
+        function getDeviceByIp(ip) {
+            for (var i=vm.scannedDevices.length-1; 0<=i; i--) {
+                var dev = vm.scannedDevices[i];
+                if (dev.ip === ip) return dev;
+            }
+            return null;
         }
 
         function appendScannedDevice(data, ipAddress) {
@@ -461,6 +475,7 @@
 
         function saveScannedResult() {
             var items = {
+                    ipCandidates: vm.ipCandidates,
                     scannedDevices: vm.scannedDevices,
                     lastScannedSerialNum: vm.lastScannedSerialNum
                 },
@@ -1407,18 +1422,20 @@
         }
 
         function onGetIp(addrs) {
-            if (!addrs || addrs.length == 0) {
-                vm.ipCandidates.push({});
-            } else {
-                var tmpRange = Object.create(null);
-                for (var i = 0; i< addrs.length; i++) {
-                    var range_start = addrs[i].replace(/\.[\d]+$/, '.1');
-                    var range_end = addrs[i].replace(/\.[\d]+$/, '.254');
-                    if (range_start in tmpRange) {
-                        continue;
+            if (vm.ipCandidates.length == 0) {
+                if (!addrs || addrs.length == 0) {
+                    vm.ipCandidates.push({});
+                } else {
+                    var tmpRange = Object.create(null);
+                    for (var i = 0; i< addrs.length; i++) {
+                        var range_start = addrs[i].replace(/\.[\d]+$/, '.1');
+                        var range_end = addrs[i].replace(/\.[\d]+$/, '.254');
+                        if (range_start in tmpRange) {
+                            continue;
+                        }
+                        tmpRange[range_start] = true;
+                        vm.ipCandidates.push({range_start:range_start, range_end:range_end, index:RangeIpIndex++});
                     }
-                    tmpRange[range_start] = true;
-                    vm.ipCandidates.push({range_start:range_start, range_end:range_end, index:RangeIpIndex++});
                 }
             }
             vm.isScanDisabled = false;

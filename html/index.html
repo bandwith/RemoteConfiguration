@@ -148,6 +148,7 @@ console.log(err);
                         <label class="control-label" for="configurate__ip_start"></label>
                         <input class="form-control" name="configurate__ip_start"
                                placeholder="192.168.0.1"
+                               ng-change="vm.saveScannedResult();"
                                ng-pattern="vm.ipPattern"
                                ng-required="true" ng-model="item.range_start" />
                     </div>
@@ -155,6 +156,7 @@ console.log(err);
                         <label class="control-label" for="configurate__ip_end"> ~ </label>
                         <input class="form-control" name="configurate__ip_end"
                                placeholder="192.168.0.254"
+                               ng-change="vm.saveScannedResult();"
                                ng-pattern="vm.ipPattern"
                                ng-required="true" ng-model="item.range_end" />
                     </div>
