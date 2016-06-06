@@ -140,6 +140,7 @@
                             for (var i in storage.scannedDevices) {
                                 var dev = storage.scannedDevices[i];
                                 dev.status = 'offline';
+                                dev.isSelected = false;
                                 vm.scannedDevices.push(dev);
                             }
                             vm.ipCandidates = (storage.ipCandidates||[])
@@ -585,6 +586,8 @@
                 row.isSelected = true;
             }
 
+console.log(row.ip+': '+row.isSelected)
+
             //vm.displayScannedDevices[row.index].isSelected = row.isSelected;
             vm.scannedDevices[row.index].isSelected = row.isSelected;
             if (row.isSelected) {
@@ -624,6 +627,7 @@
             if (!validateConfigInput()) {
                 return;
             }
+
             if (!checkReadyToConfigure()&&vm.remote_or_export=='remote') {
                 printConfigureError("Unable to configure. Please select at leaset one device.");
                 return;
@@ -754,18 +758,14 @@
         }
 
         function checkReadyToConfigure() {
-            var selectedNum = 0;
+            var status = false;
             for (var i in vm.scannedDevices) {
                 if (vm.scannedDevices[i].isSelected) {
-                    ++selectedNum;
+                    status = true;
+                    break;
                 }
             }
-            vm.isStartConfigureDisabled = (selectedNum===0);
-            if (selectedNum === 1) {
-                clearInput();
-                
-                // get all settings
-            }
+            vm.isStartConfigureDisabled = !status;
             return status;
         }
 
