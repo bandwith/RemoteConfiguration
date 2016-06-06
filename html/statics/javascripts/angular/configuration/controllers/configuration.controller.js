@@ -129,32 +129,29 @@
             vm.onRemoveAllClick = onRemoveAllClick;
             vm.saveScannedResult = saveScannedResult;
             vm.lastScannedSerialNum = {};
-            vm.localStorageName = 'lastResults';
+            //vm.localStorageName = 'lastResults';
             vm.hasLastScannedResults = false;
             vm.firstCome = true;
-            if ('undefined' !== typeof Storage) {
-                var storage = localStorage.getItem(vm.localStorageName);
-                if (storage) {
-                    try {
-                        storage = JSON.parse(storage);
-                        if (storage.scannedDevices && storage.lastScannedSerialNum) {
-                            for (var i in storage.scannedDevices) {
-                                var dev = storage.scannedDevices[i];
-                                dev.status = 'offline';
-                                dev.isSelected = false;
-                                vm.scannedDevices.push(dev);
-                            }
-                            vm.ipCandidates = (storage.ipCandidates||[])
-                            vm.lastScannedSerialNum = (storage.lastScannedSerialNum||{});
-                            vm.hasLastScannedResults = true;
+
+            if (sessionStorage && sessionStorage.cacheScannedData) {
+                var scannedData = {};
+                try {
+                    scannedData = angular.fromJson(sessionStorage.cacheScannedData);
+                    if (scannedData.scannedDevices && scannedData.lastScannedSerialNum) {
+                        for (var i in scannedData.scannedDevices) {
+                            var dev = scannedData.scannedDevices[i];
+                            dev.status = 'offline';
+                            dev.isSelected = false;
+                            vm.scannedDevices.push(dev);
                         }
+                        vm.ipCandidates = (scannedData.ipCandidates||[])
+                        vm.lastScannedSerialNum = (scannedData.lastScannedSerialNum||{});
+                        vm.hasLastScannedResults = true;
                     }
-                    catch (e) {
-                    }
+                } catch (err) {
+                    console.warn("unable to read sessionStorage, clear cacehData.");
+                    sessionStorage.removeItem('cacheScannedData');
                 }
-            }
-            else {
-                console.warn('No web storage support.');
             }
 
             calSTableHeight();
@@ -506,15 +503,11 @@
         }
 
         function saveScannedResult() {
-            var items = {
-                    ipCandidates: vm.ipCandidates,
-                    scannedDevices: vm.scannedDevices,
-                    lastScannedSerialNum: vm.lastScannedSerialNum
-                },
-                json = '{}';
-            try { json = JSON.stringify(items); }
-            catch (e) {}
-            localStorage.setItem(vm.localStorageName, json);
+            sessionStorage.cacheScannedData = angular.toJson({
+                ipCandidates: vm.ipCandidates,
+                scannedDevices: vm.scannedDevices,
+                lastScannedSerialNum: vm.lastScannedSerialNum
+            });
         }
 
         function onRemoveClick(row) {
@@ -629,8 +622,7 @@
         function onSTableAllChecked() {
             var selected = vm.STableSelectAllDevices;
             for (var i in vm.scannedDevices) {
-                //vm.displayScannedDevices[i].isSelected = selected;
-                vm.scannedDevices[vm.displayScannedDevices[i].index].isSelected = selected;
+                vm.scannedDevices[i].isSelected = selected;
             }
             checkReadyToConfigure();
         }
