@@ -622,7 +622,9 @@
         function onSTableAllChecked() {
             var selected = vm.STableSelectAllDevices;
             for (var i in vm.scannedDevices) {
-                vm.scannedDevices[i].isSelected = selected;
+                var dev = vm.scannedDevices[i];
+                if (dev.status !== 'online') continue;
+                dev.isSelected = selected;
             }
             checkReadyToConfigure();
         }
