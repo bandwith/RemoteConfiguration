@@ -559,7 +559,11 @@
         }
 
         function onSTableClick(row) {
-            if (row.status !== 'online') return;
+            if (row.status !== 'online') {
+                row.isSelected = false;
+                return;
+            }
+
             if (row.isSelected) {
                 row.isSelected = false;
             } else {
