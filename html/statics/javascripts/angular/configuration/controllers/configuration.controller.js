@@ -123,6 +123,7 @@
             vm.startConfigString = 'Start Configuration';
 
             vm.countStatus = countStatus;
+            vm.scanDevice = scanDevice;
             vm.checkLastResults = checkLastResults;
             vm.onRemoveClick = onRemoveClick;
             vm.onRemoveAllClick = onRemoveAllClick;
@@ -167,6 +168,11 @@
             watchSliders();
         }
 
+        var NUM_IN_ROUND = 255;//50;
+        var SCAN_TIMEOUT = 1000;//30000;
+        var RETRY_TIMES = 3;
+        var DELAY_PER_ROUND_MS = SCAN_TIMEOUT;//2500;
+
         function checkLastResults() {
             if (vm.hasLastScannedResults && vm.firstCome) {
                 vm.startScan(vm.scannedDevices.map(function(dev) {
@@ -195,10 +201,6 @@
             var requestNum = 0;
             var responseNum = 0;
             var timeCost = 0;
-            var NUM_IN_ROUND = 255;//50;
-            var SCAN_TIMEOUT = 1000;//30000;
-            var RETRY_TIMES = 3;
-            var DELAY_PER_ROUND_MS = SCAN_TIMEOUT;//2500;
             var j = 0;
 
             //var round = 0;
@@ -447,6 +449,35 @@
             return null;
         }
 
+        function scanDevice(row) {
+            var key = 'abcde';
+            var myHashCode = QRC.getHashCode(key);
+            row.status = 'processing';
+            $timeout(function(scanIp) {
+                var caller = $q.defer();
+
+                $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
+                    {timeout: caller.promise}).then(function(data) {
+                        if (data && data.data && data.data.results &&
+                            data.data.results.hash_code == myHashCode) {
+                            var parser = document.createElement('a');
+                            parser.href = data.config.url;
+
+                            appendScannedDevice(data, parser.hostname);
+                            printAndAppendScanResult("Found Target IP: " + parser.hostname + ", keep scanning..");
+
+                            vm.scannedDevices[vm.lastScannedSerialNum[data.data.results.serial_number]].status = 'online';
+                        }
+                    }, function(data) {
+                        vm.scannedDevices.forEach(function(dev) {
+                            if (dev.ip != scanIp) return;
+                            dev.status = 'offline';
+                        });
+                    });
+                $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
+            }, 0, true, row.ip);
+        }
+
         function appendScannedDevice(data, ipAddress) {
             var result = data.data.results;
             var serial_number = result.serial_number;
@@ -585,8 +616,6 @@
             } else {
                 row.isSelected = true;
             }
-
-console.log(row.ip+': '+row.isSelected)
 
             //vm.displayScannedDevices[row.index].isSelected = row.isSelected;
             vm.scannedDevices[row.index].isSelected = row.isSelected;

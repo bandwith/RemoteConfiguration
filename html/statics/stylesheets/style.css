@@ -6,6 +6,7 @@
 .device-row:not([status="online"]) td:not(.device-highlight) {
     opacity: 0.25;
 }
+.device-row[status="processing"] .device-refresh,
 .device-row[status="processing"] .device-remove {
     display: none;
 }
@@ -25,5 +26,8 @@
 }
 .device-row .device-remove {
     color: #c66;
+    cursor: pointer;
+}
+.device-row .device-refresh {
     cursor: pointer;
 }
