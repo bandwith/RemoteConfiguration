@@ -1,0 +1,29 @@
+*[ng-show="vm.deviceScanResult"] {
+    display: none;
+}
+
+
+.device-row:not([status="online"]) td:not(.device-highlight) {
+    opacity: 0.25;
+}
+.device-row[status="processing"] .device-remove {
+    display: none;
+}
+.device-row .device-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid #999;
+    background-color: #fc6;
+    display: inline-block;
+}
+.device-row[status="online"] .device-status {
+    background-color: #6c6;
+}
+.device-row[status="offline"] .device-status {
+    background-color: #c66;
+}
+.device-row .device-remove {
+    color: #c66;
+    cursor: pointer;
+}

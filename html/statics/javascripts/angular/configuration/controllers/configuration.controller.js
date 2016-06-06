@@ -3,7 +3,15 @@
 
     angular
         .module('qrc-center.configuration.controllers')
-        .controller('ConfigurationController', ConfigurationController);
+        .controller('ConfigurationController', ConfigurationController)
+        .directive('afterRender', ['$timeout', function($timeout) {
+            return {
+                restrict: 'A',
+                link: function(scope, element, attrs) {
+                    if (scope.$last === true) $timeout(scope.$eval(attrs.afterRender), 0);
+                }
+            };
+        }]);
 
     ConfigurationController.$inject = ['QRC', '$scope', '$injector', '$timeout', '$http', '$q', 'blockUI'];
 
@@ -114,6 +122,37 @@
             vm.isConfigClicked = false;
             vm.startConfigString = 'Start Configuration';
 
+            vm.countStatus = countStatus;
+            vm.checkLastResults = checkLastResults;
+            vm.onRemoveClick = onRemoveClick;
+            vm.onRemoveAllClick = onRemoveAllClick;
+            vm.lastScannedSerialNum = {};
+            vm.localStorageName = 'lastResults';
+            vm.hasLastScannedResults = false;
+            vm.firstCome = true;
+            if ('undefined' !== typeof Storage) {
+                var storage = localStorage.getItem(vm.localStorageName);
+                if (storage) {
+                    try {
+                        storage = JSON.parse(storage);
+                        if (storage.scannedDevices && storage.lastScannedSerialNum) {
+                            for (var i in storage.scannedDevices) {
+                                var dev = storage.scannedDevices[i];
+                                dev.status = 'offline';
+                                vm.scannedDevices.push(dev);
+                            }
+                            vm.lastScannedSerialNum = storage.lastScannedSerialNum;
+                            vm.hasLastScannedResults = true;
+                        }
+                    }
+                    catch (e) {
+                    }
+                }
+            }
+            else {
+                console.warn('No web storage support.');
+            }
+
             calSTableHeight();
 
 
@@ -125,10 +164,24 @@
             watchSliders();
         }
 
+        function checkLastResults() {
+            if (vm.hasLastScannedResults && vm.firstCome) {
+                vm.startScan(vm.scannedDevices.map(function(dev) {
+                    return dev.ip;
+                }));
+            }
+            vm.firstCome = false;
+        }
+        function countStatus(status) {
+            return vm.scannedDevices.reduce(function(prev, curr) {
+                return (curr.status===status ?(prev+1) :prev);
+            }, 0);
+        }
+
 
         // ---------- For Scan Tab ---------- 
 
-        function startScan() {
+        function startScan(ipList) {
             if (vm.isScanning) {
                 stopScan();
                 return;
@@ -139,54 +192,65 @@
             var requestNum = 0;
             var responseNum = 0;
             var timeCost = 0;
-            var NUM_IN_ROUND = 50;
-            var DELAY_PER_ROUND_MS = 2500;
-            var SCAN_TIMEOUT = 30000;
+            var NUM_IN_ROUND = 255;//50;
+            var SCAN_TIMEOUT = 5000;//30000;
+            var RETRY_TIMES = 3;
+            var DELAY_PER_ROUND_MS = SCAN_TIMEOUT;//2500;
             var j = 0;
 
             //var round = 0;
+            var useIpList = ('undefined'!==typeof ipList);
 
             // First, count how manu request we need and check if all ip range's format are valid.
-            for (var i=0; i < vm.ipCandidates.length; i++) {
-                var range_start = vm.ipCandidates[i].range_start;
-                var range_end = vm.ipCandidates[i].range_end;
-                if (!ValidateIPaddress(range_start)) {
-                    printScanError("Start IP '"+ range_start +"' is invalid.");
-                    stopScan();
-                    return;
-                }
-                if (!ValidateIPaddress(range_end)) {
-                    printScanError("End IP '"+ range_end +"' is invalid.");
-                    stopScan();
-                    return
-                };
-                if (!isIpRangeValid(range_start, range_end)) {
-                    printScanError("Invalid IP range:" +
-                                   range_start + "~" + range_end +
-                                   "\nShould be within a C Class IP (ex, 192.168.0.1 ~ 192.168.0.254)");
-                    stopScan();
-                    return;
-                }
-                var ip_start = parseInt(range_start.match(/\.[\d]+$/)[0].replace(/\./,''));
-                var ip_end = parseInt(range_end.match(/\.[\d]+$/)[0].replace(/\./,''));
-                if (ip_end < ip_start) {
-                    printScanError("Start IP '" + range_start +
-                                   "' should be smaller than End IP '"+ range_end +"'");
-                    stopScan();
-                    return;
-                }
-                for (var ip = ip_start; ip <= ip_end; ip++) {
-                    var targetIP = ip_prefix + ip;
-                    if (targetIP in scannedIPs) continue;
+            if (useIpList) {
+                for (var i=ipList.length-1; 0<=i; i--) {
                     requestNum++;
                     j++;
-                    if ((j % NUM_IN_ROUND) == 0) {
-                        timeCost += DELAY_PER_ROUND_MS;
+                    if ((j%NUM_IN_ROUND)==0) timeCost += DELAY_PER_ROUND_MS;
+                }
+            }
+            else {
+                for (var i=0; i<vm.ipCandidates.length; i++) {
+                    var range_start = vm.ipCandidates[i].range_start;
+                    var range_end = vm.ipCandidates[i].range_end;
+                    if (!ValidateIPaddress(range_start)) {
+                        printScanError("Start IP '"+ range_start +"' is invalid.");
+                        stopScan();
+                        return;
+                    }
+                    if (!ValidateIPaddress(range_end)) {
+                        printScanError("End IP '"+ range_end +"' is invalid.");
+                        stopScan();
+                        return
+                    };
+                    if (!isIpRangeValid(range_start, range_end)) {
+                        printScanError("Invalid IP range:" +
+                                       range_start + "~" + range_end +
+                                       "\nShould be within a C Class IP (ex, 192.168.0.1 ~ 192.168.0.254)");
+                        stopScan();
+                        return;
+                    }
+                    var ip_prefix = range_start.replace(/\.[\d]+$/, '.');
+                    var ip_start = parseInt(range_start.match(/\.[\d]+$/)[0].replace(/\./,''));
+                    var ip_end = parseInt(range_end.match(/\.[\d]+$/)[0].replace(/\./,''));
+                    if (ip_end < ip_start) {
+                        printScanError("Start IP '" + range_start +
+                                       "' should be smaller than End IP '"+ range_end +"'");
+                        stopScan();
+                        return;
+                    }
+                    for (var ip = ip_start; ip <= ip_end; ip++) {
+                        var targetIP = ip_prefix + ip;
+                        if (targetIP in scannedIPs) continue;
+                        requestNum++;
+                        j++;
+                        if ((j % NUM_IN_ROUND) == 0) {
+                            timeCost += DELAY_PER_ROUND_MS;
+                        }
                     }
                 }
-
             }
-            vm.timeCostEstimate = (timeCost + SCAN_TIMEOUT)/1000;
+            vm.timeCostEstimate = RETRY_TIMES*(timeCost+SCAN_TIMEOUT)/1000;
             // Then, do the real scan
             scannedIPs = Object.create(null);
             var key = 'abcde';
@@ -205,24 +269,16 @@
             }
             */
 
-
+            var startMs = (new Date()).getTime();
             j = 0;
-            for (var i=0; i < vm.ipCandidates.length; i++) {
-                if (!vm.isScanning) break;
 
-                var range_start = vm.ipCandidates[i].range_start;
-                var range_end = vm.ipCandidates[i].range_end;
-
-                var ip_prefix = range_start.replace(/\.[\d]+$/, '.');
-                var ip_start = parseInt(range_start.match(/\.[\d]+$/)[0].replace(/\./,''));
-                var ip_end = parseInt(range_end.match(/\.[\d]+$/)[0].replace(/\./,''));
-
-                for (var ip = ip_start; ip <= ip_end; ip++) {
+            if (useIpList) {
+                for (var i=0, len=ipList.length; i<len; i++) {
                     if (!vm.isScanning) break;
-
-                    var targetIP = ip_prefix + ip;
+                    var targetIP = ipList[i];
                     if (targetIP in scannedIPs) continue;
-                    scannedIPs[targetIP] = true;
+                    scannedIPs[targetIP] = 0;
+
                     var req = $timeout(function(scanIp) {
                         var caller = $q.defer();
 
@@ -238,11 +294,48 @@
                     }, timeCost, true, targetIP);
                     scanRequestsTimer.push(req);
                     j++;
-                    if ((j % NUM_IN_ROUND) == 0) {
-                        timeCost += DELAY_PER_ROUND_MS;
+                    if ((j%NUM_IN_ROUND)==0) timeCost += DELAY_PER_ROUND_MS;
+                }
+            }
+            else {
+                for (var i=0; i<vm.ipCandidates.length; i++) {
+                    if (!vm.isScanning) break;
+
+                    var range_start = vm.ipCandidates[i].range_start;
+                    var range_end = vm.ipCandidates[i].range_end;
+
+                    var ip_prefix = range_start.replace(/\.[\d]+$/, '.');
+                    var ip_start = parseInt(range_start.match(/\.[\d]+$/)[0].replace(/\./,''));
+                    var ip_end = parseInt(range_end.match(/\.[\d]+$/)[0].replace(/\./,''));
+
+                    for (var ip = ip_start; ip <= ip_end; ip++) {
+                        if (!vm.isScanning) break;
+                        var targetIP = ip_prefix + ip;
+                        if (targetIP in scannedIPs) continue;
+                        scannedIPs[targetIP] = 0;
+
+                        var req = $timeout(function(scanIp) {
+                            var caller = $q.defer();
+
+                            $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
+                                      {timeout: caller.promise}).then(successScanFn, errorScanFn);
+                            $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
+                            scanRequestCaller.push(caller);
+                            /*
+                            QRC.setTargetIpAddress(targetIP);
+                            QRC.getPublicInfo(key).then(successScanFn, errorScanFn);
+                            */
+
+                        }, timeCost, true, targetIP);
+                        scanRequestsTimer.push(req);
+                        j++;
+                        if ((j % NUM_IN_ROUND) == 0) {
+                            timeCost += DELAY_PER_ROUND_MS;
+                        }
                     }
                 }
             }
+
             function successScanFn(data) {
                 if (data && data.data && data.data.results &&
                     data.data.results.hash_code == myHashCode) {
@@ -252,6 +345,7 @@
                     appendScannedDevice(data, parser.hostname);
                     printAndAppendScanResult("Found Target IP: " + parser.hostname + ", keep scanning..");
 
+                    vm.scannedDevices[vm.lastScannedSerialNum[data.data.results.serial_number]].status = 'online';
                 }
                 responseNum++;
                 //console.log("responseNum:" + responseNum);
@@ -261,16 +355,42 @@
             function errorScanFn(data) {
                 var parser = document.createElement('a');
                 parser.href = data.config.url;
-                if (parser.hostname == "192.168.1.25") {
+                var ip = parser.hostname;
+
+                if (vm.isScanning && 
+                    ++scannedIPs[ip] < RETRY_TIMES) {
+                    var req = $timeout(function(scanIp) {
+                        var caller = $q.defer();
+                        $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
+                                  {timeout: caller.promise}).then(successScanFn, errorScanFn);
+                        $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
+                        scanRequestCaller.push(caller);
+                    }, 0, true, ip);
+                    scanRequestsTimer.push(req);
+                    return;
+                }
+
+                if (ip == "192.168.1.25") {
                     console.log("error response from targetIP:" + targetIP);
                 }
+                vm.scannedDevices.forEach(function(dev) {
+                    if (dev.ip != ip) return;
+                    dev.status = 'offline';
+                });
+
                 responseNum++;
                 //console.log("responseNum:" + responseNum);
                 checkScanIsDone();
             }
             function checkScanIsDone() {
                 if (responseNum == requestNum) {
-                    printAndAppendScanResult("Done scan devices. All found devices:" + vm.foundIPs.join(","));
+                    console.info('done: '+((new Date().getTime())-startMs)/1000+'s');
+
+                    printAndAppendScanResult("Done scan devices. All found devices:" 
+                        +vm.scannedDevices.reduce(function(prev, curr) {
+                            if (curr.status === 'online') prev.push(curr.ip);
+                            return prev;
+                        }, []).join(", "));
                     stopScan();
                 }
             }
@@ -286,9 +406,9 @@
             if (vm.scannedDevices.length > 0) {
                 vm.isNextShow = true;
             }
-            var bui = blockUI.instances.get('BlockUIForScanning');
-            bui.stop();
+
             printAndAppendScanResult("Stop Scaning.");
+            saveScannedResult();
         }
 
         function goConfigDev() {
@@ -299,26 +419,22 @@
         function initScan() {
             vm.isScanning = true;
             vm.isNextShow = false;
-            vm.foundIPs = [];
+            vm.foundIPs = vm.scannedDevices.map(function(dev) { return dev.ip; });
             scanRequestsTimer = [];
             scanRequestCaller = [];
-            vm.scannedDevices = [];
+
+            for (var serial_number in vm.lastScannedSerialNum) {
+                vm.scannedDevices[vm.lastScannedSerialNum[serial_number]].status = 'processing';
+            }
+
             vm.isStartConfigureDisabled = true;
             calSTableHeight();
             clearScanResult();
-            var bui = blockUI.instances.get('BlockUIForScanning');
-            bui.start('Waiting for scanning...');
         }
 
         function appendScannedDevice(data, ipAddress) {
-
-            vm.foundIPs.push(ipAddress);
             var result = data.data.results;
-            result.ip = ipAddress;
-            result.index = vm.scannedDevices.length;
-            vm.scannedDevices.push(result);
-            calSTableHeight();
-
+            var serial_number = result.serial_number;
             var isInModelIdArray = false;
             for (var i in vm.scannedModelId) {
                 if (vm.scannedModelId[i] == result.model_id){
@@ -328,6 +444,49 @@
             }
             if (!isInModelIdArray) {
                 vm.scannedModelId.push(result.model_id);
+            }
+            if ('undefined' === typeof vm.lastScannedSerialNum[serial_number]) {
+                var index = vm.scannedDevices.length;
+                vm.lastScannedSerialNum[serial_number] = index;
+                vm.foundIPs.push(ipAddress);
+                result.ip = ipAddress;
+                result.index = index;
+                vm.scannedDevices.push(result);
+                calSTableHeight();
+            }
+            else {
+                vm.scannedDevices[vm.lastScannedSerialNum[serial_number]].player_name = result.player_name;
+            }
+        }
+
+        function saveScannedResult() {
+            var items = {
+                    scannedDevices: vm.scannedDevices,
+                    lastScannedSerialNum: vm.lastScannedSerialNum
+                },
+                json = '{}';
+            try { json = JSON.stringify(items); }
+            catch (e) {}
+            localStorage.setItem(vm.localStorageName, json);
+        }
+
+        function onRemoveClick(row) {
+            var index = row.index;
+            var dev = vm.scannedDevices[index];
+            delete vm.lastScannedSerialNum[dev.serial_number];
+            vm.scannedDevices.splice(index, 1);
+            for (var i=vm.scannedDevices.length-1; index<=i; i--) {
+                var dev = vm.scannedDevices[i];
+                dev.index = i;
+                vm.lastScannedSerialNum[dev.serial_number] = i;
+            }
+            saveScannedResult();
+            calSTableHeight();
+        }
+
+        function onRemoveAllClick() {
+            for (var i=vm.scannedDevices.length-1; 0<=i; i--) {
+                onRemoveClick(vm.scannedDevices[i]);
             }
         }
 
@@ -354,6 +513,7 @@
             if (data) {
                 vm.deviceScanResult = vm.deviceScanResult + "\n" + JSON.stringify(data.data, null, 2);
             }
+
         }
 
         function clearScanResult() {
@@ -399,6 +559,7 @@
         }
 
         function onSTableClick(row) {
+            if (row.status !== 'online') return;
             if (row.isSelected) {
                 row.isSelected = false;
             } else {
@@ -416,8 +577,8 @@
         }
         function onSTableAllChecked() {
             var selected = vm.STableSelectAllDevices;
-            for (var i in vm.displayScannedDevices) {
-                vm.displayScannedDevices[i].isSelected = selected;
+            for (var i in vm.scannedDevices) {
+                //vm.displayScannedDevices[i].isSelected = selected;
                 vm.scannedDevices[vm.displayScannedDevices[i].index].isSelected = selected;
             }
             checkReadyToConfigure();
@@ -574,14 +735,18 @@
         }
 
         function checkReadyToConfigure() {
-            var status = false;
+            var selectedNum = 0;
             for (var i in vm.scannedDevices) {
                 if (vm.scannedDevices[i].isSelected) {
-                    status = true;
-                    break;
+                    ++selectedNum;
                 }
             }
-            vm.isStartConfigureDisabled = !status;
+            vm.isStartConfigureDisabled = (selectedNum===0);
+            if (selectedNum === 1) {
+                clearInput();
+                
+                // get all settings
+            }
             return status;
         }
 
@@ -602,7 +767,7 @@
                 if (!isSimulate && vm.remote_or_export=='remote') {
                     isRemoteRequest = true;
                     QRC.setTargetIpAddress(device.ip, device.index);
-                    QRC.getToken(vm.current_password, device.index)
+                    QRC.getToken((vm.current_password||'12345678'), device.index)
                         .then(successGetTokenFn, errorConfigFn);
                 } else {
                     QRC.setTargetIpAddress(device.ip, device.index);
@@ -1321,7 +1486,7 @@
         }
         function watchScannedDevices() {
             $scope.$watch(
-                'vm.displayScannedDevices', function(newValue) {
+                'vm.scannedDevices', function(newValue) {
                     checkAllDisplayDevicesSelected();
                 });
         }
@@ -1332,23 +1497,19 @@
             });
         }
 
-
-
         function checkAllDisplayDevicesSelected() {
-            if (!vm.displayScannedDevices.length) {
+            if (!vm.scannedDevices.length) {
                 vm.STableSelectAllDevices = false;
                 return;
             }
             vm.STableSelectAllDevices = true;
-            for (var i in vm.displayScannedDevices) {
-                if (!vm.displayScannedDevices[i].isSelected) {
+            for (var i in vm.scannedDevices) {
+                if (!vm.scannedDevices[i].isSelected) {
                     vm.STableSelectAllDevices = false;
                     break;
                 }
             }
         }
-
-
     }
 
 
@@ -1374,6 +1535,5 @@
             return r;
         };
     });
-
 
 })();
