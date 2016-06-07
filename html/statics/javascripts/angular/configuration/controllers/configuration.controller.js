@@ -17,7 +17,6 @@
 
     function ConfigurationController(QRC, $scope, $injector, $timeout, $http, $q, blockUI) {
 
-        var RangeIpIndex = 0;
         var scanRequestsTimer = [];
         var scanRequestCaller = [];
         var cacheConfigurationData = {};
@@ -144,7 +143,10 @@
                             dev.isSelected = false;
                             vm.scannedDevices.push(dev);
                         }
-                        vm.ipCandidates = (scannedData.ipCandidates||[])
+                        vm.ipCandidates = (scannedData.ipCandidates||[]).map(function(ip, index) {
+                            ip.index = index;
+                            return ip;
+                        });
                         vm.lastScannedSerialNum = (scannedData.lastScannedSerialNum||{});
                         vm.hasLastScannedResults = true;
                     }
@@ -563,7 +565,9 @@
         }
 
         function addNewRange() {
-            vm.ipCandidates.push({index:RangeIpIndex++});
+            vm.ipCandidates.push({
+                index: vm.ipCandidates.length
+            });
             checkRemoveRangeButton();
         }
 
@@ -1462,7 +1466,11 @@
                             continue;
                         }
                         tmpRange[range_start] = true;
-                        vm.ipCandidates.push({range_start:range_start, range_end:range_end, index:RangeIpIndex++});
+                        vm.ipCandidates.push({
+                            range_start: range_start,
+                            range_end: range_end,
+                            index: vm.ipCandidates.length
+                        });
                     }
                 }
             }
