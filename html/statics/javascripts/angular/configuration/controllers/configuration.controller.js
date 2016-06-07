@@ -244,6 +244,7 @@
                     for (var ip = ip_start; ip <= ip_end; ip++) {
                         var targetIP = ip_prefix + ip;
                         if (targetIP in scannedIPs) continue;
+                        scannedIPs[targetIP] = 0;
                         requestNum++;
                         j++;
                         if ((j % NUM_IN_ROUND) == 0) {
@@ -260,7 +261,6 @@
             timeCost = 0;
 
             //Testing devices
-
             /*
             for (var k=0;k<51;k++) {
                 appendScannedDevice({data:{results:{model_id:'FHD123',player_name:'AAA', serial_number:'AAA'}}}, '192.168.1.131');
@@ -271,9 +271,7 @@
             }
             */
 
-            var startMs = (new Date()).getTime();
             j = 0;
-
             if (useIpList) {
                 for (var i=0, len=ipList.length; i<len; i++) {
                     if (!vm.isScanning) break;
@@ -362,12 +360,11 @@
                 parser.href = data.config.url;
                 var ip = parser.hostname;
 
-                if (vm.isScanning && 
-                    ++scannedIPs[ip] < RETRY_TIMES) {
+                if (vm.isScanning && (++scannedIPs[ip] < RETRY_TIMES)) {
                     var req = $timeout(function(scanIp) {
                         var caller = $q.defer();
                         $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
-                                  {timeout: caller.promise}).then(successScanFn, errorScanFn);
+                            {timeout: caller.promise}).then(successScanFn, errorScanFn);
                         $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
                         scanRequestCaller.push(caller);
                     }, 0, true, ip);
@@ -389,8 +386,6 @@
             }
             function checkScanIsDone() {
                 if (responseNum == requestNum) {
-                    console.info('done: '+((new Date().getTime())-startMs)/1000+'s');
-
                     printAndAppendScanResult("Done scan devices. All found devices:" 
                         +vm.scannedDevices.reduce(function(prev, curr) {
                             if (curr.status === 'online') prev.push(curr.ip);
@@ -504,7 +499,13 @@
 
         function saveScannedResult() {
             sessionStorage.cacheScannedData = angular.toJson({
-                ipCandidates: vm.ipCandidates,
+                ipCandidates: vm.ipCandidates.reduce(function(pool, curr) {
+                    if (curr.range_start || curr.range_end) pool.push(curr)
+                    return pool
+                }, []).map(function(ip, index) {
+                    ip.index = index;
+                    return ip;
+                }),
                 scannedDevices: vm.scannedDevices,
                 lastScannedSerialNum: vm.lastScannedSerialNum
             });
@@ -567,12 +568,16 @@
         }
 
         function removeRange(item) {
-            for (var i=0; i < vm.ipCandidates.length; i++) {
+            for (var i=vm.ipCandidates.length-1; 0<=i; i--) {
                 if (vm.ipCandidates[i].index == item.index) {
                     vm.ipCandidates.splice(i, 1);
+                    for (var j=vm.ipCandidates.length-1; 0<=j; j--) {
+                        vm.ipCandidates[i].index = j;
+                    }
+                    saveScannedResult();
+                    break;
                 }
             }
-
             checkRemoveRangeButton();
         }
 
