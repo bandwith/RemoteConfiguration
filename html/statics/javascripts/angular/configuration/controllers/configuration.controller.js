@@ -132,6 +132,40 @@
             vm.hasLastScannedResults = false;
             vm.firstCome = true;
 
+            vm.localStorageName = 'RCCLocalStorage';
+            if (localStorage) {
+                var scannedData = {};
+                try {
+                    scannedData = JSON.parse(localStorage.getItem(vm.localStorageName));
+                    if (!scannedData) {
+                        console.warn('No local storage found');
+                    }
+                    else if (scannedData.scannedDevices && scannedData.lastScannedSerialNum) {
+                        for (var i in scannedData.scannedDevices) {
+                            var dev = scannedData.scannedDevices[i];
+                            dev.status = 'offline';
+                            dev.isSelected = false;
+                            vm.scannedDevices.push(dev);
+                        }
+                        vm.ipCandidates = (scannedData.ipCandidates||[]).map(function(ip, index) {
+                            ip.index = index;
+                            return ip;
+                        });
+                        vm.lastScannedSerialNum = (scannedData.lastScannedSerialNum||{});
+                        vm.hasLastScannedResults = true;
+                    }
+                    else {
+                        console.warn('Local storage not complete. Clear local storage data');
+                        localStorage.removeItem(vm.localStorageName);
+                    }
+                }
+                catch (e) {
+                    console.warn('Read local storage error. Clear local storage data');
+                    localStorage.removeItem(vm.localStorageName);
+                }
+            }
+
+            /*
             if (sessionStorage && sessionStorage.cacheScannedData) {
                 var scannedData = {};
                 try {
@@ -155,6 +189,7 @@
                     sessionStorage.removeItem('cacheScannedData');
                 }
             }
+            */
 
             calSTableHeight();
 
@@ -500,6 +535,18 @@
         }
 
         function saveScannedResult() {
+            localStorage.setItem(vm.localStorageName, JSON.stringify({
+                ipCandidates: vm.ipCandidates.reduce(function(pool, curr) {
+                    if (curr.range_start || curr.range_end) pool.push(curr)
+                    return pool
+                }, []).map(function(ip, index) {
+                    ip.index = index;
+                    return ip;
+                }),
+                scannedDevices: vm.scannedDevices,
+                lastScannedSerialNum: vm.lastScannedSerialNum
+            }));
+            /*
             sessionStorage.cacheScannedData = angular.toJson({
                 ipCandidates: vm.ipCandidates.reduce(function(pool, curr) {
                     if (curr.range_start || curr.range_end) pool.push(curr)
@@ -511,6 +558,7 @@
                 scannedDevices: vm.scannedDevices,
                 lastScannedSerialNum: vm.lastScannedSerialNum
             });
+            */
         }
 
         function onRemoveClick(row) {
