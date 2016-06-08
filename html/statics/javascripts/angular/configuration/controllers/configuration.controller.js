@@ -165,32 +165,6 @@
                 }
             }
 
-            /*
-            if (sessionStorage && sessionStorage.cacheScannedData) {
-                var scannedData = {};
-                try {
-                    scannedData = angular.fromJson(sessionStorage.cacheScannedData);
-                    if (scannedData.scannedDevices && scannedData.lastScannedSerialNum) {
-                        for (var i in scannedData.scannedDevices) {
-                            var dev = scannedData.scannedDevices[i];
-                            dev.status = 'offline';
-                            dev.isSelected = false;
-                            vm.scannedDevices.push(dev);
-                        }
-                        vm.ipCandidates = (scannedData.ipCandidates||[]).map(function(ip, index) {
-                            ip.index = index;
-                            return ip;
-                        });
-                        vm.lastScannedSerialNum = (scannedData.lastScannedSerialNum||{});
-                        vm.hasLastScannedResults = true;
-                    }
-                } catch (err) {
-                    console.warn("unable to read sessionStorage, clear cacehData.");
-                    sessionStorage.removeItem('cacheScannedData');
-                }
-            }
-            */
-
             calSTableHeight();
 
 
@@ -546,19 +520,6 @@
                 scannedDevices: vm.scannedDevices,
                 lastScannedSerialNum: vm.lastScannedSerialNum
             }));
-            /*
-            sessionStorage.cacheScannedData = angular.toJson({
-                ipCandidates: vm.ipCandidates.reduce(function(pool, curr) {
-                    if (curr.range_start || curr.range_end) pool.push(curr)
-                    return pool
-                }, []).map(function(ip, index) {
-                    ip.index = index;
-                    return ip;
-                }),
-                scannedDevices: vm.scannedDevices,
-                lastScannedSerialNum: vm.lastScannedSerialNum
-            });
-            */
         }
 
         function onRemoveClick(row) {
