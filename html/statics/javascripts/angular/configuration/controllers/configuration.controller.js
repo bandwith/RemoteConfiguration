@@ -504,7 +504,9 @@
                 calSTableHeight();
             }
             else {
-                vm.scannedDevices[vm.lastScannedSerialNum[serial_number]].player_name = result.player_name;
+                var info = vm.scannedDevices[vm.lastScannedSerialNum[serial_number]];
+                info.player_name = result.player_name;
+                info.ip = ipAddress;
             }
         }
 
