@@ -197,7 +197,7 @@ console.log(err);
                         <div class="col-xs-12">
                             <label class="control-label" for="configurate__target_devices" uib-tooltip="">Scanned Devices <span uib-tooltip="All scanned devices are showing in the following table. Click devices to select them to do the configuration." class="glyphicon glyphicon-info-sign"></span></label>
                             <div class="table-container" ng-style="vm.STableStyle">
-                                <table st-table="vm.scannedDevices" class="table">
+                                <table st-safe-src="vm.scannedDevices" st-table="vm.displayScannedDevices" class="table">
                                     <col width="5%">
                                     <col width="5%">
                                     <col width="5%">
@@ -243,7 +243,7 @@ console.log(err);
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="row in vm.scannedDevices track by $index"
+                                        <tr ng-repeat="row in vm.displayScannedDevices track by $index"
                                             ng-click="vm.onSTableClick(row);" 
                                             ng-class="{info: row.isSelected}" 
                                             class="device-row" status="{{row.status}}" 
@@ -267,7 +267,7 @@ console.log(err);
                                             <td>{{row.serial_number}}</td>
                                             <td class="text-center device-highlight">
                                                 <span class="device-remove glyphicon glyphicon-remove"
-                                                    ng-click="vm.onRemoveClick(row);">
+                                                    ng-click="vm.onRemoveClick(row, $index);">
                                                 </span>
                                             </td>
                                         </tr>

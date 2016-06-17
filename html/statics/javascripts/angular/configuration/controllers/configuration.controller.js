@@ -151,7 +151,10 @@
                             ip.index = index;
                             return ip;
                         });
-                        vm.lastScannedSerialNum = (scannedData.lastScannedSerialNum||{});
+                        vm.lastScannedSerialNum = vm.scannedDevices.reduce(function(pool, curr) {
+                            pool[curr.serial_number] = curr.index;
+                            return pool;
+                        }, {});
                         vm.hasLastScannedResults = true;
                     }
                     else {
@@ -188,6 +191,7 @@
                 }));
             }
             vm.firstCome = false;
+            calSTableHeight();
         }
         function countStatus(status) {
             return vm.scannedDevices.reduce(function(prev, curr) {
@@ -524,12 +528,13 @@
             }));
         }
 
-        function onRemoveClick(row) {
-            var index = row.index;
-            var dev = vm.scannedDevices[index];
-            delete vm.lastScannedSerialNum[dev.serial_number];
+        function onRemoveClick(row, inx) {
+            var serial_number = row.serial_number;
+            var index = vm.lastScannedSerialNum[serial_number];
             vm.scannedDevices.splice(index, 1);
-            for (var i=vm.scannedDevices.length-1; index<=i; i--) {
+            vm.displayScannedDevices.splice(inx, 1);
+            delete vm.lastScannedSerialNum[serial_number];
+            for (var i=vm.scannedDevices.length-1; 0<=i; i--) {
                 var dev = vm.scannedDevices[i];
                 dev.index = i;
                 vm.lastScannedSerialNum[dev.serial_number] = i;
@@ -539,8 +544,8 @@
         }
 
         function onRemoveAllClick() {
-            for (var i=vm.scannedDevices.length-1; 0<=i; i--) {
-                onRemoveClick(vm.scannedDevices[i]);
+            for (var i=vm.displayScannedDevices.length-1; 0<=i; i--) {
+                onRemoveClick(vm.displayScannedDevices[i], i);
             }
         }
 
@@ -630,7 +635,6 @@
                 row.isSelected = true;
             }
 
-            //vm.displayScannedDevices[row.index].isSelected = row.isSelected;
             vm.scannedDevices[row.index].isSelected = row.isSelected;
             if (row.isSelected) {
                 checkAllDisplayDevicesSelected();
@@ -641,10 +645,11 @@
         }
         function onSTableAllChecked() {
             var selected = vm.STableSelectAllDevices;
-            for (var i in vm.scannedDevices) {
-                var dev = vm.scannedDevices[i];
+            for (var i in vm.displayScannedDevices) {
+                var dev = vm.displayScannedDevices[i];
                 if (dev.status !== 'online') continue;
                 dev.isSelected = selected;
+                vm.scannedDevices[dev.index].isSelected = selected;
             }
             checkReadyToConfigure();
         }
@@ -1554,7 +1559,7 @@
         }
         function watchScannedDevices() {
             $scope.$watch(
-                'vm.scannedDevices', function(newValue) {
+                'vm.displayScannedDevices', function(newValue) {
                     checkAllDisplayDevicesSelected();
                 });
         }
@@ -1566,13 +1571,13 @@
         }
 
         function checkAllDisplayDevicesSelected() {
-            if (!vm.scannedDevices.length) {
+            if (!vm.displayScannedDevices.length) {
                 vm.STableSelectAllDevices = false;
                 return;
             }
             vm.STableSelectAllDevices = true;
-            for (var i in vm.scannedDevices) {
-                if (!vm.scannedDevices[i].isSelected) {
+            for (var i in vm.displayScannedDevices) {
+                if (!vm.displayScannedDevices[i].isSelected) {
                     vm.STableSelectAllDevices = false;
                     break;
                 }
