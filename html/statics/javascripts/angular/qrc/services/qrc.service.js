@@ -32,6 +32,9 @@
             getWifiNetwork: getWifiNetwork,
             setWifiNetwork: setWifiNetwork,
 
+            getProxy: getProxy,
+            setProxy: setProxy,
+
             setProp: setProp,
             listProp: listProp,
 
@@ -148,6 +151,16 @@
         function setWifiNetwork(wifiConfig, idx) {
             var url = buildUrl("/v1/wifi/network", idx);
             return $http.post(url, wifiConfig, getConfig(idx));
+        }
+
+        // proxy
+        function getProxy(idx) {
+            var url = buildUrl("/v1/net/proxy", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setProxy(param, idx) {
+            var url = buildUrl("/v1/net/proxy", idx);
+            return $http.post(url, param, getConfig(idx));
         }
 
         function setProp(prop, value, idx) {

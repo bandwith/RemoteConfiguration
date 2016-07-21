@@ -54,6 +54,7 @@
             "WifiNetwork",
             "EthernetNetwork",
             "EthernetState",
+            "Proxy",
             "DoneConfig",
         ];
         var vm = this;
@@ -887,7 +888,7 @@
                     readyForNextConfig(device, caseIdx, true);
                     $timeout(configOneMoreDevice, 100);
                 }
-            } else if (vm.useConfig[configKey]) {
+            } else if (configKey === "Proxy" || vm.useConfig[configKey]) {
                 if(vm.remote_or_export=='remote') {
                     isRemoteRequest = true;
                 }
@@ -1226,12 +1227,48 @@
                                 vm.configure.WifiNetwork.advanced.network_prefix_length =
                                     netMaskToPrefixLength(vm.configure.WifiNetwork.advanced.netMask);
                             }
-                            // TODO: Set proxy
                             var url = QRC.buildUrl("/v1/wifi/network", device.index);
                             var param = vm.configure.WifiNetwork;
                             vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                             readyForNextConfig(device, caseIdx, true);
                         }
+                    }
+                } else if (configKey == "Proxy") {
+                    var proxySettings = false;
+                    if ("none" === vm.configure.SettingProxyType) {
+                        proxySettings = {
+                            proxy_settings: 'none'
+                        };
+                    }
+                    else if ("static" === vm.configure.SettingProxyType) {
+                        proxySettings = {
+                            proxy_settings: 'static',
+                            proxy_static_host: vm.configure.ProxyStaticHost,
+                            proxy_static_port: vm.configure.ProxyStaticPort,
+                            proxy_static_exclusion_list: vm.configure.ProxyStaticExclusionList
+                        };
+                    }
+                    else if ("pac" === vm.configure.SettingProxyType) {
+                        proxySettings = {
+                            proxy_settings: 'pac',
+                            proxy_pac_url: vm.configure.ProxyPacUrl
+                        };
+                    }
+
+                    if (proxySettings) {
+                        if (vm.remote_or_export=='remote') {
+                            QRC.setProxy(proxySettings, device.index)
+                                .then(successConfigFn, errorConfigFn);
+                        }
+                        else {
+                            var url = QRC.buildUrl("/v1/net/proxy", device.index);
+                            vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":proxySettings};
+                            readyForNextConfig(device, caseIdx, true);
+                        }
+                    }
+                    else {
+                        printConfigureError("Un-recognized proxy type:"+vm.configure.SettingProxyType);
+                        readyForNextConfig(device, caseIdx, false);
                     }
                 } else {
                     printConfigureError("Un-recognized configKey:" + configKey);
@@ -1281,6 +1318,8 @@
                 readyForNextConfig(device, caseIdx, true);
             }
             function successConfigFn(data) {
+                    console.log(data);
+                
                 readyForNextConfig(device, caseIdx, true);
             }
             function errorConfigFn(data) {

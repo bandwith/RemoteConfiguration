@@ -657,10 +657,6 @@ console.log(err);
                                 </div>
                             </div>
                         </uib-accordion-group>
-
-
-
-
                         <uib-accordion-group name="wifiGroup" is-open="vm.accordion.wifiOpen"
                                              template-url="accordion-group.html">
                             <uib-accordion-heading>
@@ -690,8 +686,6 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-
-
                             <div show-errors class="form-group" >
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.WifiNetwork"
@@ -828,8 +822,80 @@ console.log(err);
                             </div>
                         </uib-accordion-group>
 
-
-
+                        <uib-accordion-group name="wifiGroup" is-open="vm.accordion.proxyOpen"
+                                             template-url="accordion-group.html">
+                            <uib-accordion-heading>
+                                Proxy <i class="pull-right glyphicon" 
+                                        ng-class="{'glyphicon-chevron-down': vm.accordion.proxyOpen, 'glyphicon-chevron-right': !vm.accordion.proxyOpen}"></i>
+                            </uib-accordion-heading>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.SettingProxyType"
+                                           ng-change="vm.checkInitConfig('SettingProxyType', vm.useConfig.SettingProxyType, 'none')">
+                                    Proxy Settings
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="none"
+                                               ng-disabled="!vm.useConfig.SettingProxyType"
+                                               ng-model="vm.configure.SettingProxyType" >
+                                        none
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="static"
+                                               ng-disabled="!vm.useConfig.SettingProxyType"
+                                               ng-model="vm.configure.SettingProxyType" >
+                                        static
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="pac"
+                                               ng-disabled="!vm.useConfig.SettingProxyType"
+                                               ng-model="vm.configure.SettingProxyType" >
+                                        pac
+                                    </label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"  ng-hide="vm.configure.SettingProxyType!=='static'">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.ProxyStaticHost"
+                                           ng-change="vm.checkInitConfig('ProxyStaticHost', vm.useConfig.ProxyStaticHost)">
+                                    Static Host
+                                </label>
+                                <div class="col-xs-9">
+                                    <input ng-disabled="!vm.useConfig.ProxyStaticHost" class="form-control" ng-model="vm.configure.ProxyStaticHost">
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"  ng-hide="vm.configure.SettingProxyType!=='static'">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.ProxyStaticPort"
+                                           ng-change="vm.checkInitConfig('ProxyStaticPort', vm.useConfig.ProxyStaticPort)">
+                                    Static Port
+                                </label>
+                                <div class="col-xs-9">
+                                    <input ng-disabled="!vm.useConfig.ProxyStaticPort" class="form-control" ng-model="vm.configure.ProxyStaticPort">
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"  ng-hide="vm.configure.SettingProxyType!=='static'">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.ProxyStaticExclusionList"
+                                           ng-change="vm.checkInitConfig('ProxyStaticExclusionList', vm.useConfig.ProxyStaticExclusionList)">
+                                    Static Exclusion List
+                                </label>
+                                <div class="col-xs-9">
+                                    <input ng-disabled="!vm.useConfig.ProxyStaticExclusionList" class="form-control" ng-model="vm.configure.ProxyStaticExclusionList">
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"  ng-hide="vm.configure.SettingProxyType!=='pac'">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.ProxyPacUrl"
+                                           ng-change="vm.checkInitConfig('ProxyPacUrl', vm.useConfig.ProxyPacUrl)">
+                                    PAC URL
+                                </label>
+                                <div class="col-xs-9">
+                                    <input ng-disabled="!vm.useConfig.ProxyPacUrl" class="form-control" ng-model="vm.configure.ProxyPacUrl">
+                                </div>
+                            </div>
+                        </uib-accordion-group>
 
                         <uib-accordion-group  is-open="vm.accordion.audioOpen"
                                              template-url="accordion-group.html">
