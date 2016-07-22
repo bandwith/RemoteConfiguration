@@ -808,9 +808,11 @@
         }
 
         function checkReadyToConfigure() {
-            var count = 0;
-            for (var devIdx in vm.scannedDevices) {
-                if (vm.scannedDevices[devIdx].isSelected) {
+            var count = 0,
+                devIdx = -1;
+            for (var i in vm.scannedDevices) {
+                if (vm.scannedDevices[i].isSelected) {
+                    devIdx = i;
                     ++count;
                 }
             }
