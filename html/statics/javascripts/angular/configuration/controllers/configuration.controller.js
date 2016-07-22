@@ -900,6 +900,7 @@
                             else {
                                 vm.currConfig.SettingProxy = 'none';
                             }
+                            vm.configure.SettingProxy = vm.currConfig.SettingProxy;
                             callback();
                         });
                     });
@@ -1331,6 +1332,9 @@
                     }
                 } else if (configKey == "SettingProxy") {
                     var proxySettings = false;
+                    if (vm.configure.SettingProxy == vm.currConfig.SettingProxy) {
+                        proxySettings = false;
+                    }
                     if ("none" === vm.configure.SettingProxy) {
                         proxySettings = {
                             proxy_settings: 'none'

@@ -355,13 +355,13 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="enable"
+                                        <input type="radio" name="securityPassword" value="enable"
                                                ng-disabled="!vm.useConfig.SecurityPasswordEnabled"
                                                ng-model="vm.configure.SecurityPasswordEnabled" >
                                         enable
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="disable"
+                                        <input type="radio" name="securityPassword" value="disable"
                                                ng-disabled="!vm.useConfig.SecurityPasswordEnabled"
                                                ng-change="vm.deleteConfig('SecurityPassword');vm.useConfig.SecurityPassword=false"
                                                ng-model="vm.configure.SecurityPasswordEnabled">
@@ -421,14 +421,14 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="enable"
+                                        <input type="radio" name="adbEnabled" value="enable"
                                                ng-disabled="!vm.useConfig.SettingsAdbEnabled"
                                                ng-checked="vm.currConfig.SettingsAdbEnabled=='enable'"
                                                ng-model="vm.configure.SettingsAdbEnabled" >
                                         enable
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="disable"
+                                        <input type="radio" name="adbEnabled" value="disable"
                                                ng-disabled="!vm.useConfig.SettingsAdbEnabled"
                                                ng-checked="vm.currConfig.SettingsAdbEnabled=='disable'"
                                                ng-model="vm.configure.SettingsAdbEnabled">
@@ -445,14 +445,14 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="enable"
+                                        <input type="radio" name="adbOverTcp" value="enable"
                                                ng-disabled="!vm.useConfig.SettingsAdbOverTcp"
                                                ng-checked="vm.currConfig.SettingsAdbOverTcp=='enable'"
                                                ng-model="vm.configure.SettingsAdbOverTcp" >
                                         enable (Port: 5555)
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="disable"
+                                        <input type="radio" name="adbOverTcp"  value="disable"
                                                ng-disabled="!vm.useConfig.SettingsAdbOverTcp"
                                                ng-checked="vm.currConfig.SettingsAdbOverTcp=='disable'"
                                                ng-model="vm.configure.SettingsAdbOverTcp">
@@ -486,14 +486,14 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="enable"
+                                        <input type="radio" name="rebootTimeOptimized" value="enable"
                                                ng-disabled="!vm.useConfig.SettingsRebootTimeOptimized"
                                                ng-checked="vm.currConfig.SettingsRebootTimeOptimized==='enable'"
                                                ng-model="vm.configure.SettingsRebootTimeOptimized" >
                                         enable
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="disable"
+                                        <input type="radio" name="rebootTimeOptimized"  value="disable"
                                                ng-disabled="vm.useConfig.SettingsRebootTimeOptimized==='disable'"
                                                ng-checked="!vm.currConfig.SettingsRebootTimeOptimized"
                                                ng-model="vm.configure.SettingsRebootTimeOptimized">
@@ -509,28 +509,28 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="0"
+                                        <input type="radio" name="screenOrientation" value="0"
                                                ng-disabled="!vm.useConfig.SettingsScreenOrientation"
                                                ng-checked="vm.currConfig.SettingsScreenOrientation=='0'"
                                                ng-model="vm.configure.SettingsScreenOrientation" >
                                         0 degree
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="1"
+                                        <input type="radio" name="screenOrientation" value="1"
                                                ng-disabled="!vm.useConfig.SettingsScreenOrientation"
                                                ng-checked="vm.currConfig.SettingsScreenOrientation=='1'"
                                                ng-model="vm.configure.SettingsScreenOrientation">
                                         90 degree
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="2"
+                                        <input type="radio" name="screenOrientation" value="2"
                                                ng-disabled="!vm.useConfig.SettingsScreenOrientation"
                                                ng-checked="vm.currConfig.SettingsScreenOrientation=='2'"
                                                ng-model="vm.configure.SettingsScreenOrientation" >
                                         180 degree
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="3"
+                                        <input type="radio" name="screenOrientation" value="3"
                                                ng-disabled="!vm.useConfig.SettingsScreenOrientation"
                                                ng-checked="vm.currConfig.SettingsScreenOrientation=='3'"
                                                ng-model="vm.configure.SettingsScreenOrientation">
@@ -567,14 +567,14 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="enable"
+                                        <input type="radio" name="ethernetState" value="enable"
                                                ng-disabled="!vm.useConfig.EthernetState"
                                                ng-checked="vm.currConfig.EthernetState=='enable'"
                                                ng-model="vm.configure.EthernetState" >
                                         enable
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="disable"
+                                        <input type="radio" name="ethernetState" value="disable"
                                                ng-disabled="!vm.useConfig.EthernetState"
                                                ng-checked="vm.currConfig.EthernetState=='disable'"
                                                ng-model="vm.configure.EthernetState">
@@ -590,14 +590,14 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="dhcp"
+                                        <input type="radio" name="ipAssignment" value="dhcp"
                                                ng-disabled="!vm.useConfig.EthernetNetwork"
                                                ng-checked="vm.currConfig.EthernetNetwork.ip_assignment=='dhcp'"
                                                ng-model="vm.configure.EthernetNetwork.ip_assignment" >
                                         DHCP
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="static"
+                                        <input type="radio" name="ipAssignment" value="static"
                                                ng-disabled="!vm.useConfig.EthernetNetwork"
                                                ng-checked="vm.currConfig.EthernetNetwork=='static'"
                                                ng-model="vm.configure.EthernetNetwork.ip_assignment">
@@ -698,14 +698,14 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="enable"
+                                        <input type="radio" name="wifiState" value="enable"
                                                ng-disabled="!vm.useConfig.WifiState"
                                                ng-checked="vm.currConfig.WifiState=='enable'"
                                                ng-model="vm.configure.WifiState" >
                                         enable
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="disable"
+                                        <input type="radio" name="wifiState" value="disable"
                                                ng-change="vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false"
                                                ng-disabled="!vm.useConfig.WifiState"
                                                ng-checked="vm.currConfig.WifiState=='disable'"
@@ -762,14 +762,14 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="dhcp"
+                                        <input type="radio" name="wifiIpAssignment" value="dhcp"
                                                ng-disabled="!vm.useConfig.WifiNetwork"
                                                ng-init="vm.configure.WifiNetwork.advanced.ip_assignment=vm.configure.WifiNetwork.advanced.ip_assignment?vm.configure.WifiNetwork.advanced.ip_assignment:'dhcp'"
                                                ng-model="vm.configure.WifiNetwork.advanced.ip_assignment">
                                         DHCP
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="static"
+                                        <input type="radio" name="wifiIpAssignment" value="static"
                                                ng-disabled="!vm.useConfig.WifiNetwork"
                                                ng-model="vm.configure.WifiNetwork.advanced.ip_assignment">
                                         Static
@@ -864,21 +864,21 @@ console.log(err);
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
-                                        <input type="radio" value="none"
+                                        <input type="radio" name="proxyType" value="none"
                                                ng-disabled="!vm.useConfig.SettingProxy"
                                                ng-checked="vm.currConfig.SettingProxy=='none'"
                                                ng-model="vm.configure.SettingProxy" >
                                         none
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="static"
+                                        <input type="radio" name="proxyType" value="static"
                                                ng-disabled="!vm.useConfig.SettingProxy"
                                                ng-checked="vm.currConfig.SettingProxy=='static'"
                                                ng-model="vm.configure.SettingProxy" >
                                         static
                                     </label>
                                     <label class="radio-inline">
-                                        <input type="radio" value="pac"
+                                        <input type="radio" name="proxyType" value="pac"
                                                ng-disabled="!vm.useConfig.SettingProxy"
                                                ng-checked="vm.currConfig.SettingProxy=='pac'"
                                                ng-model="vm.configure.SettingProxy" >
@@ -886,25 +886,25 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-                            <div show-errors class="form-group"  ng-show="vm.configure.SettingProxy=='static'">
+                            <div show-errors class="form-group" ng-hide="vm.currConfig.SettingProxy!='static'">
                                 <label class="col-xs-3 control-label-left">Host</label>
                                 <div class="col-xs-9">
                                     <input name="proxyStaticHost" class="form-control" ng-init="null" ng-value="vm.currConfig.ProxyStaticHost" ng-model="vm.configure.ProxyStaticHost">
                                 </div>
                             </div>
-                            <div show-errors class="form-group"  ng-show="vm.configure.SettingProxy=='static'">
+                            <div show-errors class="form-group" ng-hide="vm.currConfig.SettingProxy!='static'">
                                 <label class="col-xs-3 control-label-left">Port</label>
                                 <div class="col-xs-9">
                                     <input name="proxyStaticPort" class="form-control" ng-init="null" ng-value="vm.currConfig.ProxyStaticPort" ng-model="vm.configure.ProxyStaticPort">
                                 </div>
                             </div>
-                            <div show-errors class="form-group"  ng-show="vm.configure.SettingProxy=='static'">
+                            <div show-errors class="form-group" ng-hide="vm.currConfig.SettingProxy!='static'">
                                 <label class="col-xs-3 control-label-left">Exclusion List</label>
                                 <div class="col-xs-9">
                                     <input name="proxyStaticExclusionList" class="form-control" ng-value="vm.currConfig.ProxyStaticExclusionList||''" ng-init="null" ng-model="vm.configure.ProxyStaticExclusionList">
                                 </div>
                             </div>
-                            <div show-errors class="form-group"  ng-show="vm.configure.SettingProxy=='pac'">
+                            <div show-errors class="form-group" ng-hide="vm.currConfig.SettingProxy!='pac'">
                                 <label class="col-xs-3 control-label-left">PAC URL</label>
                                 <div class="col-xs-9">
                                     <input name="proxyPacUrl" class="form-control" ng-value="vm.currConfig.ProxyPacUrl||''" ng-init="null" ng-model="vm.configure.ProxyPacUrl">
