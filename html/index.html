@@ -889,25 +889,25 @@ console.log(err);
                             <div show-errors class="form-group" ng-hide="vm.currConfig.SettingProxy!='static'">
                                 <label class="col-xs-3 control-label-left">Host</label>
                                 <div class="col-xs-9">
-                                    <input name="proxyStaticHost" class="form-control" ng-init="null" ng-value="vm.currConfig.ProxyStaticHost" ng-model="vm.configure.ProxyStaticHost">
+                                    <input name="proxyStaticHost" class="form-control" ng-init="null" ng-disabled="!vm.useConfig.SettingProxy" ng-value="vm.currConfig.ProxyStaticHost" ng-model="vm.configure.ProxyStaticHost">
                                 </div>
                             </div>
                             <div show-errors class="form-group" ng-hide="vm.currConfig.SettingProxy!='static'">
                                 <label class="col-xs-3 control-label-left">Port</label>
                                 <div class="col-xs-9">
-                                    <input name="proxyStaticPort" class="form-control" ng-init="null" ng-value="vm.currConfig.ProxyStaticPort" ng-model="vm.configure.ProxyStaticPort">
+                                    <input name="proxyStaticPort" class="form-control" ng-init="null" ng-disabled="!vm.useConfig.SettingProxy" ng-value="vm.currConfig.ProxyStaticPort" ng-model="vm.configure.ProxyStaticPort">
                                 </div>
                             </div>
                             <div show-errors class="form-group" ng-hide="vm.currConfig.SettingProxy!='static'">
                                 <label class="col-xs-3 control-label-left">Exclusion List</label>
                                 <div class="col-xs-9">
-                                    <input name="proxyStaticExclusionList" class="form-control" ng-value="vm.currConfig.ProxyStaticExclusionList||''" ng-init="null" ng-model="vm.configure.ProxyStaticExclusionList">
+                                    <input name="proxyStaticExclusionList" class="form-control" ng-value="vm.currConfig.ProxyStaticExclusionList||''" ng-init="null" ng-disabled="!vm.useConfig.SettingProxy" ng-model="vm.configure.ProxyStaticExclusionList">
                                 </div>
                             </div>
                             <div show-errors class="form-group" ng-hide="vm.currConfig.SettingProxy!='pac'">
                                 <label class="col-xs-3 control-label-left">PAC URL</label>
                                 <div class="col-xs-9">
-                                    <input name="proxyPacUrl" class="form-control" ng-value="vm.currConfig.ProxyPacUrl||''" ng-init="null" ng-model="vm.configure.ProxyPacUrl">
+                                    <input name="proxyPacUrl" class="form-control" ng-value="vm.currConfig.ProxyPacUrl||''" ng-init="null" ng-disabled="!vm.useConfig.SettingProxy" ng-model="vm.configure.ProxyPacUrl">
                                 </div>
                             </div>
                         </uib-accordion-group>
