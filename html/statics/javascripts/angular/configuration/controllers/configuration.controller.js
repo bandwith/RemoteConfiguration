@@ -66,6 +66,7 @@
             vm.current_password = "";
             vm.configure = {};
             vm.useConfig = {};
+            vm.currConfig = {};
             vm.exportConfig = {};
 
             if (sessionStorage && sessionStorage.cacheConfigurationData) {
@@ -807,15 +808,104 @@
         }
 
         function checkReadyToConfigure() {
-            var status = false;
-            for (var i in vm.scannedDevices) {
-                if (vm.scannedDevices[i].isSelected) {
-                    status = true;
-                    break;
+            var count = 0;
+            for (var devIdx in vm.scannedDevices) {
+                if (vm.scannedDevices[devIdx].isSelected) {
+                    ++count;
                 }
             }
-            vm.isStartConfigureDisabled = !status;
-            return status;
+            vm.isStartConfigureDisabled = !(0<count);
+
+            // show device information
+            vm.currConfig = {};
+            if (1 === count) {
+                var device = vm.scannedDevices[devIdx];
+                QRC.setTargetIpAddress(device.ip, device.index);
+                QRC.getToken((vm.current_password||'12345678'), device.index).then(function(data) {
+                    QRC.setTargetAuthToken(data.data.access_token, device.index);
+                    var steps = [],
+                        nextStep = function() {
+                            if (!steps.length) return;
+                            steps.shift()(nextStep);
+                        };
+                    steps.push(function(callback) {
+                        QRC.getSettings('', device.index).then(function(data) {
+                            var settings = data.data.results;
+                            vm.currConfig.Timezone = settings.timezone;
+                            vm.currConfig.SettingsPlayerName = settings.player_name;
+                            vm.currConfig.SettingsPlayGroup = settings.play_group;
+                            vm.currConfig.SettingsNtpServer = settings.ntp_server;
+                            vm.currConfig.SettingsSmilContentUrl = settings.smil_content_url;
+                            vm.currConfig.SettingsAdbEnabled = settings.adb_enabled;
+                            vm.currConfig.SettingsAdbEnabled = (settings.adb_enabled ?'enable' :'disable');
+                            vm.currConfig.SettingsAdbOverTcp = (settings.adb_over_tcp ?'enable' :'disable');
+                            vm.currConfig.SettingsRebootTime = (settings.reboot_time
+                                ?settings.reboot_time
+                                    .split(':')
+                                    .map(function(n) { return ('0'+n).slice(-2); })
+                                    .join(':')
+                                :null
+                            );
+                            vm.currConfig.SettingsRebootTimeOptimized = (settings.is_reboot_optimized ?'enable' :'disable');
+                            vm.currConfig.SettingsScreenOrientation = settings.screen_orientation;
+                            vm.currConfig.SettingsOtaXmlUrl = settings.ota_xml_url;
+                            callback();
+                        });
+                    });
+                    steps.push(function(callback) {
+                        QRC.getEth0State(device.index).then(function(data) {
+                            vm.currConfig.EthernetState = (data.data.value==='enabled' ?'enable' :'disable');
+                            callback();
+                        });
+                    });
+                    steps.push(function(callback) {
+                        QRC.getEth0Network(device.index).then(function(data) {
+                            vm.currConfig.EthernetNetwork = data.data;
+                            callback();
+                        });
+                    });
+                    steps.push(function(callback) {
+                        QRC.getWifiState(device.index).then(function(data) {
+                            vm.currConfig.WifiState = (data.data.value==='enabled' ?'enable' :'disable');
+                            callback();
+                        });
+                    });
+                    steps.push(function(callback) {
+                        QRC.listAudioVolume(device.index).then(function(data) {
+                            data = data.data.results;
+                            vm.currConfig.AudioStreamMusic = data.stream_music;
+                            vm.currConfig.AudioStreamAlarm = data.stream_alarm;
+                            vm.currConfig.AudioStreamNotification = data.stream_notification;
+                            vm.configure.AudioStreamMusic = data.stream_music;
+                            vm.configure.AudioStreamAlarm = data.stream_alarm;
+                            vm.configure.AudioStreamNotification = data.stream_notification;
+                            callback();
+                        });
+                    });
+                    steps.push(function(callback) {
+                        QRC.getProxy(device.index).then(function(data) {
+                            data = data.data;
+                            if (data.proxy_pac_url) {
+                                vm.currConfig.SettingProxy = 'pac';
+                                vm.currConfig.ProxyPacUrl = data.proxy_pac_url;
+                            }
+                            else if (data.proxy_static_host) {
+                                vm.currConfig.SettingProxy = 'static';
+                                vm.currConfig.ProxyStaticHost = data.proxy_static_host;
+                                vm.currConfig.ProxyStaticPort = data.proxy_static_port;
+                                vm.currConfig.ProxyStaticExclusionList = (data.proxy_static_exclusion_list||[]).join(',');
+                            }
+                            else {
+                                vm.currConfig.SettingProxy = 'none';
+                            }
+                            callback();
+                        });
+                    });
+                    nextStep();
+                });
+            }
+
+            return count;
         }
 
         function runConfigureCase(caseIdx, device, isSimulate) {
@@ -1094,7 +1184,8 @@
                         readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "Timezone") {
-                    if (!vm.configure[configKey]) {
+                    if (!vm.configure[configKey] ||
+                        vm.configure[configKey] == vm.currConfig[configKey]) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
@@ -1109,7 +1200,8 @@
                     }
 
                 } else if (configKey == "AudioStreamMusic") {
-                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                    if (vm.configure[configKey] == vm.currConfig[configKey] ||
+                        vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
@@ -1124,7 +1216,8 @@
                         readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "AudioStreamNotification") {
-                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                    if (vm.configure[configKey] == vm.currConfig[configKey] ||
+                        vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
@@ -1139,7 +1232,8 @@
                         readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "AudioStreamAlarm") {
-                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                    if (vm.configure[configKey] == vm.currConfig[configKey] ||
+                        vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
@@ -1551,7 +1645,7 @@
                     vm.configure[configKey] = value;
                 }
             } else if (!isChecked && vm.configure.hasOwnProperty(configKey)) {
-                delete vm.configure[configKey];
+                //delete vm.configure[configKey];
                 if (isInitRebootTime) {
                     vm.formScope.ConfigForm['rebootTime'].$setViewValue(undefined, true);
                     vm.formScope.ConfigForm['rebootTime'].$render();

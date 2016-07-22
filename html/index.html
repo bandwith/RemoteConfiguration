@@ -304,14 +304,15 @@ console.log(err);
 
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.Timezone"
-                                           ng-change="vm.checkInitConfig('Timezone', vm.useConfig.Timezone, 'Europe/Amsterdam')">
+                                           ng-change="vm.checkInitConfig('Timezone', vm.useConfig.Timezone, (vm.currConfig.Timezone||'Europe/Amsterdam'))">
                                     Time Zone
                                 </label>
                                 <div class="col-xs-9">
                                     <timezone-selector name="Timezone" class="form-control"
-                                                       ng-required="vm.useConfig.Timezone"
-                                                       ng-disabled="!vm.useConfig.Timezone"
-                                                       width="100%" ng-model="vm.configure.Timezone">
+                                        ng-required="vm.useConfig.Timezone"
+                                        ng-value="vm.configure.Timezone"
+                                        ng-disabled="!vm.useConfig.Timezone"
+                                        width="100%" ng-model="vm.configure.Timezone">
                                     </timezone-selector>
                                     <div ng-show="ConfigForm.Timezone.$error.required" class="help-block">* Required</div>
                                 </div>
@@ -321,12 +322,14 @@ console.log(err);
 
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsPlayerName"
-                                           ng-change="vm.checkInitConfig('SettingsPlayerName', vm.useConfig.SettingsPlayerName)">
+                                           ng-change="vm.checkInitConfig('SettingsPlayerName', vm.useConfig.SettingsPlayerName, (vm.currConfig.SettingsPlayerName))">
                                     Player Name
                                 </label>
                                 <div class="col-xs-9">
                                     <input ng-disabled="!vm.useConfig.SettingsPlayerName"
-                                           class="form-control" ng-model="vm.configure.SettingsPlayerName" />
+                                           class="form-control" 
+                                           ng-value="vm.currConfig.SettingsPlayerName||''"
+                                           ng-model="vm.configure.SettingsPlayerName" />
                                 </div>
 
                             </div>
@@ -334,12 +337,13 @@ console.log(err);
 
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsPlayGroup"
-                                           ng-change="vm.checkInitConfig('SettingsPlayGroup', vm.useConfig.SettingsPlayGroup)">
+                                           ng-change="vm.checkInitConfig('SettingsPlayGroup', vm.useConfig.SettingsPlayGroup, vm.currConfig.SettingsPlayGroup)">
                                     Player Group
                                 </label>
                                 <div class="col-xs-9">
                                     <input ng-disabled="!vm.useConfig.SettingsPlayGroup"
-                                           class="form-control" ng-model="vm.configure.SettingsPlayGroup" />
+                                           class="form-control" 
+                                           ng-value="vm.currConfig.SettingsPlayGroup||''" ng-model="vm.configure.SettingsPlayGroup" />
                                 </div>
 
                             </div>
@@ -383,20 +387,21 @@ console.log(err);
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsNtpServer"
-                                           ng-change="vm.checkInitConfig('SettingsNtpServer', vm.useConfig.SettingsNtpServer)">
+                                           ng-change="vm.checkInitConfig('SettingsNtpServer', vm.useConfig.SettingsNtpServer, vm.currConfig.SettingsNtpServer)">
                                     NTP Server
                                 </label>
                                 <div class="col-xs-9">
                                     <input
                                            placeholder="ex, 0.fr.pool.ntp.org"
                                            ng-disabled="!vm.useConfig.SettingsNtpServer"
+                                           ng-value="vm.currConfig.SettingsNtpServer||''"
                                            class="form-control" ng-model="vm.configure.SettingsNtpServer" />
                                 </div>
                             </div>
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsSmilContentUrl"
-                                           ng-change="vm.checkInitConfig('SettingsSmilContentUrl', vm.useConfig.SettingsSmilContentUrl)">
+                                           ng-change="vm.checkInitConfig('SettingsSmilContentUrl', vm.useConfig.SettingsSmilContentUrl, vm.currConfig.SettingsSmilContentUrl)">
                                     SMIL Player URL
                                 </label>
                                 <div class="col-xs-9">
@@ -404,26 +409,28 @@ console.log(err);
                                            placeholder="ex, http://folk.uio.no/annembek/inf3210/examples/basic.smil"
                                            ng-disabled="!vm.useConfig.SettingsSmilContentUrl"
                                            class="form-control"
+                                           ng-value="vm.currConfig.SettingsSmilContentUrl||''"
                                            ng-model="vm.configure.SettingsSmilContentUrl" />
                                 </div>
                             </div>
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsAdbEnabled"
-                                           ng-change="vm.checkInitConfig('SettingsAdbEnabled', vm.useConfig.SettingsAdbEnabled, 'enable');vm.deleteConfig('SettingsAdbOverTcp');vm.useConfig.SettingsAdbOverTcp=false">
+                                           ng-change="vm.checkInitConfig('SettingsAdbEnabled', vm.useConfig.SettingsAdbEnabled, (vm.currConfig.SettingsAdbEnabled||'enable'))">
                                     ADB Enable
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
                                         <input type="radio" value="enable"
                                                ng-disabled="!vm.useConfig.SettingsAdbEnabled"
+                                               ng-checked="vm.currConfig.SettingsAdbEnabled=='enable'"
                                                ng-model="vm.configure.SettingsAdbEnabled" >
                                         enable
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="disable"
                                                ng-disabled="!vm.useConfig.SettingsAdbEnabled"
-                                               ng-change="vm.deleteConfig('SettingsAdbOverTcp');vm.useConfig.SettingsAdbOverTcp=false"
+                                               ng-checked="vm.currConfig.SettingsAdbEnabled=='disable'"
                                                ng-model="vm.configure.SettingsAdbEnabled">
                                         disable
                                     </label>
@@ -433,19 +440,21 @@ console.log(err);
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsAdbOverTcp"
                                            ng-disabled="vm.configure.SettingsAdbEnabled!='enable'"
-                                           ng-change="vm.checkInitConfig('SettingsAdbOverTcp', vm.useConfig.SettingsAdbOverTcp, 'disable')">
+                                           ng-change="vm.checkInitConfig('SettingsAdbOverTcp', vm.useConfig.SettingsAdbOverTcp, (vm.currConfig.SettingsAdbOverTcp||'disable'))">
                                     ADB Over TCP-IP
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
                                         <input type="radio" value="enable"
                                                ng-disabled="!vm.useConfig.SettingsAdbOverTcp"
+                                               ng-checked="vm.currConfig.SettingsAdbOverTcp=='enable'"
                                                ng-model="vm.configure.SettingsAdbOverTcp" >
                                         enable (Port: 5555)
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="disable"
                                                ng-disabled="!vm.useConfig.SettingsAdbOverTcp"
+                                               ng-checked="vm.currConfig.SettingsAdbOverTcp=='disable'"
                                                ng-model="vm.configure.SettingsAdbOverTcp">
                                         disable
                                     </label>
@@ -455,14 +464,16 @@ console.log(err);
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsRebootTime"
-                                           ng-change="vm.checkInitConfig('SettingsRebootTime', vm.useConfig.SettingsRebootTime, null, true)">
+                                           ng-change="vm.checkInitConfig('SettingsRebootTime', vm.useConfig.SettingsRebootTime, vm.currConfig.SettingsRebootTime||null, true)">
                                     Reboot Time
                                 </label>
                                 <div class="col-xs-9">
                                     <input ng-disabled="!vm.useConfig.SettingsRebootTime"
                                            ng-required="vm.useConfig.SettingsRebootTime"
                                            type="time" name="rebootTime"
-                                           class="form-control" ng-model="vm.configure.SettingsRebootTime" />
+                                           class="form-control" 
+                                           ng-value="vm.currConfig.SettingsRebootTime||''"
+                                           ng-model="vm.configure.SettingsRebootTime" />
                                     <div ng-show="ConfigForm.rebootTime.$error.required" class="help-block">* Required</div>
                                     <div ng-show="ConfigForm.rebootTime.$error.time" class="help-block">Invalid time format</div>
                                 </div>
@@ -470,19 +481,21 @@ console.log(err);
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsRebootTimeOptimized"
-                                           ng-change="vm.checkInitConfig('SettingsRebootTimeOptimized', vm.useConfig.SettingsRebootTimeOptimized, 'enable')">
+                                           ng-change="vm.checkInitConfig('SettingsRebootTimeOptimized', vm.useConfig.SettingsRebootTimeOptimized, vm.currConfig.SettingsRebootTimeOptimized||'enable'))">
                                     Optimize Reboot Time
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
                                         <input type="radio" value="enable"
                                                ng-disabled="!vm.useConfig.SettingsRebootTimeOptimized"
+                                               ng-checked="vm.currConfig.SettingsRebootTimeOptimized==='enable'"
                                                ng-model="vm.configure.SettingsRebootTimeOptimized" >
                                         enable
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="disable"
-                                               ng-disabled="!vm.useConfig.SettingsRebootTimeOptimized"
+                                               ng-disabled="vm.useConfig.SettingsRebootTimeOptimized==='disable'"
+                                               ng-checked="!vm.currConfig.SettingsRebootTimeOptimized"
                                                ng-model="vm.configure.SettingsRebootTimeOptimized">
                                         disable
                                     </label>
@@ -491,31 +504,35 @@ console.log(err);
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsScreenOrientation"
-                                           ng-change="vm.checkInitConfig('SettingsScreenOrientation', vm.useConfig.SettingsScreenOrientation, '0')">
+                                           ng-change="vm.checkInitConfig('SettingsScreenOrientation', vm.useConfig.SettingsScreenOrientation, (vm.currConfig.SettingsScreenOrientation||'0'))">
                                     Screen orientation
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
                                         <input type="radio" value="0"
                                                ng-disabled="!vm.useConfig.SettingsScreenOrientation"
+                                               ng-checked="vm.currConfig.SettingsScreenOrientation=='0'"
                                                ng-model="vm.configure.SettingsScreenOrientation" >
                                         0 degree
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="1"
                                                ng-disabled="!vm.useConfig.SettingsScreenOrientation"
+                                               ng-checked="vm.currConfig.SettingsScreenOrientation=='1'"
                                                ng-model="vm.configure.SettingsScreenOrientation">
                                         90 degree
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="2"
                                                ng-disabled="!vm.useConfig.SettingsScreenOrientation"
+                                               ng-checked="vm.currConfig.SettingsScreenOrientation=='2'"
                                                ng-model="vm.configure.SettingsScreenOrientation" >
                                         180 degree
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="3"
                                                ng-disabled="!vm.useConfig.SettingsScreenOrientation"
+                                               ng-checked="vm.currConfig.SettingsScreenOrientation=='3'"
                                                ng-model="vm.configure.SettingsScreenOrientation">
                                         270 degree
                                     </label>
@@ -545,19 +562,21 @@ console.log(err);
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.EthernetState"
-                                           ng-change="vm.checkInitConfig('EthernetState', vm.useConfig.EthernetState, 'enable')">
+                                           ng-change="vm.checkInitConfig('EthernetState', vm.useConfig.EthernetState, (vm.currConfig.EthernetState||'enable'))">
                                     Enable Ethernet
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
                                         <input type="radio" value="enable"
                                                ng-disabled="!vm.useConfig.EthernetState"
+                                               ng-checked="vm.currConfig.EthernetState=='enable'"
                                                ng-model="vm.configure.EthernetState" >
                                         enable
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="disable"
                                                ng-disabled="!vm.useConfig.EthernetState"
+                                               ng-checked="vm.currConfig.EthernetState=='disable'"
                                                ng-model="vm.configure.EthernetState">
                                         disable
                                     </label>
@@ -573,12 +592,14 @@ console.log(err);
                                     <label class="radio-inline">
                                         <input type="radio" value="dhcp"
                                                ng-disabled="!vm.useConfig.EthernetNetwork"
+                                               ng-checked="vm.currConfig.EthernetNetwork.ip_assignment=='dhcp'"
                                                ng-model="vm.configure.EthernetNetwork.ip_assignment" >
                                         DHCP
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="static"
                                                ng-disabled="!vm.useConfig.EthernetNetwork"
+                                               ng-checked="vm.currConfig.EthernetNetwork=='static'"
                                                ng-model="vm.configure.EthernetNetwork.ip_assignment">
                                         Static
                                     </label>
@@ -593,6 +614,7 @@ console.log(err);
                                            ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
                                            ng-pattern="vm.ipPattern"
                                            placeholder="ex, 192.168.1.49"
+                                           ng-value="vm.data.static_ip||''"
                                            class="form-control" 
                                            ng-model="vm.configure.EthernetNetwork.static_ip" />
                                     <div ng-show="ConfigForm.ethernetIp.$error.required" class="help-block">* Required</div>
@@ -608,6 +630,7 @@ console.log(err);
                                            ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
                                            ng-pattern="vm.ipPattern"
                                            placeholder="ex, 192.168.1.1"
+                                           ng-value="vm.currConfig.EthernetNetwork.gateway||''"
                                            class="form-control"
                                            ng-model="vm.configure.EthernetNetwork.gateway" />
                                     <div ng-show="ConfigForm.ethernetGateway.$error.required" class="help-block">* Required</div>
@@ -622,6 +645,7 @@ console.log(err);
                                            ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
                                            ng-pattern="vm.ipPattern"
                                            placeholder="ex, 255.255.255.0"
+                                           ng-value="vm.currConfig.EthernetNetwork.netMask||''"
                                            class="form-control" 
                                            ng-model="vm.configure.EthernetNetwork.netMask" />
                                     <div ng-show="ConfigForm.netMask.$error.required" class="help-block">* Required</div>
@@ -636,6 +660,7 @@ console.log(err);
                                            ng-required="vm.configure.EthernetNetwork.ip_assignment=='static'"
                                            ng-pattern="vm.ipPattern"
                                            placeholder="ex, 8.8.8.8"
+                                           ng-value="vm.currConfig.EthernetNetwork.dns||''"
                                            class="form-control" 
                                            ng-model="vm.configure.EthernetNetwork.dns" />
                                     <div ng-show="ConfigForm.dns.$error.required" class="help-block">* Required</div>
@@ -649,6 +674,7 @@ console.log(err);
                                     <input name="dns2"
                                            ng-pattern="vm.ipPattern"
                                            placeholder="ex, 4.4.4.4"
+                                           ng-value="vm.currConfig.EthernetNetwork.dns2||''"
                                            class="form-control"
                                            ng-init="null"
                                            ng-model="vm.configure.EthernetNetwork.dns2" />
@@ -667,13 +693,14 @@ console.log(err);
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.WifiState"
-                                           ng-change="vm.checkInitConfig('WifiState', vm.useConfig.WifiState, 'enable');vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false">
+                                           ng-change="vm.checkInitConfig('WifiState', vm.useConfig.WifiState, (vm.currConfig.WifiState||'enable'));vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false">
                                     Enable Wifi
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
                                         <input type="radio" value="enable"
                                                ng-disabled="!vm.useConfig.WifiState"
+                                               ng-checked="vm.currConfig.WifiState=='enable'"
                                                ng-model="vm.configure.WifiState" >
                                         enable
                                     </label>
@@ -681,6 +708,7 @@ console.log(err);
                                         <input type="radio" value="disable"
                                                ng-change="vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false"
                                                ng-disabled="!vm.useConfig.WifiState"
+                                               ng-checked="vm.currConfig.WifiState=='disable'"
                                                ng-model="vm.configure.WifiState">
                                         disable
                                     </label>
@@ -822,7 +850,7 @@ console.log(err);
                             </div>
                         </uib-accordion-group>
 
-                        <uib-accordion-group name="wifiGroup" is-open="vm.accordion.proxyOpen"
+                        <uib-accordion-group name="proxyGroup" is-open="vm.accordion.proxyOpen"
                                              template-url="accordion-group.html">
                             <uib-accordion-heading>
                                 Proxy <i class="pull-right glyphicon" 
@@ -831,68 +859,55 @@ console.log(err);
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingProxy"
-                                           ng-change="vm.checkInitConfig('SettingProxy', vm.useConfig.SettingProxy, 'none')">
+                                           ng-change="vm.checkInitConfig('SettingProxy', vm.useConfig.SettingProxy, (vm.currConfig.SettingProxy||'none'))">
                                     Proxy Settings
                                 </label>
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
                                         <input type="radio" value="none"
                                                ng-disabled="!vm.useConfig.SettingProxy"
+                                               ng-checked="vm.currConfig.SettingProxy=='none'"
                                                ng-model="vm.configure.SettingProxy" >
                                         none
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="static"
                                                ng-disabled="!vm.useConfig.SettingProxy"
+                                               ng-checked="vm.currConfig.SettingProxy=='static'"
                                                ng-model="vm.configure.SettingProxy" >
                                         static
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="pac"
                                                ng-disabled="!vm.useConfig.SettingProxy"
+                                               ng-checked="vm.currConfig.SettingProxy=='pac'"
                                                ng-model="vm.configure.SettingProxy" >
                                         pac
                                     </label>
                                 </div>
                             </div>
-                            <div show-errors class="form-group"  ng-hide="vm.configure.SettingProxy!=='static'">
-                                <label class="col-xs-3 control-label-left">
-                                    <input type="checkbox" ng-model="vm.useConfig.ProxyStaticHost"
-                                           ng-change="vm.checkInitConfig('ProxyStaticHost', vm.useConfig.ProxyStaticHost)">
-                                    Static Host
-                                </label>
+                            <div show-errors class="form-group"  ng-show="vm.configure.SettingProxy=='static'">
+                                <label class="col-xs-3 control-label-left">Host</label>
                                 <div class="col-xs-9">
-                                    <input ng-disabled="!vm.useConfig.ProxyStaticHost" class="form-control" ng-model="vm.configure.ProxyStaticHost">
+                                    <input name="proxyStaticHost" class="form-control" ng-init="null" ng-value="vm.currConfig.ProxyStaticHost" ng-model="vm.configure.ProxyStaticHost">
                                 </div>
                             </div>
-                            <div show-errors class="form-group"  ng-hide="vm.configure.SettingProxy!=='static'">
-                                <label class="col-xs-3 control-label-left">
-                                    <input type="checkbox" ng-model="vm.useConfig.ProxyStaticPort"
-                                           ng-change="vm.checkInitConfig('ProxyStaticPort', vm.useConfig.ProxyStaticPort)">
-                                    Static Port
-                                </label>
+                            <div show-errors class="form-group"  ng-show="vm.configure.SettingProxy=='static'">
+                                <label class="col-xs-3 control-label-left">Port</label>
                                 <div class="col-xs-9">
-                                    <input ng-disabled="!vm.useConfig.ProxyStaticPort" class="form-control" ng-model="vm.configure.ProxyStaticPort">
+                                    <input name="proxyStaticPort" class="form-control" ng-init="null" ng-value="vm.currConfig.ProxyStaticPort" ng-model="vm.configure.ProxyStaticPort">
                                 </div>
                             </div>
-                            <div show-errors class="form-group"  ng-hide="vm.configure.SettingProxy!=='static'">
-                                <label class="col-xs-3 control-label-left">
-                                    <input type="checkbox" ng-model="vm.useConfig.ProxyStaticExclusionList"
-                                           ng-change="vm.checkInitConfig('ProxyStaticExclusionList', vm.useConfig.ProxyStaticExclusionList)">
-                                    Static Exclusion List
-                                </label>
+                            <div show-errors class="form-group"  ng-show="vm.configure.SettingProxy=='static'">
+                                <label class="col-xs-3 control-label-left">Exclusion List</label>
                                 <div class="col-xs-9">
-                                    <input ng-disabled="!vm.useConfig.ProxyStaticExclusionList" class="form-control" ng-model="vm.configure.ProxyStaticExclusionList">
+                                    <input name="proxyStaticExclusionList" class="form-control" ng-value="vm.currConfig.ProxyStaticExclusionList||''" ng-init="null" ng-model="vm.configure.ProxyStaticExclusionList">
                                 </div>
                             </div>
-                            <div show-errors class="form-group"  ng-hide="vm.configure.SettingProxy!=='pac'">
-                                <label class="col-xs-3 control-label-left">
-                                    <input type="checkbox" ng-model="vm.useConfig.ProxyPacUrl"
-                                           ng-change="vm.checkInitConfig('ProxyPacUrl', vm.useConfig.ProxyPacUrl)">
-                                    PAC URL
-                                </label>
+                            <div show-errors class="form-group"  ng-show="vm.configure.SettingProxy=='pac'">
+                                <label class="col-xs-3 control-label-left">PAC URL</label>
                                 <div class="col-xs-9">
-                                    <input ng-disabled="!vm.useConfig.ProxyPacUrl" class="form-control" ng-model="vm.configure.ProxyPacUrl">
+                                    <input name="proxyPacUrl" class="form-control" ng-value="vm.currConfig.ProxyPacUrl||''" ng-init="null" ng-model="vm.configure.ProxyPacUrl">
                                 </div>
                             </div>
                         </uib-accordion-group>
@@ -907,33 +922,36 @@ console.log(err);
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-slider">
                                     <input type="checkbox" ng-model="vm.useConfig.AudioStreamMusic"
-                                           ng-change="vm.checkInitConfig('AudioStreamMusic', vm.useConfig.AudioStreamMusic, 50)">
+                                           ng-change="vm.checkInitConfig('AudioStreamMusic', vm.useConfig.AudioStreamMusic, (vm.currConfig.AudioStreamMusic||50))">
                                     Media
                                 </label>
                                 <div class="col-xs-9">
                                     <rzslider rz-slider-options="{floor: 0, ceil: 100, translate:vm.translateStreamVolume, disabled:!vm.useConfig.AudioStreamMusic}"
+                                        rz-slider-value="vm.currConfig.AudioStreamMusic||0"
                                               rz-slider-model="vm.configure.AudioStreamMusic"></rzslider>
                                 </div>
                             </div>
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-slider">
                                     <input type="checkbox" ng-model="vm.useConfig.AudioStreamAlarm"
-                                           ng-change="vm.checkInitConfig('AudioStreamAlarm', vm.useConfig.AudioStreamAlarm, 50)">
+                                           ng-change="vm.checkInitConfig('AudioStreamAlarm', vm.useConfig.AudioStreamAlarm, (vm.currConfig.AudioStreamAlarm||50))">
                                     Alarm
                                 </label>
                                 <div class="col-xs-9">
                                     <rzslider rz-slider-options="{floor: 0, ceil: 100, translate:vm.translateStreamVolume, disabled:!vm.useConfig.AudioStreamAlarm}"
+                                        rz-slider-value="vm.currConfig.AudioStreamAlarm||0"
                                               rz-slider-model="vm.configure.AudioStreamAlarm"></rzslider>
                                 </div>
                             </div>
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-slider">
                                     <input type="checkbox" ng-model="vm.useConfig.AudioStreamNotification"
-                                           ng-change="vm.checkInitConfig('AudioStreamNotification', vm.useConfig.AudioStreamNotification, 50)">
+                                           ng-change="vm.checkInitConfig('AudioStreamNotification', vm.useConfig.AudioStreamNotification, (vm.currConfig.AudioStreamNotification||50))">
                                     Notification
                                 </label>
                                 <div class="col-xs-9">
                                     <rzslider rz-slider-options="{floor: 0, ceil: 100, translate:vm.translateStreamVolume, disabled:!vm.useConfig.AudioStreamNotification}"
+                                        rz-value="vm.currConfig.AudioStreamNotification||0"
                                               rz-slider-model="vm.configure.AudioStreamNotification"></rzslider>
                                 </div>
                             </div>
