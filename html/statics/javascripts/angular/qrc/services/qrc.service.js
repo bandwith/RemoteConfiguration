@@ -113,6 +113,7 @@
         }
         function setSettings(key, value, idx) {
             var url = buildUrl("/v1/settings/" + key, idx);
+            console.log(key+': '+value);
             return $http.post(url, {
                 "value": value}, getConfig(idx));
         }

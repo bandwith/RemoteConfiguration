@@ -52,21 +52,21 @@
             "SecurityPassword",
             "WifiState",
             "WifiNetwork",
+            "SettingsProxy",
             "EthernetNetwork",
             "EthernetState",
-            "SettingProxy",
             "DoneConfig",
         ];
         var vm = this;
+            vm.configure = {};
+        var getVm = function() { return vm; }
 
 
         activate();
 
         function activate() {
             vm.current_password = "";
-            vm.configure = {};
             vm.useConfig = {};
-            vm.currConfig = {};
             vm.exportConfig = {};
 
             if (sessionStorage && sessionStorage.cacheConfigurationData) {
@@ -669,6 +669,9 @@
         }
 
         function startConfigure() {
+            // fix closure issue
+            window.rccConfigure = vm.configure;
+
             if (vm.isConfiguring) {
                 stopConfigure();
                 return;
@@ -808,20 +811,20 @@
         }
 
         function checkReadyToConfigure() {
-            var count = 0,
-                devIdx = -1;
+            var status = false,
+                count = 0,
+                devIndex = -1;
             for (var i in vm.scannedDevices) {
                 if (vm.scannedDevices[i].isSelected) {
-                    devIdx = i;
+                    devIndex = i;
                     ++count;
+                    status = true;
                 }
             }
-            vm.isStartConfigureDisabled = !(0<count);
-
-            // show device information
-            vm.currConfig = {};
+            vm.isStartConfigureDisabled = !status;
+            vm.configure = {};
             if (1 === count) {
-                var device = vm.scannedDevices[devIdx];
+                var device = vm.scannedDevices[devIndex];
                 QRC.setTargetIpAddress(device.ip, device.index);
                 QRC.getToken((vm.current_password||'12345678'), device.index).then(function(data) {
                     QRC.setTargetAuthToken(data.data.access_token, device.index);
@@ -832,52 +835,45 @@
                         };
                     steps.push(function(callback) {
                         QRC.getSettings('', device.index).then(function(data) {
-                            var settings = data.data.results;
-                            vm.currConfig.Timezone = settings.timezone;
-                            vm.currConfig.SettingsPlayerName = settings.player_name;
-                            vm.currConfig.SettingsPlayGroup = settings.play_group;
-                            vm.currConfig.SettingsNtpServer = settings.ntp_server;
-                            vm.currConfig.SettingsSmilContentUrl = settings.smil_content_url;
-                            vm.currConfig.SettingsAdbEnabled = settings.adb_enabled;
-                            vm.currConfig.SettingsAdbEnabled = (settings.adb_enabled ?'enable' :'disable');
-                            vm.currConfig.SettingsAdbOverTcp = (settings.adb_over_tcp ?'enable' :'disable');
-                            vm.currConfig.SettingsRebootTime = (settings.reboot_time
-                                ?settings.reboot_time
-                                    .split(':')
-                                    .map(function(n) { return ('0'+n).slice(-2); })
-                                    .join(':')
-                                :null
-                            );
-                            vm.currConfig.SettingsRebootTimeOptimized = (settings.is_reboot_optimized ?'enable' :'disable');
-                            vm.currConfig.SettingsScreenOrientation = settings.screen_orientation;
-                            vm.currConfig.SettingsOtaXmlUrl = settings.ota_xml_url;
+                            data = data.data.results;
+                            vm.configure.Timezone = data.timezone;
+                            vm.configure.SettingsPlayerName = data.player_name;
+                            vm.configure.SettingsPlayGroup = data.play_group;
+                            vm.configure.SettingsNtpServer = data.ntp_server;
+                            vm.configure.SettingsSmilContentUrl = data.content_url;
+                            vm.configure.SettingsAdbEnabled = (data.adb_enabled ?'enable' :'disable');
+                            vm.configure.SettingsAdbOverTcp = (data.adb_over_tcp ?'enable' :'disable');
+                            vm.configure.SettingsRebootTimeOptimized = (data.is_reboot_optimized ?'enable' :'disable');
+                            vm.configure.SettingsScreenOrientation = data.screen_orientation;
+                            vm.configure.SettingsOtaXmlUrl = data.ota_xml_url;
+                            var d = (data.reboot_time||'').split(':'),
+                                dt = new Date();
+                            if (d) dt.setHours(d[0], d[1], 0, 0);
+                            vm.configure.SettingsRebootTime = (d ?dt :null);
                             callback();
                         });
                     });
                     steps.push(function(callback) {
                         QRC.getEth0State(device.index).then(function(data) {
-                            vm.currConfig.EthernetState = (data.data.value==='enabled' ?'enable' :'disable');
-                            callback();
-                        });
-                    });
-                    steps.push(function(callback) {
-                        QRC.getEth0Network(device.index).then(function(data) {
-                            vm.currConfig.EthernetNetwork = data.data;
+                            vm.configure.EthernetState = (data.data.value==='enabled' ?'enable' :'disable');
                             callback();
                         });
                     });
                     steps.push(function(callback) {
                         QRC.getWifiState(device.index).then(function(data) {
-                            vm.currConfig.WifiState = (data.data.value==='enabled' ?'enable' :'disable');
+                            vm.configure.WifiState = (data.data.value==='enabled' ?'enable' :'disable');
+                            callback();
+                        });
+                    });
+                    steps.push(function(callback) {
+                        QRC.getEth0Network(device.index).then(function(data) {
+                            vm.configure.EthernetNetwork = data.data;
                             callback();
                         });
                     });
                     steps.push(function(callback) {
                         QRC.listAudioVolume(device.index).then(function(data) {
                             data = data.data.results;
-                            vm.currConfig.AudioStreamMusic = data.stream_music;
-                            vm.currConfig.AudioStreamAlarm = data.stream_alarm;
-                            vm.currConfig.AudioStreamNotification = data.stream_notification;
                             vm.configure.AudioStreamMusic = data.stream_music;
                             vm.configure.AudioStreamAlarm = data.stream_alarm;
                             vm.configure.AudioStreamNotification = data.stream_notification;
@@ -887,28 +883,20 @@
                     steps.push(function(callback) {
                         QRC.getProxy(device.index).then(function(data) {
                             data = data.data;
-                            if (data.proxy_pac_url) {
-                                vm.currConfig.SettingProxy = 'pac';
-                                vm.currConfig.ProxyPacUrl = data.proxy_pac_url;
-                            }
-                            else if (data.proxy_static_host) {
-                                vm.currConfig.SettingProxy = 'static';
-                                vm.currConfig.ProxyStaticHost = data.proxy_static_host;
-                                vm.currConfig.ProxyStaticPort = data.proxy_static_port;
-                                vm.currConfig.ProxyStaticExclusionList = (data.proxy_static_exclusion_list||[]).join(',');
-                            }
-                            else {
-                                vm.currConfig.SettingProxy = 'none';
-                            }
-                            vm.configure.SettingProxy = vm.currConfig.SettingProxy;
+                            if (data.proxy_pac_url) data.type = 'pac';
+                            else if (data.proxy_static_host) data.type = 'static';
+                            else data.type = 'none';
+                            vm.configure.SettingsProxy = data;
                             callback();
                         });
-                    });
+                    });/*
+                    steps.push(function(callback) {
+                        console.log(vm.configure)
+                    });*/
                     nextStep();
                 });
             }
-
-            return count;
+            return status;
         }
 
         function runConfigureCase(caseIdx, device, isSimulate) {
@@ -1009,6 +997,10 @@
 
 
             function runConfigureByKey(configKey, caseIdx, device) {
+                // fix closure issue
+                vm.configure = window.rccConfigure;
+                console.log(configKey)
+                
                 var retryWifi = 0;
                 var MAX_RETRY = 20;
                 var RETRY_DELAY = 1000; //we give it 20 (20 * 1000ms) sec to retry wifi network setup
@@ -1187,8 +1179,7 @@
                         readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "Timezone") {
-                    if (!vm.configure[configKey] ||
-                        vm.configure[configKey] == vm.currConfig[configKey]) {
+                    if (!vm.configure[configKey]) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
@@ -1203,8 +1194,7 @@
                     }
 
                 } else if (configKey == "AudioStreamMusic") {
-                    if (vm.configure[configKey] == vm.currConfig[configKey] ||
-                        vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
@@ -1219,8 +1209,7 @@
                         readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "AudioStreamNotification") {
-                    if (vm.configure[configKey] == vm.currConfig[configKey] ||
-                        vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
@@ -1235,8 +1224,7 @@
                         readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "AudioStreamAlarm") {
-                    if (vm.configure[configKey] == vm.currConfig[configKey] ||
-                        vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
                         readyForNextConfig(device, caseIdx, true);
                         return;
                     }
@@ -1324,51 +1312,37 @@
                                 vm.configure.WifiNetwork.advanced.network_prefix_length =
                                     netMaskToPrefixLength(vm.configure.WifiNetwork.advanced.netMask);
                             }
+                            // TODO: Set proxy
                             var url = QRC.buildUrl("/v1/wifi/network", device.index);
                             var param = vm.configure.WifiNetwork;
                             vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                             readyForNextConfig(device, caseIdx, true);
                         }
                     }
-                } else if (configKey == "SettingProxy") {
-                    var proxySettings = false;
-                    if (vm.configure.SettingProxy == vm.currConfig.SettingProxy) {
-                        proxySettings = false;
+                } else if (configKey == "SettingsProxy") {
+                    var data = vm.configure.SettingsProxy;
+                    var proxySetting = {
+                        proxy_settings: data.type
+                    };
+                    switch (proxySetting.proxy_settings) {
+                        case 'static':
+                            proxySetting.proxy_static_host = data.proxy_static_host;
+                            proxySetting.proxy_static_port = data.proxy_static_port;
+                            proxySetting.proxy_static_exclusion_list = (data.proxy_static_exclusion_list||'');
+                            break;
+                        case 'pac':
+                            proxySetting.proxy_pac_url = data.proxy_pac_url;
+                            break;
                     }
-                    if ("none" === vm.configure.SettingProxy) {
-                        proxySettings = {
-                            proxy_settings: 'none'
-                        };
-                    }
-                    else if ("static" === vm.configure.SettingProxy) {
-                        proxySettings = {
-                            proxy_settings: 'static',
-                            proxy_static_host: vm.configure.ProxyStaticHost,
-                            proxy_static_port: vm.configure.ProxyStaticPort,
-                            proxy_static_exclusion_list: vm.configure.ProxyStaticExclusionList
-                        };
-                    }
-                    else if ("pac" === vm.configure.SettingProxy) {
-                        proxySettings = {
-                            proxy_settings: 'pac',
-                            proxy_pac_url: vm.configure.ProxyPacUrl
-                        };
-                    }
-
-                    if (proxySettings) {
-                        if (vm.remote_or_export=='remote') {
-                            QRC.setProxy(proxySettings, device.index)
-                                .then(successConfigFn, errorConfigFn);
-                        }
-                        else {
-                            var url = QRC.buildUrl("/v1/net/proxy", device.index);
-                            vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":proxySettings};
-                            readyForNextConfig(device, caseIdx, true);
-                        }
-                    }
-                    else {
-                        printConfigureError("Un-recognized proxy type:"+vm.configure.SettingProxy);
-                        readyForNextConfig(device, caseIdx, false);
+                    if(vm.remote_or_export=='remote') {
+                        console.log(proxySetting);
+                        console.log(data);
+                        QRC.setProxy(proxySetting, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/net/proxy", device.index);
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":proxySetting};
+                        readyForNextConfig(device, caseIdx, true);
                     }
                 } else {
                     printConfigureError("Un-recognized configKey:" + configKey);
@@ -1408,6 +1382,7 @@
                         vm.configure.WifiNetwork.advanced.network_prefix_length =
                             netMaskToPrefixLength(vm.configure.WifiNetwork.advanced.netMask);
                     }
+                    // TODO: Set proxy
                 }
                 QRC.setWifiNetwork(vm.configure.WifiNetwork, device.index)
                     .then(successConfigFn, errorConfigFn);
@@ -1646,7 +1621,7 @@
                     var d = new Date("January 1, 1972 04:00:00");
                     vm.configure[configKey] = d;
                 } else if (typeof value == 'undefined') {
-                    vm.configure[configKey] = "";
+                    //vm.configure[configKey] = "";
                 } else {
                     vm.configure[configKey] = value;
                 }
