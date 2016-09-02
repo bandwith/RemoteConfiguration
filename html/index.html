@@ -534,6 +534,19 @@ console.log(err);
                                            class="form-control" ng-model="vm.configure.SettingsOtaXmlUrl" />
                                 </div>
                             </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.SettingsAppOtaXmlUrl"
+                                           ng-change="vm.checkInitConfig('SettingsAppOtaXmlUrl', vm.useConfig.SettingsAppOtaXmlUrl)">
+                                    App OTA Xml Url
+                                </label>
+                                <div class="col-xs-9">
+                                    <input
+                                           placeholder="ex, http://192.168.1.3/web/app/testapp.xml"
+                                           ng-disabled="!vm.useConfig.SettingsAppOtaXmlUrl"
+                                           class="form-control" ng-model="vm.configure.SettingsAppOtaXmlUrl" />
+                                </div>
+                            </div>
                         </uib-accordion-group>
                         <uib-accordion-group name="ethernetGroup" is-open="vm.accordion.ethernetOpen"
                                              template-url="accordion-group.html">

@@ -41,6 +41,7 @@
             "SettingsRebootTimeOptimized",
             "SettingsScreenOrientation",
             "SettingsOtaXmlUrl",
+            "SettingsAppOtaXmlUrl",
             "AudioStreamMusic",
             "AudioStreamNotification",
             "AudioStreamAlarm",
@@ -846,6 +847,7 @@
                             vm.configure.SettingsRebootTimeOptimized = (data.is_reboot_optimized ?'enable' :'disable');
                             vm.configure.SettingsScreenOrientation = data.screen_orientation;
                             vm.configure.SettingsOtaXmlUrl = data.ota_xml_url;
+                            vm.configure.SettingsAppOtaXmlUrl = data.app_ota_xml_url;
                             var d = (data.reboot_time||'').split(':'),
                                 dt = new Date();
                             if (d) dt.setHours(d[0], d[1], 0, 0);
@@ -1103,6 +1105,17 @@
                             .then(successConfigFn, errorConfigFn);
                     } else {
                         var url = QRC.buildUrl("/v1/settings/ota_xml_url", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsAppOtaXmlUrl") {
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("app_ota_xml_url",
+                                        vm.configure[configKey], device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/app_ota_xml_url", device.index);
                         var param = {"value": vm.configure[configKey]};
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
