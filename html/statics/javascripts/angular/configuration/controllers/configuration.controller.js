@@ -629,7 +629,7 @@
                 QRC.getToken((vm.current_password||'12345678'), device.index)
                     .then(function(data) {
                         QRC.setTargetAuthToken(data.data.access_token, device.index);
-                        (QRC.reboot(device.index);
+                        QRC.reboot(device.index);
                     }, function(e) { console.error(e); });
             });
         }
