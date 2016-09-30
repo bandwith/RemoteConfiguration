@@ -960,6 +960,18 @@ console.log(err);
                                 </div>
                             </div>
                         </uib-accordion-group>
+                        <uib-accordion-group is-open="vm.accordion.remoteControl" template-url="accordion-group.html">
+                            <uib-accordion-heading>
+                                Remote Control<i class="pull-right glyphicon"
+                                               ng-class="{'glyphicon-chevron-down': vm.accordion.remoteControl, 'glyphicon-chevron-right': !vm.accordion.remoteControl}"></i>
+                            </uib-accordion-heading>
+                            <div class="alert alert-warning">Remote control devices.</div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-slider">
+                                    <button ng-disabled="(vm.isStartConfigureDisabled)" class="btn btn-error pull-left" ng-click="vm.remoteReboot();">Remote Reboot</button>
+                                </label>
+                            </div>
+                        </uib-accordion-group>
                     </uib-accordion>
 
 

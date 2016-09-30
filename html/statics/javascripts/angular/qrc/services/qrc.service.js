@@ -18,6 +18,8 @@
             setTargetAuthToken: setTargetAuthToken,
 
             // Followings are QRC API
+            reboot: reboot,
+
             getPublicInfo: getPublicInfo,
             getToken: getToken,
             getInfo: getInfo,
@@ -89,6 +91,10 @@
 
 
         // Followings are QRC API
+        function reboot(idx) {
+            var url = buildUrl("/v1/task/reboot", idx);
+            return $http.post(url, {}, getConfig(idx));
+        }
 
         function getPublicInfo(key, idx) {
             var url = buildUrl("/v1/public/info?key=" + key, idx);

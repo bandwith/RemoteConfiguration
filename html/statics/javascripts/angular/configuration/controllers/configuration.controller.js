@@ -123,6 +123,7 @@
             vm.isConfiguring = 0;
             vm.isConfigClicked = false;
             vm.startConfigString = 'Start Configuration';
+            vm.remoteReboot = remoteReboot;
 
             vm.countStatus = countStatus;
             vm.scanDevice = scanDevice;
@@ -616,6 +617,23 @@
         // ---------- End of For Scan Tab ---------- 
 
         // ---------- For Configure Tab ---------- 
+        function remoteReboot() {
+            var devices = [];
+            for (var devIdx in vm.scannedDevices) {
+                if (vm.scannedDevices[devIdx].isSelected) {
+                    devices.push(vm.scannedDevices[devIdx]);
+                }
+            }
+            devices.forEach(function(device) {
+                QRC.setTargetIpAddress(device.ip, device.index);
+                QRC.getToken((vm.current_password||'12345678'), device.index)
+                    .then(function(data) {
+                        QRC.setTargetAuthToken(data.data.access_token, device.index);
+                        (QRC.reboot(device.index);
+                    }, function(e) { console.error(e); });
+            });
+        }
+
         function clearInput() {
             vm.current_password = "";
             vm.configure = {};
