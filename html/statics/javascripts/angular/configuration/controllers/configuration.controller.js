@@ -243,30 +243,31 @@
                         stopScan();
                         return
                     };
-                    if (!isIpRangeValid(range_start, range_end)) {
-                        printScanError("Invalid IP range:" +
-                                       range_start + "~" + range_end +
-                                       "\nShould be within a C Class IP (ex, 192.168.0.1 ~ 192.168.0.254)");
-                        stopScan();
-                        return;
-                    }
-                    var ip_prefix = range_start.replace(/\.[\d]+$/, '.');
-                    var ip_start = parseInt(range_start.match(/\.[\d]+$/)[0].replace(/\./,''));
-                    var ip_end = parseInt(range_end.match(/\.[\d]+$/)[0].replace(/\./,''));
-                    if (ip_end < ip_start) {
+                    var std_ip = function(ip) {
+                        return parseInt(ip.split('.').map(function(n) {
+                            return ('00'+n).slice(-3);
+                        }).join(''));
+                    };
+                    if (std_ip(range_end) < std_ip(range_start)) {
                         printScanError("Start IP '" + range_start +
                                        "' should be smaller than End IP '"+ range_end +"'");
                         stopScan();
                         return;
                     }
-                    for (var ip = ip_start; ip <= ip_end; ip++) {
-                        var targetIP = ip_prefix + ip;
-                        if (targetIP in scannedIPs) continue;
-                        scannedIPs[targetIP] = 0;
-                        requestNum++;
-                        j++;
-                        if ((j % NUM_IN_ROUND) == 0) {
-                            timeCost += DELAY_PER_ROUND_MS;
+                    var ip_prefix = range_start.replace(/[\d]+\.[\d]+$/, '');
+                    for (var ip3=parseInt(range_start.split('.')[2]),
+                        ip3ub=parseInt(range_end.split('.')[2]); ip3<=ip3ub; ip3++) {
+                        var ip_head = (ip_prefix+ip3+'.');
+                        for (var ip4=parseInt(range_start.split('.')[3]),
+                            ip4up=parseInt(range_end.split('.')[3]); ip4<=ip4up; ip4++) {
+                            var targetIP = (ip_head+ip4);
+                            if (targetIP in scannedIPs) continue;
+                            scannedIPs[targetIP] = 0;
+                            requestNum++;
+                            j++;
+                            if ((j%NUM_IN_ROUND) == 0) {
+                                timeCost += DELAY_PER_ROUND_MS;
+                            }
                         }
                     }
                 }
