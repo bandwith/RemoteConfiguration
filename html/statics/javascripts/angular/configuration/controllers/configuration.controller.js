@@ -889,6 +889,17 @@
                     steps.push(function(callback) {
                         QRC.getEth0Network(device.index).then(function(data) {
                             vm.configure.EthernetNetwork = data.data;
+                            console.log(data.data);
+                            var len = data.data.network_prefix_length,
+                                str = '';
+                            for (var i=0; i<len; i++) str += '1';
+                            for (; i<32; i++) str += '0';
+                            vm.configure.EthernetNetwork.netMask = (
+                                parseInt(str.substr(0, 8), 2)
+                                +'.'+parseInt(str.substr(8, 8), 2)
+                                +'.'+parseInt(str.substr(16, 8), 2)
+                                +'.'+parseInt(str.substr(24, 8), 2)
+                            );
                             callback();
                         });
                     });
