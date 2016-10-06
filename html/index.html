@@ -979,6 +979,18 @@ console.log(err);
                                     <button type="button" ng-disabled="(vm.isStartConfigureDisabled)" class="btn btn-error pull-left" ng-click="vm.remoteReboot();">Remote Reboot</button>
                                 </label>
                             </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.FirmwareUpdate">
+                                    Firmware Update
+                                </label>
+                                <div class="col-xs-9">
+                                    <input data-bind-file=""
+                                           type="file" 
+                                           ng-disabled="!vm.useConfig.FirmwareUpdate"
+                                           class="form-control" ng-model="vm.firmwareFile" ng-change="vm.onFirmwareFileChange" />
+                                </div>
+                            </div>
                         </uib-accordion-group>
                     </uib-accordion>
 

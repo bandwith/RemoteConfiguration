@@ -12,6 +12,10 @@
         }
 
         var QRC = {
+            getTokenVal: function(idx) {
+                return authToken[idx];
+            },
+
             // Followings are only utils
             setTargetIpAddress: setTargetIpAddress,
             getHashCode: getHashCode,

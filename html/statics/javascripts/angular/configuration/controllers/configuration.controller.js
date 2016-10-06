@@ -4,6 +4,23 @@
     angular
         .module('qrc-center.configuration.controllers')
         .controller('ConfigurationController', ConfigurationController)
+        .directive('bindFile', function() {
+            return {
+                require: 'ngModel',
+                restrict: 'A',
+                link: function($scope, el, attrs, ngModel) {
+                    el.bind('change', function(e) {
+                        ngModel.$setViewValue(e.target.files[0]);
+                        $scope.$apply();
+                    });
+                    $scope.$watch(function() {
+                        return ngModel.$viewValue;
+                    }, function(value) {
+                        if (!value) el.val('');
+                    });
+                }
+            };
+        })
         .directive('afterRender', ['$timeout', function($timeout) {
             return {
                 restrict: 'A',
@@ -13,9 +30,9 @@
             };
         }]);
 
-    ConfigurationController.$inject = ['QRC', '$scope', '$injector', '$timeout', '$http', '$q', 'blockUI'];
+    ConfigurationController.$inject = ['QRC', '$scope', '$injector', '$parse', '$timeout', '$http', '$q', 'blockUI'];
 
-    function ConfigurationController(QRC, $scope, $injector, $timeout, $http, $q, blockUI) {
+    function ConfigurationController(QRC, $scope, $injector, $parse, $timeout, $http, $q, blockUI) {
 
         var scanRequestsTimer = [];
         var scanRequestCaller = [];
@@ -56,12 +73,12 @@
             "SettingsProxy",
             "EthernetNetwork",
             "EthernetState",
+            "FirmwareUpdate",
             "DoneConfig",
         ];
         var vm = this;
             vm.configure = {};
         var getVm = function() { return vm; }
-
 
         activate();
 
@@ -133,6 +150,10 @@
             vm.onRemoveAllClick = onRemoveAllClick;
             vm.saveScannedResult = saveScannedResult;
             vm.lastScannedSerialNum = {};
+            vm.firmwareFile;
+            vm.onFirmwareFileChange = function() {
+                console.log(this, vm.firmwareFile);
+            };
             //vm.localStorageName = 'lastResults';
             vm.hasLastScannedResults = false;
             vm.firstCome = true;
@@ -1071,7 +1092,6 @@
             function runConfigureByKey(configKey, caseIdx, device) {
                 // fix closure issue
                 vm.configure = window.rccConfigure;
-                console.log(configKey)
                 
                 var retryWifi = 0;
                 var MAX_RETRY = 20;
@@ -1427,6 +1447,36 @@
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":proxySetting};
                         readyForNextConfig(device, caseIdx, true);
                     }
+                } else if (configKey == "FirmwareUpdate") {
+                    var token = QRC.getTokenVal(device.index),
+                        xhr = new XMLHttpRequest(),
+                        data = new FormData(),
+                        $preg = $('<span>'),
+                        $msg = $('<div>')
+                            .attr('id', 'progress')
+                            .hide()
+                            .append($('<div>')
+                                .addClass('box')
+                                .append($('<span>').html('Firmware Upload: '))
+                                .append($preg)
+                            );
+                    data.append('file', vm.firmwareFile);
+                    xhr.open('POST', ('http://'+device.ip+':8080/v1/task/update_firmware'), true);
+                    //xhr.setRequestHeader('Content-Type', 'multipart/form-data');
+                    xhr.setRequestHeader('Authorization', ('Bearer '+token));
+                    xhr.upload.onprogress = function(e) {
+                        $preg.html(parseInt(100*e.loaded/e.total)+'%');
+                    };
+                    xhr.onreadystatechange = function(e) {
+                        if (this.readyState != 4) return;
+                        if (this.status == 200) successConfigFn(this.response);
+                        else errorConfigFn(this.response);
+                        $msg.fadeOut(function() {
+                            $(this).remove();
+                        });
+                    };
+                    $('body').append($msg.fadeIn());
+                    xhr.send(data);
                 } else {
                     printConfigureError("Un-recognized configKey:" + configKey);
                     readyForNextConfig(device, caseIdx, false);

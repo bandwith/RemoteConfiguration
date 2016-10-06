@@ -37,6 +37,7 @@
     cursor: pointer;
 }
 
+#progress,
 #screenshot {
     position: fixed;
     top: 0;
@@ -46,11 +47,19 @@
     background: rgba(0, 0, 0, 0.5);
     z-index: 10000;
 }
+#progress .box,
 #screenshot .box {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+#progress .box {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+}
+#screenshot .box {
     padding: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     background: #fff;
