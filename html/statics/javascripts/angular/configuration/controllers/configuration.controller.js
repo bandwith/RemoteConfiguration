@@ -128,6 +128,7 @@
             vm.countStatus = countStatus;
             vm.scanDevice = scanDevice;
             vm.checkLastResults = checkLastResults;
+            vm.onScreenshotClick = onScreenshotClick;
             vm.onRemoveClick = onRemoveClick;
             vm.onRemoveAllClick = onRemoveAllClick;
             vm.saveScannedResult = saveScannedResult;
@@ -533,6 +534,46 @@
             }));
         }
 
+        function onScreenshotClick(row, inx) {
+            var index = vm.lastScannedSerialNum[row.serial_number],
+                device = vm.scannedDevices[index];
+            QRC.setTargetIpAddress(device.ip, device.index);
+            QRC.getToken((vm.current_password||'12345678'), device.index)
+                .then(function(data) {
+                    var xml = new XMLHttpRequest();
+                    xml.open('GET', ('http://'+device.ip+':8080/v1/task/screenshot'), true);
+                    xml.setRequestHeader('Authorization', ('Bearer '+data.data.access_token));
+                    xml.responseType = 'arraybuffer';
+                    xml.onload = function() {
+                        var data = this.response,
+                            uInt8Arr = new Uint8Array(data),
+                            len = uInt8Arr.length,
+                            bStr = new Array(len);
+                        while (len--) bStr[len] = String.fromCharCode(uInt8Arr[len]);
+                        $('body').append($('<div>')
+                            .hide()
+                            .attr('id', 'screenshot')
+                            .append($('<div>')
+                                .addClass('box')
+                                .append($('<img>')
+                                    .attr('src', ('data:image/jpeg;base64,'+btoa(bStr.join(''))))
+                                )
+                                .on('click', function(e) {
+                                    e.stopPropagation();
+                                })
+                            )
+                            .on('click', function() {
+                                $(this).fadeOut(function() {
+                                    $(this).remove();
+                                })
+                            })
+                            .fadeIn()
+                        );
+                    };
+                    xml.send();
+                }, function(e) { console.error(e); });
+        }
+
         function onRemoveClick(row, inx) {
             var serial_number = row.serial_number;
             var index = vm.lastScannedSerialNum[serial_number];
@@ -889,7 +930,6 @@
                     steps.push(function(callback) {
                         QRC.getEth0Network(device.index).then(function(data) {
                             vm.configure.EthernetNetwork = data.data;
-                            console.log(data.data);
                             var len = data.data.network_prefix_length,
                                 str = '';
                             for (var i=0; i<len; i++) str += '1';

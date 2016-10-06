@@ -19,6 +19,7 @@
 
             // Followings are QRC API
             reboot: reboot,
+            getScreenshot: getScreenshot,
 
             getPublicInfo: getPublicInfo,
             getToken: getToken,
@@ -94,6 +95,10 @@
         function reboot(idx) {
             var url = buildUrl("/v1/task/reboot", idx);
             return $http.post(url, {}, getConfig(idx));
+        }
+        function getScreenshot(idx) {
+            var url = buildUrl("/v1/task/screenshot", idx);
+            return $http.get(url, getConfig(idx));
         }
 
         function getPublicInfo(key, idx) {

@@ -201,6 +201,7 @@ console.log(err);
                                     <col width="5%">
                                     <col width="5%">
                                     <col width="5%">
+                                    <col width="5%">
                                     <col width="20%">
                                     <col width="20%">
                                     <col width="20%">
@@ -208,19 +209,21 @@ console.log(err);
                                     <col width="5%">
                                     <thead>
                                         <tr>
-                                            <th>Select</th>
-                                            <th>Refresh</th>
-                                            <th st-sort="status">Status</th>
-                                            <th st-sort="ip">IP</th>
-                                            <th st-sort="model_id">Model ID</th>
-                                            <th st-sort="player_name">Name</th>
-                                            <th st-sort="serial_number">Serial</th>
-                                            <th>Remove</th>
+                                            <th></th>
+                                            <th class="text-center">Refresh</th>
+                                            <th class="text-center" st-sort="status">Status</th>
+                                            <th></th>
+                                            <th class="text-center" st-sort="ip">IP</th>
+                                            <th class="text-center" st-sort="model_id">Model ID</th>
+                                            <th class="text-center" st-sort="player_name">Name</th>
+                                            <th class="text-center" st-sort="serial_number">Serial Number</th>
+                                            <th class="text-center">Remove</th>
                                         </tr>
                                         <tr>
                                             <th class="text-center">
                                                 <input type="checkbox" ng-change="vm.onSTableAllChecked();" ng-model="vm.STableSelectAllDevices"/>
                                             </th>
+                                            <th></th>
                                             <th></th>
                                             <th></th>
                                             <th>
@@ -260,6 +263,11 @@ console.log(err);
                                             </td>
                                             <td class="text-center device-highlight">
                                                 <span class="device-status"></span>
+                                            </td>
+                                            <td class="text-center device-highlight">
+                                                <span class="device-screenshot glyphicon glyphicon-camera"
+                                                    ng-click="vm.onScreenshotClick(row, $index); $event.stopPropagation();">
+                                                </span>
                                             </td>
                                             <td>{{row.ip | uppercase}}</td>
                                             <td>{{row.model_id}}</td>
