@@ -562,6 +562,14 @@
             QRC.setTargetIpAddress(device.ip, device.index);
             QRC.getToken((vm.current_password||'12345678'), device.index)
                 .then(function(data) {
+                    var $box = $('<div>').addClass('box');
+                    var $mask = $('<div>');
+                    $('body').append($mask
+                        .hide()
+                        .attr('id', 'screenshot')
+                        .append($box)
+                        .fadeIn()
+                    );
                     var xhr = new XMLHttpRequest();
                     xhr.open('GET', ('http://'+device.ip+':8080/v1/task/screenshot'), true);
                     xhr.setRequestHeader('Authorization', ('Bearer '+data.data.access_token));
@@ -572,25 +580,18 @@
                             len = uInt8Arr.length,
                             bStr = new Array(len);
                         while (len--) bStr[len] = String.fromCharCode(uInt8Arr[len]);
-                        $('body').append($('<div>')
-                            .hide()
-                            .attr('id', 'screenshot')
-                            .append($('<div>')
-                                .addClass('box')
-                                .append($('<img>')
-                                    .attr('src', ('data:image/jpeg;base64,'+btoa(bStr.join(''))))
-                                )
-                                .on('click', function(e) {
-                                    e.stopPropagation();
-                                })
+                        $box
+                            .append($('<img>')
+                                .attr('src', ('data:image/jpeg;base64,'+btoa(bStr.join(''))))
                             )
-                            .on('click', function() {
-                                $(this).fadeOut(function() {
-                                    $(this).remove();
-                                })
+                            .on('click', function(e) {
+                                e.stopPropagation();
+                            });
+                        $mask.on('click', function() {
+                            $(this).fadeOut(function() {
+                                $(this).remove();
                             })
-                            .fadeIn()
-                        );
+                        });
                     };
                     xhr.send();
                 }, function(e) {
