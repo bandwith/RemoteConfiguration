@@ -243,6 +243,11 @@
 
             //var round = 0;
             var useIpList = ('undefined'!==typeof ipList);
+            var std_ip = function(ip) {
+                return parseInt(ip.split('.').map(function(n) {
+                    return ('00'+n).slice(-3);
+                }).join(''));
+            };
 
             // First, count how manu request we need and check if all ip range's format are valid.
             if (useIpList) {
@@ -266,11 +271,6 @@
                         stopScan();
                         return
                     };
-                    var std_ip = function(ip) {
-                        return parseInt(ip.split('.').map(function(n) {
-                            return ('00'+n).slice(-3);
-                        }).join(''));
-                    };
                     if (std_ip(range_end) < std_ip(range_start)) {
                         printScanError("Start IP '" + range_start +
                                        "' should be smaller than End IP '"+ range_end +"'");
@@ -293,6 +293,7 @@
                             }
                         }
                     }
+console.log(scannedIPs);
                 }
             }
             vm.timeCostEstimate = RETRY_TIMES*(timeCost+SCAN_TIMEOUT)/1000;
@@ -346,36 +347,37 @@
                     var range_start = vm.ipCandidates[i].range_start;
                     var range_end = vm.ipCandidates[i].range_end;
 
-                    var ip_prefix = range_start.replace(/\.[\d]+$/, '.');
-                    var ip_start = parseInt(range_start.match(/\.[\d]+$/)[0].replace(/\./,''));
-                    var ip_end = parseInt(range_end.match(/\.[\d]+$/)[0].replace(/\./,''));
+                    var ip_prefix = range_start.replace(/[\d]+\.[\d]+$/, '');
+                    for (var ip3=parseInt(range_start.split('.')[2]),
+                        ip3ub=parseInt(range_end.split('.')[2]); ip3<=ip3ub; ip3++) {
+                        var ip_head = (ip_prefix+ip3+'.');
+                        for (var ip4=parseInt(range_start.split('.')[3]),
+                            ip4up=parseInt(range_end.split('.')[3]); ip4<=ip4up; ip4++) {
+                            var targetIP = (ip_head+ip4);
+                            if (targetIP in scannedIPs) continue;
+                            scannedIPs[targetIP] = 0;
 
-                    for (var ip = ip_start; ip <= ip_end; ip++) {
-                        if (!vm.isScanning) break;
-                        var targetIP = ip_prefix + ip;
-                        if (targetIP in scannedIPs) continue;
-                        scannedIPs[targetIP] = 0;
+                            var dev = getDeviceByIp(targetIP);
+                            if (dev) dev.status = 'processing';
 
-                        var dev = getDeviceByIp(targetIP);
-                        if (dev) dev.status = 'processing';
+                            var req = $timeout(function(scanIp) {
+                                var caller = $q.defer();
 
-                        var req = $timeout(function(scanIp) {
-                            var caller = $q.defer();
+                                $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
+                                          {timeout: caller.promise}).then(successScanFn, errorScanFn);
+                                $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
+                                scanRequestCaller.push(caller);
+                                /*
+                                QRC.setTargetIpAddress(targetIP);
+                                QRC.getPublicInfo(key).then(successScanFn, errorScanFn);
+                                */
 
-                            $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
-                                      {timeout: caller.promise}).then(successScanFn, errorScanFn);
-                            $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
-                            scanRequestCaller.push(caller);
-                            /*
-                            QRC.setTargetIpAddress(targetIP);
-                            QRC.getPublicInfo(key).then(successScanFn, errorScanFn);
-                            */
-
-                        }, timeCost, true, targetIP);
-                        scanRequestsTimer.push(req);
-                        j++;
-                        if ((j % NUM_IN_ROUND) == 0) {
-                            timeCost += DELAY_PER_ROUND_MS;
+                            }, timeCost, true, targetIP);
+                            scanRequestsTimer.push(req);
+                            j++;
+                            if ((j % NUM_IN_ROUND) == 0) {
+                                timeCost += DELAY_PER_ROUND_MS;
+                            }
                         }
                     }
                 }
