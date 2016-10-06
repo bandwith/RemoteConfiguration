@@ -293,7 +293,6 @@
                             }
                         }
                     }
-console.log(scannedIPs);
                 }
             }
             vm.timeCostEstimate = RETRY_TIMES*(timeCost+SCAN_TIMEOUT)/1000;
@@ -563,11 +562,11 @@ console.log(scannedIPs);
             QRC.setTargetIpAddress(device.ip, device.index);
             QRC.getToken((vm.current_password||'12345678'), device.index)
                 .then(function(data) {
-                    var xml = new XMLHttpRequest();
-                    xml.open('GET', ('http://'+device.ip+':8080/v1/task/screenshot'), true);
-                    xml.setRequestHeader('Authorization', ('Bearer '+data.data.access_token));
-                    xml.responseType = 'arraybuffer';
-                    xml.onload = function() {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', ('http://'+device.ip+':8080/v1/task/screenshot'), true);
+                    xhr.setRequestHeader('Authorization', ('Bearer '+data.data.access_token));
+                    xhr.responseType = 'arraybuffer';
+                    xhr.onload = function() {
                         var data = this.response,
                             uInt8Arr = new Uint8Array(data),
                             len = uInt8Arr.length,
@@ -593,8 +592,23 @@ console.log(scannedIPs);
                             .fadeIn()
                         );
                     };
-                    xml.send();
-                }, function(e) { console.error(e); });
+                    xhr.send();
+                }, function(e) {
+                    $('body').append($('<div>')
+                        .hide()
+                        .attr('id', 'progress')
+                        .append($('<div>')
+                            .addClass('box')
+                            .html('Please set device password')
+                        )
+                        .on('click', function() {
+                            $(this).fadeOut(function() {
+                                $(this).remove();
+                            })
+                        })
+                        .fadeIn()
+                    );
+                });
         }
 
         function onRemoveClick(row, inx) {
