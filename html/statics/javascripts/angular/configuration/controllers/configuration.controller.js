@@ -358,12 +358,18 @@
                     var range_start = vm.ipCandidates[i].range_start;
                     var range_end = vm.ipCandidates[i].range_end;
 
-                    var ip_prefix = range_start.replace(/[\d]+\.[\d]+$/, '');
-                    for (var ip3=parseInt(range_start.split('.')[2]),
-                        ip3ub=parseInt(range_end.split('.')[2]); ip3<=ip3ub; ip3++) {
+                    var ip_prefix = range_start.replace(/[\d]+\.[\d]+$/, ''),
+                        ip1s = range_start.split('.'),
+                        ip2s = range_end.split('.'),
+                        ip1_3 = parseInt(ip1s[2]),
+                        ip1_4 = parseInt(ip1s[3]),
+                        ip2_3 = parseInt(ip2s[2]),
+                        ip2_4 = parseInt(ip2s[3]);
+                    for (var ip3=ip1_3; ip3<=ip2_3; ip3++) {
                         var ip_head = (ip_prefix+ip3+'.');
-                        for (var ip4=parseInt(range_start.split('.')[3]),
-                            ip4up=parseInt(range_end.split('.')[3]); ip4<=ip4up; ip4++) {
+                        for (var ip4=(ip3===ip1_3 ?ip1_4 :1),
+                            ip4ub=(ip3===ip2_3 ?ip2_4 :255);
+                            ip4<=ip4ub; ip4++) {
                             var targetIP = (ip_head+ip4);
                             if (targetIP in scannedIPs) continue;
                             scannedIPs[targetIP] = 0;
