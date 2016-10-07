@@ -324,8 +324,9 @@
                     var req = $timeout(function(scanIp) {
                         var caller = $q.defer();
 
-                        $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
-                                  {timeout: caller.promise}).then(successScanFn, errorScanFn);
+                        $http.get(("http://"+scanIp+":8080/v1/public/info?key="+key), {
+                            timeout: SCAN_TIMEOUT
+                        }).then(successScanFn, errorScanFn);
                         $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
                         scanRequestCaller.push(caller);
                         /*
@@ -1486,11 +1487,26 @@
                     };
                     xhr.onreadystatechange = function(e) {
                         if (this.readyState != 4) return;
-                        if (this.status == 200) successConfigFn(this.response);
-                        else errorConfigFn(this.response);
-                        $msg.fadeOut(function() {
-                            $(this).remove();
-                        });
+                        var fin = function() {
+                            $msg.fadeOut(function() {
+                                $(this).remove();
+                            });
+                        };
+                        if (this.status == 200) {
+                            successConfigFn(this.response);
+                            fin();
+                        }
+                        else {
+                            errorConfigFn(this.response);
+                            var data = '';
+                            try {
+                                data = ((JSON.parse(this.response)||{}).detail||'Unknow Error');
+                            }
+                            catch (e) {}
+                            $msg
+                                .on('click', fin)
+                                .find('.box').html('Firmware Update Failed: '+data);
+                        }
                     };
                     $('body').append($msg.fadeIn());
                     xhr.send(data);
