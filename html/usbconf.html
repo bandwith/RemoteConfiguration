@@ -230,6 +230,23 @@ angular.module('usbConfig', [])
             //Get wifi state and enable it before configuration
             printResult("Run config case:" + exportConfigs[configIdx].key);
             getWifiStatus();
+        } else if(exportConfigs[configIdx].key == "SettingsRebootTime") {
+            //set schedule_reboot_mode before set SettingsRebootTime
+            printResult("Run config case:" + exportConfigs[configIdx].key);
+            var json_content = {};
+            json_content.value = "DailyReboot";
+            $.ajax({
+                url: "http://localhost:8080/v1/settings/schedule_reboot_mode",
+                method: "POST",
+                dataType :"text",
+                contentType:"application/json",
+                data: JSON.stringify(json_content)
+            })
+            .done(function() {
+                printResult("enable DailyReboot mode");
+                ajaxRequest(exportConfigs[configIdx].url, exportConfigs[configIdx].param, "POST");
+            })
+            .fail(failConfig)
         } else {
             var meth = (exportConfigs[configIdx].delete == true)? "DELETE":"POST";
             printResult("Run config case:" + exportConfigs[configIdx].key);

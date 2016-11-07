@@ -1208,7 +1208,7 @@
                         QRC.setSettings("is_reboot_optimized", rebootOpt, device.index)
                         .then(successConfigFn, errorConfigFn);
                     } else {
-                        var url = QRC.buildUrl("/v1/settings/reboot_time", device.index);
+                        var url = QRC.buildUrl("/v1/settings/is_reboot_optimized", device.index);
                         var param = {"value": rebootOpt};
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
