@@ -63,6 +63,7 @@
             "AudioStreamNotification",
             "AudioStreamAlarm",
             "Timezone",
+            "SettingsTimeFormat",
             "SettingsAdbOverTcp",
             "TmpDisableAdb", // MUST after SettingsAdbOverTcp to restart adb server
             "SettingsAdbEnabled",
@@ -954,6 +955,7 @@
                         QRC.getSettings('', device.index).then(function(data) {
                             data = data.data.results;
                             vm.configure.Timezone = data.timezone;
+                            vm.configure.SettingsTimeFormat = (data['24_time_format']=='enabled' ?'enable' :'disable');
                             vm.configure.SettingsPlayerName = data.player_name;
                             vm.configure.SettingsPlayGroup = data.play_group;
                             vm.configure.SettingsNtpServer = data.ntp_server;
@@ -1194,6 +1196,22 @@
                     } else {
                         var url = QRC.buildUrl("/v1/settings/reboot_time", device.index);
                         var param = {"value": timeStr};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsTimeFormat") {
+                    var time24Format;
+                    if (vm.configure.SettingsTimeFormat == "enable") {
+                        time24Format = "enabled";
+                    } else {
+                        time24Format = "disabled";
+                    }
+                    if (vm.remote_or_export=='remote') {
+                        QRC.setSettings("24_time_format", time24Format, device.index)
+                        .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/24_time_format", device.index);
+                        var param = {"value": time24Format};
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
                     }

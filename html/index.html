@@ -324,6 +324,27 @@ console.log(err);
                                     <div ng-show="ConfigForm.Timezone.$error.required" class="help-block">* Required</div>
                                 </div>
                             </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.SettingsTimeFormat"
+                                           ng-change="vm.checkInitConfig('SettingsTimeFormat', vm.useConfig.SettingsTimeFormat, 'enable')">
+                                    24 Hour Format
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="enable"
+                                               ng-disabled="!vm.useConfig.SettingsTimeFormat"
+                                               ng-model="vm.configure.SettingsTimeFormat" >
+                                        enable
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="disable"
+                                               ng-disabled="!vm.useConfig.SettingsTimeFormat"
+                                               ng-model="vm.configure.SettingsTimeFormat">
+                                        disable
+                                    </label>
+                                </div>
+                            </div>
 
                             <div show-errors class="form-group">
 
