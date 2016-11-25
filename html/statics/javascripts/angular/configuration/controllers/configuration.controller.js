@@ -66,6 +66,7 @@
             "AudioStreamNotification",
             "AudioStreamAlarm",
             "Timezone",
+            "SettingsAutoTime",
             "SettingsTimeFormat",
             "SettingsAdbOverTcp",
             "TmpDisableAdb", // MUST after SettingsAdbOverTcp to restart adb server
@@ -957,7 +958,9 @@
                     steps.push(function(callback) {
                         QRC.getSettings('', device.index).then(function(data) {
                             data = data.data.results;
+console.log(data);
                             vm.configure.Timezone = data.timezone;
+                            vm.configure.SettingsAutoTime = (data.auto_time_enabled ?'enable' :'disable');
                             vm.configure.SettingsTimeFormat = (data['24_time_format']=='enabled' ?'enable' :'disable');
                             vm.configure.SettingsPlayerName = data.player_name;
                             vm.configure.SettingsPlayGroup = data.play_group;
@@ -983,7 +986,6 @@
                             if (dsf) ddsf.setHours(dsf[0], dsf[1], 0, 0);
                             vm.configure.SettingsScheduleOff = (dsf ?ddsf :null);
 
-console.log(vm.configure);
                             callback();
                         });
                     });
@@ -1217,7 +1219,6 @@ console.log(vm.configure);
                     }
                 } else if (configKey == "SettingsScheduleOn") {
                     var timeObj = vm.configure[configKey];
-console.log('on', timeObj);
                     if (!timeObj) {
                         readyForNextConfig(device, caseIdx, true);
                         return false;
@@ -1234,7 +1235,6 @@ console.log('on', timeObj);
                     }
                 } else if (configKey == "SettingsScheduleOff") {
                     var timeObj = vm.configure[configKey];
-console.log('off', timeObj);
                     if (!timeObj) {
                         readyForNextConfig(device, caseIdx, true);
                         return false;
@@ -1251,7 +1251,6 @@ console.log('off', timeObj);
                     }
                 } else if (configKey == "SettingsRebootTime") {
                     var timeObj = vm.configure[configKey];
-console.log('reboottime', timeObj);
                     if (!timeObj) {
                         readyForNextConfig(device, caseIdx, true);
                         return false;
@@ -1263,6 +1262,23 @@ console.log('reboottime', timeObj);
                     } else {
                         var url = QRC.buildUrl("/v1/settings/reboot_time", device.index);
                         var param = {"value": timeStr};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsAutoTime") {
+                    var autoTime;
+                    if (vm.configure.SettingsAutoTime == "enable") {
+                        autoTime = true;
+                    } else {
+                        autoTime = false;
+                    }
+console.log('autoTime', autoTime)
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("auto_time_enabled", autoTime, device.index)
+                        .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/auto_time_enabled", device.index);
+                        var param = {"value": autoTime};
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
                     }

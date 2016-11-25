@@ -326,6 +326,27 @@ console.log(err);
                             </div>
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.SettingsAutoTime"
+                                           ng-change="vm.checkInitConfig('SettingsAutoTime', vm.useConfig.SettingsAutoTime, 'enable')">
+                                    Auto Time
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="enable"
+                                               ng-disabled="!vm.useConfig.SettingsAutoTime"
+                                               ng-model="vm.configure.SettingsAutoTime" >
+                                        enable
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="disable"
+                                               ng-disabled="!vm.useConfig.SettingsAutoTime"
+                                               ng-model="vm.configure.SettingsAutoTime">
+                                        disable
+                                    </label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsTimeFormat"
                                            ng-change="vm.checkInitConfig('SettingsTimeFormat', vm.useConfig.SettingsTimeFormat, 'enable');">
                                     24 Hour Format
@@ -480,13 +501,6 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-
-
-
-
-
-
-
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsRebootMode">
@@ -507,7 +521,6 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-
                             <div show-errors class="form-group" 
                                  ng-show="vm.configure.SettingsRebootMode=='DailyReboot'">
                                 <label class="col-xs-3 control-label-left">Reboot Time</label>
@@ -519,7 +532,6 @@ console.log(err);
                                     <div ng-show="ConfigForm.rebootTime.$error.time" class="help-block">Invalid time format</div>
                                 </div>
                             </div>
-
                             <div show-errors class="form-group" 
                                  ng-show="vm.configure.SettingsRebootMode=='ScheduleOnOff'">
                                 <label class="col-xs-3 control-label-left">Schedule On</label>
@@ -542,47 +554,6 @@ console.log(err);
                                     <div ng-show="ConfigForm.scheduleOff.$error.time" class="help-block">Invalid time format</div>
                                 </div>
                             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                            <!--
-                            <div show-errors class="form-group">
-                                <label class="col-xs-3 control-label-left">
-                                    <input type="checkbox" ng-model="vm.useConfig.SettingsRebootTime"
-                                           ng-change="vm.checkInitConfig('SettingsRebootTime', vm.useConfig.SettingsRebootTime, null, true)">
-                                    Reboot Time
-                                </label>
-                                <div class="col-xs-9">
-                                    <input ng-disabled="!vm.useConfig.SettingsRebootTime"
-                                           ng-required="vm.useConfig.SettingsRebootTime"
-                                           type="time" name="rebootTime"
-                                           class="form-control" ng-model="vm.configure.SettingsRebootTime" />
-                                    <div ng-show="ConfigForm.rebootTime.$error.required" class="help-block">* Required</div>
-                                    <div ng-show="ConfigForm.rebootTime.$error.time" class="help-block">Invalid time format</div>
-                                </div>
-                            </div>
-                            -->
-
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsRebootTimeOptimized"
