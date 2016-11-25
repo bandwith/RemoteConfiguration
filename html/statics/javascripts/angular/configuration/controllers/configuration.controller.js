@@ -54,7 +54,10 @@
             "SettingsPlayGroup",
             "SettingsNtpServer",
             "SettingsSmilContentUrl",
+            "SettingsRebootMode",
             "SettingsRebootTime",
+            "SettingsScheduleOn",
+            "SettingsScheduleOff",
             "SettingsRebootTimeOptimized",
             "SettingsScreenOrientation",
             "SettingsOtaXmlUrl",
@@ -962,14 +965,25 @@
                             vm.configure.SettingsSmilContentUrl = data.content_url;
                             vm.configure.SettingsAdbEnabled = (data.adb_enabled ?'enable' :'disable');
                             vm.configure.SettingsAdbOverTcp = (data.adb_over_tcp ?'enable' :'disable');
+                            vm.configure.SettingsRebootMode = data.schedule_reboot_mode;
                             vm.configure.SettingsRebootTimeOptimized = (data.is_reboot_optimized ?'enable' :'disable');
                             vm.configure.SettingsScreenOrientation = data.screen_orientation;
                             vm.configure.SettingsOtaXmlUrl = data.ota_xml_url;
                             vm.configure.SettingsAppOtaXmlUrl = data.app_ota_xml_url;
-                            var d = (data.reboot_time||'').split(':'),
-                                dt = new Date();
-                            if (d) dt.setHours(d[0], d[1], 0, 0);
-                            vm.configure.SettingsRebootTime = (d ?dt :null);
+                            var drt = (data.reboot_time||'').split(':'),
+                                ddrt = new Date();
+                            if (drt) ddrt.setHours(drt[0], drt[1], 0, 0);
+                            vm.configure.SettingsRebootTime = (drt ?ddrt :null);
+                            var dsn = (data.schedule_on_time||'').split(':'),
+                                ddsn = new Date();
+                            if (dsn) ddsn.setHours(dsn[0], dsn[1], 0, 0);
+                            vm.configure.SettingsScheduleOn = (dsn ?ddsn :null);
+                            var dsf = (data.schedule_off_time||'').split(':'),
+                                ddsf = new Date();
+                            if (dsf) ddsf.setHours(dsf[0], dsf[1], 0, 0);
+                            vm.configure.SettingsScheduleOff = (dsf ?ddsf :null);
+
+console.log(vm.configure);
                             callback();
                         });
                     });
@@ -1179,17 +1193,70 @@
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
                     }
-                } else if (configKey == "SettingsRebootTime") {
+                } else if (configKey == "SettingsRebootMode") {
+                    var mode = vm.configure.SettingsRebootMode;
+                    if ("DailyReboot"==mode) {
+                        vm.useConfig.SettingsRebootTime = true;
+                        delete vm.useConfig.SettingsScheduleOn;
+                        delete vm.useConfig.SettingsScheduleOff;
+                    }
+                    else {
+                        delete vm.useConfig.SettingsRebootTime;
+                        vm.useConfig.SettingsScheduleOn = true;
+                        vm.useConfig.SettingsScheduleOff = true;
+                    }
+                    if (vm.remote_or_export=='remote') {
+                        QRC.setSettings("schedule_reboot_mode",
+                            vm.configure[configKey], device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/schedule_reboot_mode", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsScheduleOn") {
                     var timeObj = vm.configure[configKey];
+console.log('on', timeObj);
                     if (!timeObj) {
                         readyForNextConfig(device, caseIdx, true);
                         return false;
                     }
-                    var hour = timeObj.getHours();
-                    hour = hour>=10?hour:("0"+hour);
-                    var minute = timeObj.getMinutes();
-                    minute = minute>10?minute:("0"+minute);
-                    var timeStr = hour + ":" + minute;
+                    var timeStr = (("0"+timeObj.getHours()).slice(-2)+":"+("0"+timeObj.getMinutes()).slice(-2));
+                    if (vm.remote_or_export=='remote') {
+                        QRC.setSettings("schedule_on_time", timeStr, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/schedule_on_time", device.index);
+                        var param = {"value": timeStr};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsScheduleOff") {
+                    var timeObj = vm.configure[configKey];
+console.log('off', timeObj);
+                    if (!timeObj) {
+                        readyForNextConfig(device, caseIdx, true);
+                        return false;
+                    }
+                    var timeStr = (("0"+timeObj.getHours()).slice(-2)+":"+("0"+timeObj.getMinutes()).slice(-2));
+                    if (vm.remote_or_export=='remote') {
+                        QRC.setSettings("schedule_off_time", timeStr, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/schedule_off_time", device.index);
+                        var param = {"value": timeStr};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsRebootTime") {
+                    var timeObj = vm.configure[configKey];
+console.log('reboottime', timeObj);
+                    if (!timeObj) {
+                        readyForNextConfig(device, caseIdx, true);
+                        return false;
+                    }
+                    var timeStr = (("0"+timeObj.getHours()).slice(-2)+":"+("0"+timeObj.getMinutes()).slice(-2));
                     if(vm.remote_or_export=='remote') {
                         QRC.setSettings("reboot_time", timeStr, device.index)
                             .then(successConfigFn, errorConfigFn);
@@ -1708,6 +1775,8 @@
         }
         function convertConfiguration() {
             vm.configure.SettingsRebootTime = new Date(vm.configure.SettingsRebootTime);
+            vm.configure.SettingsScheduleOn = new Date(vm.configure.SettingsScheduleOn);
+            vm.configure.SettingsScheduleOff = new Date(vm.configure.SettingsScheduleOff);
         }
 
 
