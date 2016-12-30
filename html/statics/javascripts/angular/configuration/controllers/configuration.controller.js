@@ -803,7 +803,7 @@
                 return;
             }
 
-            if (!checkReadyToConfigure()&&vm.remote_or_export=='remote') {
+            if (!checkDeviceSelected() && vm.remote_or_export=='remote') {
                 printConfigureError("Unable to configure. Please select at leaset one device.");
                 return;
             }
@@ -930,6 +930,15 @@
         }
         function setFormScope(scope) {
             vm.formScope = scope;
+        }
+
+        function checkDeviceSelected() {
+            for (var i in vm.scannedDevices) {
+                if (vm.scannedDevices[i].isSelected) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         function checkReadyToConfigure() {
