@@ -1067,7 +1067,20 @@ console.log(err);
                                     <input data-bind-file=""
                                            type="file" 
                                            ng-disabled="!vm.useConfig.FirmwareUpdate"
-                                           class="form-control" ng-model="vm.firmwareFile" ng-change="vm.onFirmwareFileChange" />
+                                           class="form-control" ng-model="vm.firmwareFile" ng-change="vm.onFirmwareFileChange()" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.AppUpdate">
+                                    App Update
+                                </label>
+                                <div class="col-xs-9">
+                                    <input data-bind-files=""
+                                           type="file" 
+                                           ng-disabled="!vm.useConfig.AppUpdate"
+                                           class="form-control" ng-model="vm.appFiles" ng-change="vm.onAppFilesChange()"
+                                           multiple />
                                 </div>
                             </div>
                         </uib-accordion-group>

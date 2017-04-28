@@ -21,6 +21,23 @@
                 }
             };
         })
+        .directive('bindFiles', function() {
+            return {
+                require: 'ngModel',
+                restrict: 'A',
+                link: function($scope, el, attrs, ngModel) {
+                    el.bind('change', function(e) {
+                        ngModel.$setViewValue(e.target.files);
+                        $scope.$apply();
+                    });
+                    $scope.$watch(function() {
+                        return ngModel.$viewValue;
+                    }, function(value) {
+                        if (!value) el.val('');
+                    });
+                }
+            };
+        })
         .directive('afterRender', ['$timeout', function($timeout) {
             return {
                 restrict: 'A',
@@ -79,6 +96,7 @@
             "EthernetNetwork",
             "EthernetState",
             "FirmwareUpdate",
+            "AppUpdate",
             "DoneConfig",
         ];
         var vm = this;
@@ -159,6 +177,10 @@
             vm.onFirmwareFileChange = function() {
                 console.log(this, vm.firmwareFile);
             };
+            vm.appFiles;
+            vm.onAppFilesChange = function() {
+                console.log(vm.appFiles);
+            }
             //vm.localStorageName = 'lastResults';
             vm.hasLastScannedResults = false;
             vm.firstCome = true;
@@ -1633,6 +1655,53 @@ console.log('autoTime', autoTime)
                             $msg
                                 .on('click', fin)
                                 .find('.box').html('Firmware Update Failed: '+data);
+                        }
+                    };
+                    $('body').append($msg.fadeIn());
+                    xhr.send(data);
+                } else if (configKey == "AppUpdate") {
+                    var token = QRC.getTokenVal(device.index),
+                        xhr = new XMLHttpRequest(),
+                        data = new FormData(),
+                        $preg = $('<span>'),
+                        $msg = $('<div>')
+                            .attr('id', 'progress')
+                            .hide()
+                            .append($('<div>')
+                                .addClass('box')
+                                .append($('<span>').html('App Upload: '))
+                                .append($preg)
+                            );
+                    for(var i = 0; i < vm.appFiles.length; i++) {
+                        data.append("file" + (i + 1), vm.appFiles[i]);
+                    }
+                    xhr.open('POST', ('http://'+device.ip+':8080/v1/task/update_app'), true);
+                    //xhr.setRequestHeader('Content-Type', 'multipart/form-data');
+                    xhr.setRequestHeader('Authorization', ('Bearer '+token));
+                    xhr.upload.onprogress = function(e) {
+                        $preg.html(parseInt(100*e.loaded/e.total)+'%');
+                    };
+                    xhr.onreadystatechange = function(e) {
+                        if (this.readyState != 4) return;
+                        var fin = function() {
+                            $msg.fadeOut(function() {
+                                $(this).remove();
+                            });
+                        };
+                        if (this.status == 200) {
+                            successConfigFn(this.response);
+                            fin();
+                        }
+                        else {
+                            errorConfigFn(this.response);
+                            var data = '';
+                            try {
+                                data = ((JSON.parse(this.response)||{}).detail||'Unknow Error');
+                            }
+                            catch (e) {}
+                            $msg
+                                .on('click', fin)
+                                .find('.box').html('App Update Failed: '+data);
                         }
                     };
                     $('body').append($msg.fadeIn());
