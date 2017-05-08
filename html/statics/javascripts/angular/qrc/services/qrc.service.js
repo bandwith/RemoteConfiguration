@@ -65,6 +65,11 @@
             setEth0State: setEth0State,
             getEth0Network: getEth0Network,
             setEth0Network: setEth0Network,
+            getEmergencyMessage: getEmergencyMessage,
+            getBroadcastMessage: getBroadcastMessage,
+            setTextMessageNone: setTextMessageNone,
+            setEmergenMessage: setEmergenMessage,
+            setBroadcastMessage: setBroadcastMessage,
             buildUrl: buildUrl,
             postConfig: postConfig,
             rebootDevice: rebootDevice,
@@ -275,6 +280,80 @@
             var url = buildUrl("/v1/eth/0/network", idx);
             return $http.post(url, ethConfig, getConfig(idx));
         }
+        
+        function getEmergencyMessage(idx) {
+            var url = buildUrl("/v1/textmsg/1000", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        
+        function getBroadcastMessage(idx) {
+            var url = buildUrl("/v1/textmsg/3000", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        
+        function setTextMessageNone(idx) {
+            var url = buildUrl("/v1/textmsg", idx);
+            return $http.delete(url, getConfig(idx));
+        }
+        
+        function setEmergenMessage(textMessage, idx) {
+            var url = buildUrl("/v1/textmsg/1000", idx);
+            var obj = {};
+            var currentTime = new Date((new Date().getTime()) - 60000);
+            obj.id = currentTime.getTime();
+            obj.data = {};
+            obj.data.priority = 1000;
+            obj.data.starttime = currentTime.toISOString();
+            console.log(obj.data.starttime);
+            obj.data.dur = 83400;
+            obj.data.msg = textMessage.emergency_message;
+            if(textMessage.emergency_title) {
+                obj.data.options = {};
+                obj.data.options.title = textMessage.emergency_title;
+            }
+            return $http.post(url, obj, getConfig(idx));
+        }
+        
+        function setBroadcastMessage(textMessage, idx) {
+            var url = buildUrl("/v1/textmsg/3000", idx);
+            var obj = {}
+            var currentTime = new Date();
+            obj.id = currentTime.getTime();
+            obj.data = {};
+            obj.data.priority = 3000;
+
+            if(textMessage.startTime == "custom") {
+                console.log(textMessage.broadcast_customTime);
+                //var localtime = new Date(textMessage.broadcast_customTime.replace(/-/g,'/').replace('T',' '));
+                var localtime = new Date(textMessage.broadcast_customTime);
+                console.log("start time:" + localtime.toISOString());
+                obj.data.starttime = localtime.toISOString();
+            } else {
+                obj.data.starttime = (new Date()).toISOString();
+            }
+            obj.data.dur = textMessage.broadcast_duration;
+            obj.data.msg = textMessage.broadcast_message;
+            obj.data.options = {};
+            obj.data.options.type = "normal";
+            obj.data.options.position = "bottom";
+            obj.data.options.fontSize = textMessage.broadcast_font;
+            if(textMessage.fontColor) {
+                obj.data.options.fontColor = textMessage.fontColor;
+            } else {
+                obj.data.options.fontColor = "#000000";
+            }
+
+            if(textMessage.backgroundColorType == "broadcastBackgroundColor") {
+                if(textMessage.backgroundColor) {
+                    obj.data.options.bgColor = textMessage.backgroundColor;
+                } else {
+                    obj.data.options.bgColor = "#000000";
+                }
+            }
+            obj.data.options.direction = textMessage.direction;
+            return $http.post(url, obj, getConfig(idx));
+        }
+        
         function rebootDevice(reasonStr, idx) {
             var url = buildUrl("/v1/reboot", idx);
             return $http.post(url, {"reason": reasonStr}, getConfig(idx));

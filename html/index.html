@@ -683,7 +683,6 @@ console.log(err);
                                         Static
                                     </label>
                                 </div>
-
                             </div>
                             <div show-errors class="form-group" 
                                  ng-show="vm.configure.EthernetNetwork.ip_assignment=='static'">
@@ -1054,6 +1053,174 @@ console.log(err);
                             </uib-accordion-heading>
                             <div class="alert alert-warning">Remote control devices.</div>
                             <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.TextMessage">
+                                    Text Message
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="none"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.type" >
+                                        none
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="emergency"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.type" >
+                                        emergency
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="broadcast"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.type" >
+                                        normal
+                                    </label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.TextMessage.type=='emergency'">
+                                <label class="col-xs-3 control-label-left">Title</label>
+                                <div class="col-xs-9">
+                                    <input name="emergencyTitle"
+                                           class="form-control" 
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.emergency_title" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.TextMessage.type=='emergency'">
+                                <label class="col-xs-3 control-label-left">Message</label>
+                                <div class="col-xs-9">
+                                    <input name="emergencyMessage" ng-required="vm.configure.TextMessage.type=='emergency'"
+                                           class="form-control" 
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.emergency_message" />
+                                    <div ng-show="ConfigForm.emergencyMessage.$error.required" class="help-block">* Required</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.TextMessage.type=='broadcast'">
+                                <label class="col-xs-3 control-label-left">Font Size</label>
+                                <div class="col-xs-9">
+                                    <input name="broadcastFontSize" ng-required="vm.configure.TextMessage.type=='broadcast'"
+                                           id = "broadcast_fontsize"
+                                           class="form-control"
+                                           placeholder="10"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.broadcast_font" />
+                                    <div ng-show="ConfigForm.broadcastFontSize.$error.required" class="help-block">* Required</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.TextMessage.type=='broadcast'">
+                                <label class="col-xs-3 control-label-left">Font Color</label>
+                                <div class="col-xs-3">
+                                    <input id="broadcastFontColor"
+                                           class="form-control"
+                                           type="color"
+                                           value="#000000"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.fontColor" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.TextMessage.type=='broadcast'">
+                                <label class="col-xs-3 control-label-left">Background Color</label>
+                                <div class="col-xs-3">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="transparent"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.backgroundColorType" >
+                                        transparent
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="broadcastBackgroundColor"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.backgroundColorType" >
+                                        color
+                                    </label>
+                                </div>
+                                <div class="col-xs-3">
+                                    <input id="broadcastBackgroundColor" ng-required="vm.configure.TextMessage.typ=='broadcast'"
+                                           class="form-control"
+                                           type="color"
+                                           value="#000000"
+                                           ng-show="((vm.useConfig.TextMessage) && (vm.configure.TextMessage.backgroundColorType=='broadcastBackgroundColor'))"
+                                           ng-model="vm.configure.TextMessage.backgroundColor" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.TextMessage.type=='broadcast'">
+                                <label class="col-xs-3 control-label-left">Scrolling direction</label>
+                                <div class="col-xs-3">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="right"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.direction" >
+                                        right
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="left"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.direction" >
+                                        left
+                                    </label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.TextMessage.type=='broadcast'">
+                                <label class="col-xs-3 control-label-left">Message</label>
+                                <div class="col-xs-9">
+                                    <input name="broadcastMessage" ng-required="vm.configure.TextMessage.type=='broadcast'"
+                                           class="form-control" 
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.broadcast_message" />
+                                    <div ng-show="ConfigForm.broadcastMessage.$error.required" class="help-block">* Required</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.TextMessage.type=='broadcast'">
+                                <label class="col-xs-3 control-label-left">Duration(sec)</label>
+                                <div class="col-xs-9">
+                                    <input name="broadcastDuration" ng-required="vm.configure.TextMessage.type=='broadcast'"
+                                           class="form-control" 
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.broadcast_duration" />
+                                    <div ng-show="ConfigForm.broadcastDuration.$error.required" class="help-block">* Required</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.TextMessage.type=='broadcast'">
+                                <label class="col-xs-3 control-label-left">Start time</label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="current"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.startTime" >
+                                        current time
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="custom"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.startTime" >
+                                        custom time
+                                    </label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="(vm.configure.TextMessage.type=='broadcast') && (vm.configure.TextMessage.startTime=='custom')">
+                                <label class="col-xs-3 control-label-left">DateTime</label>
+                                <div class="col-xs-9">
+                                    <input name="broadcastDate" ng-required="vm.configure.TextMessage.startTime=='custom'"
+                                           class="form-control"
+                                           type="datetime-local"
+                                           ng-disabled="!vm.useConfig.TextMessage"
+                                           ng-model="vm.configure.TextMessage.broadcast_customTime" />
+                                    <div ng-show="ConfigForm.broadcastDate.$error.datetimelocal" class="help-block">* Required </div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-slider">
                                     <button type="button" ng-disabled="(vm.isStartConfigureDisabled)" class="btn btn-error pull-left" ng-click="vm.remoteReboot();">Remote Reboot</button>
                                 </label>
@@ -1085,8 +1252,6 @@ console.log(err);
                             </div>
                         </uib-accordion-group>
                     </uib-accordion>
-
-
                 </div>
                 <div class="form-group" ng-class="{ 'has-error': vm.isConfigClicked&&ConfigForm.$invalid }">
                     <div class="col-xs-12">

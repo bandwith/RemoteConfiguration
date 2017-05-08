@@ -95,6 +95,7 @@
             "SettingsProxy",
             "EthernetNetwork",
             "EthernetState",
+            "TextMessage",
             "FirmwareUpdate",
             "AppUpdate",
             "DoneConfig",
@@ -1066,7 +1067,53 @@ console.log(data);
                             vm.configure.SettingsProxy = data;
                             callback();
                         });
-                    });/*
+                    });
+                    steps.push(function(callback) {
+                        QRC.getEmergencyMessage(device.index).then(function(data) {
+                            data = data.data;
+                            console.log(data);
+                            vm.configure.TextMessage = {};
+                            if(data.data) {
+                                if(data.data.options) {
+                                    vm.configure.TextMessage.emergency_title = data.data.options.title;
+                                }
+                                vm.configure.TextMessage.emergency_message = data.data.msg;
+                            }
+
+                            callback()
+                        });
+                    });
+                    steps.push(function(callback) {
+                        QRC.getBroadcastMessage(device.index).then(function(data) {
+                            data = data.data
+                            //console.log(data);
+                            if(data.data) {
+                                if(data.data.dur) vm.configure.TextMessage.broadcast_duration = data.data.dur;
+                                if(data.data.msg) vm.configure.TextMessage.broadcast_message = data.data.msg;
+                                if(data.data.options) {
+                                    //console.log(data.data.options);
+                                    var options = data.data.options;
+                                    if(typeof options == "String") options = JSON.parse(data.data.options);
+                                    if(options.fontSize) vm.configure.TextMessage.broadcast_font = options.fontSize;
+                                    if(options.fontColor) vm.configure.TextMessage.fontColor = options.fontColor;
+                                    if(options.bgColor) {
+                                        vm.configure.TextMessage.backgroundColorType = "broadcastBackgroundColor";
+                                        vm.configure.TextMessage.backgroundColor = options.bgColor;
+                                    } else {
+                                        vm.configure.TextMessage.backgroundColorType="transparent";
+                                    }
+                                    if(options.direction) vm.configure.TextMessage.direction = options.direction;
+                                    if(data.data.starttime) {
+                                        vm.configure.TextMessage.startTime = "custom";
+                                        var startDate = new Date(data.data.starttime);
+                                        vm.configure.TextMessage.broadcast_customTime = startDate;
+                                    }
+                                }
+                            }
+                            callback()
+                        });
+                    });
+                    /*
                     steps.push(function(callback) {
                         console.log(vm.configure)
                     });*/
@@ -1614,6 +1661,19 @@ console.log('autoTime', autoTime)
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":proxySetting};
                         readyForNextConfig(device, caseIdx, true);
                     }
+                } else if (configKey == "TextMessage") { 
+                    if(vm.configure.TextMessage.type == "none") {
+                        QRC.setTextMessageNone(device.index)
+                           .then(successConfigFn, errorConfigFn);
+                    } else if(vm.configure.TextMessage.type == "emergency") {
+                        QRC.setEmergenMessage(vm.configure.TextMessage, device.index)
+                           .then(successConfigFn, errorConfigFn);
+                        //var isoDate = new Date().toISOString();
+                        //console.log(isoDate);
+                    } else if(vm.configure.TextMessage.type == "broadcast") {
+                        QRC.setBroadcastMessage(vm.configure.TextMessage, device.index)
+                           .then(successConfigFn, errorConfigFn);
+                    }
                 } else if (configKey == "FirmwareUpdate") {
                     var token = QRC.getTokenVal(device.index),
                         xhr = new XMLHttpRequest(),
@@ -1871,6 +1931,7 @@ console.log('autoTime', autoTime)
             vm.configure.SettingsRebootTime = new Date(vm.configure.SettingsRebootTime);
             vm.configure.SettingsScheduleOn = new Date(vm.configure.SettingsScheduleOn);
             vm.configure.SettingsScheduleOff = new Date(vm.configure.SettingsScheduleOff);
+            if(vm.configure.TextMessage.broadcast_customTime) vm.configure.TextMessage.broadcast_customTime = new Date(vm.configure.TextMessage.broadcast_customTime);
         }
 
 
