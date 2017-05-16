@@ -98,6 +98,7 @@
             "TextMessage",
             "FirmwareUpdate",
             "AppUpdate",
+            "BootAnimationUpdate",
             "DoneConfig",
         ];
         var vm = this;
@@ -181,6 +182,10 @@
             vm.appFiles;
             vm.onAppFilesChange = function() {
                 console.log(vm.appFiles);
+            }
+            vm.bootAnmicationFiles;
+            vm.onBootAnmicationFilesChange = function() {
+                console.log(vm.bootAnmicationFiles);
             }
             //vm.localStorageName = 'lastResults';
             vm.hasLastScannedResults = false;
@@ -1762,6 +1767,53 @@ console.log('autoTime', autoTime)
                             $msg
                                 .on('click', fin)
                                 .find('.box').html('App Update Failed: '+data);
+                        }
+                    };
+                    $('body').append($msg.fadeIn());
+                    xhr.send(data);
+                } else if (configKey == "BootAnimationUpdate") {
+                    var token = QRC.getTokenVal(device.index),
+                        xhr = new XMLHttpRequest(),
+                        data = new FormData(),
+                        $preg = $('<span>'),
+                        $msg = $('<div>')
+                            .attr('id', 'progress')
+                            .hide()
+                            .append($('<div>')
+                                .addClass('box')
+                                .append($('<span>').html('Boot Animation Upload: '))
+                                .append($preg)
+                            );
+                    for(var i = 0; i < vm.bootAnmicationFiles.length; i++) {
+                        data.append("file" + (i + 1), vm.bootAnmicationFiles[i]);
+                    }
+                    xhr.open('POST', ('http://'+device.ip+':8080/v1/task/update_boot_animation'), true);
+                    //xhr.setRequestHeader('Content-Type', 'multipart/form-data');
+                    xhr.setRequestHeader('Authorization', ('Bearer '+token));
+                    xhr.upload.onprogress = function(e) {
+                        $preg.html(parseInt(100*e.loaded/e.total)+'%');
+                    };
+                    xhr.onreadystatechange = function(e) {
+                        if (this.readyState != 4) return;
+                        var fin = function() {
+                            $msg.fadeOut(function() {
+                                $(this).remove();
+                            });
+                        };
+                        if (this.status == 200) {
+                            successConfigFn(this.response);
+                            fin();
+                        }
+                        else {
+                            errorConfigFn(this.response);
+                            var data = '';
+                            try {
+                                data = ((JSON.parse(this.response)||{}).detail||'Unknow Error');
+                            }
+                            catch (e) {}
+                            $msg
+                                .on('click', fin)
+                                .find('.box').html('Boot Animation Failed: '+data);
                         }
                     };
                     $('body').append($msg.fadeIn());

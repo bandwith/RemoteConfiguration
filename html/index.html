@@ -1250,6 +1250,19 @@ console.log(err);
                                            multiple />
                                 </div>
                             </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.BootAnimationUpdate">
+                                    Boot Animation Update
+                                </label>
+                                <div class="col-xs-9">
+                                    <input data-bind-files=""
+                                           type="file"
+                                           ng-disabled="!vm.useConfig.BootAnimationUpdate"
+                                           class="form-control" ng-model="vm.bootAnmicationFiles" ng-change="vm.onBootAnmicationFilesChange()"
+                                           multiple />
+                                </div>
+                            </div>
                         </uib-accordion-group>
                     </uib-accordion>
                 </div>
