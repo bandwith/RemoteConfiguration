@@ -1239,8 +1239,21 @@ console.log(err);
                             </div>
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.BootAnimationUpdate">
+                                    Boot Animation Update
+                                </label>
+                                <div class="col-xs-9">
+                                    <input data-bind-files=""
+                                           type="file"
+                                           ng-disabled="!vm.useConfig.BootAnimationUpdate"
+                                           class="form-control" ng-model="vm.bootAnmicationFiles" ng-change="vm.onBootAnmicationFilesChange()"
+                                           multiple />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.AppUpdate">
-                                    App Update
+                                    App Install/Update
                                 </label>
                                 <div class="col-xs-9">
                                     <input data-bind-files=""
@@ -1252,15 +1265,105 @@ console.log(err);
                             </div>
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
-                                    <input type="checkbox" ng-model="vm.useConfig.BootAnimationUpdate">
-                                    Boot Animation Update
+                                    <input type="checkbox" ng-model="vm.useConfig.AppUninstall">
+                                    App Uninstall
                                 </label>
                                 <div class="col-xs-9">
-                                    <input data-bind-files=""
-                                           type="file"
-                                           ng-disabled="!vm.useConfig.BootAnimationUpdate"
-                                           class="form-control" ng-model="vm.bootAnmicationFiles" ng-change="vm.onBootAnmicationFilesChange()"
-                                           multiple />
+                                    <input name="appUninstall"
+                                           ng-required="vm.useConfig.AppUninstall"
+                                           ng-disabled="!vm.useConfig.AppUninstall"
+                                           class="form-control" ng-model="vm.configure.AppUninstall.package" />
+                                    <div ng-show="ConfigForm.appUninstall.$error.required" class="help-block">* Required</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-12 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.AppStart">
+                                    App Start
+                                </label>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    Package Name
+                                </label>
+                                <div class="col-xs-9">
+                                    <input name="appStartPackage"
+                                           ng-required="vm.useConfig.AppStart"
+                                           ng-disabled="!vm.useConfig.AppStart"
+                                           class="form-control" ng-model="vm.configure.AppStart.package" />
+                                    <div ng-show="ConfigForm.appStartPackage.$error.required" class="help-block">* Required</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    Class Name
+                                </label>
+                                <div class="col-xs-9">
+                                    <input name="appStartClass"
+                                           ng-required="vm.useConfig.AppStart"
+                                           ng-disabled="!vm.useConfig.AppStart"
+                                           class="form-control" ng-model="vm.configure.AppStart.class" />
+                                    <div ng-show="ConfigForm.appStartClass.$error.required" class="help-block">* Required</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.AppStop">
+                                    App Stop
+                                </label>
+                                <div class="col-xs-9">
+                                    <input name="appStopPackage"
+                                           ng-disabled="!vm.useConfig.AppStop"
+                                           ng-required="vm.useConfig.AppStop"
+                                           class="form-control" ng-model="vm.configure.AppStop.package" />
+                                    <div ng-show="ConfigForm.appStopPackage.$error.required" class="help-block">* Required</div>
+                                </div>
+                            </div>
+                        </uib-accordion-group>
+                        <uib-accordion-group  is-open="vm.accordion.appInfo"
+                                             template-url="accordion-group.html">
+                            <uib-accordion-heading>
+                                Application Information<i class="pull-right glyphicon"
+                                               ng-class="{'glyphicon-chevron-down': vm.accordion.appInfo, 'glyphicon-chevron-right': !vm.accordion.appInfo}"></i>
+                            </uib-accordion-heading>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left" >
+                                    App name
+                                </label>
+                                <div class="col-xs-9">
+                                <select class="form-control" 
+                                        name="appInfoList" 
+                                        ng-model="vm.configure.AppSelect" 
+                                        ng-options="data.label for data in vm.configure.AppList | orderBy:'label'""
+                                        ng-disabled="vm.selectDevCount!=1"
+                                        ng-change="vm.changeAppSelect();" >
+                                </select>
+                                <label ng-show="vm.selectDevCount!=1">Please select a single device before query app info.</label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" ng-show="vm.AppInfo" >
+                                <label class="col-xs-3 control-label-left" >Package Name </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.pkgname}}</label>
+                                <label class="col-xs-3 control-label-left" >Label </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.label}}</label>
+                                <label class="col-xs-3 control-label-left" >Version Name </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.version_name}}</label>
+                                <label class="col-xs-3 control-label-left" >Version Code </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.version_code}}</label>
+                                <label class="col-xs-3 control-label-left" >First Install Time </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.first_install_time}}</label>
+                                <label class="col-xs-3 control-label-left" >Last Update Time </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.last_update_time}}</label>
+                                <label class="col-xs-3 control-label-left" >Memory Info</label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.meminfo.pss}}</label>                                                                                                    
+                                <div ng-show="vm.AppInfo.activities.length > 0">
+                                <label class="col-xs-3 control-label-left">Activities:</label>
+                                <label class="col-xs-9 control-label-left"></label>
+                                <div ng-repeat="item in vm.AppInfo.activities">
+                                        <label class="col-xs-3 control-label-left"></label>
+                                        <label class="col-xs-9 control-label-left">{{item.name}}</label>
+                                </div>
+                                </div>
+                                <div ng-show="vm.AppInfo.services.length > 0">
+                                <label class="col-xs-3 control-label-left">Service:</label>
+                                <label class="col-xs-9 control-label-left"></label>
+                                <div ng-repeat="item in vm.AppInfo.services">
+                                        <label class="col-xs-3 control-label-left"></label>
+                                        <label class="col-xs-9 control-label-left">{{item.name}}</label>
+                                </div>
                                 </div>
                             </div>
                         </uib-accordion-group>

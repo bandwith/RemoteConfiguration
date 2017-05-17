@@ -99,10 +99,14 @@
             "FirmwareUpdate",
             "AppUpdate",
             "BootAnimationUpdate",
+            "AppUninstall",
+            "AppStart",
+            "AppStop",
             "DoneConfig",
         ];
         var vm = this;
             vm.configure = {};
+        
         var getVm = function() { return vm; }
 
         activate();
@@ -141,7 +145,8 @@
             vm.scannedDevices = [];
             vm.ipCandidates = [];
             vm.timeCostEstimate = 0;
-
+            
+            vm.selectDevCount = 0;
 
             // For configuration tab
             vm.deviceSelectSize = 3;
@@ -156,6 +161,7 @@
             vm.checkEthernetConfig = checkEthernetConfig;
             vm.checkInitWifiConfig = checkInitWifiConfig;
             vm.changeExportMethod = changeExportMethod;
+            vm.changeAppSelect = changeAppSelect;
             vm.displayScannedDevices = [];
             vm.selectedScannedDevices = [];
             //vm.selectedFinalDevices = [];
@@ -980,6 +986,7 @@
                     status = true;
                 }
             }
+            vm.selectDevCount = count;
             vm.isStartConfigureDisabled = !status;
             vm.configure = {};
             if (1 === count) {
@@ -1114,6 +1121,16 @@ console.log(data);
                                         vm.configure.TextMessage.broadcast_customTime = startDate;
                                     }
                                 }
+                            }
+                            callback()
+                        });
+                    });
+                    steps.push(function(callback) {
+                        QRC.getAppList(device.index).then(function(data) {
+                            data = data.data
+                            if(data.results) {
+                                vm.configure.AppSelect = "";
+                                vm.configure.AppList = data.results;
                             }
                             callback()
                         });
@@ -1754,8 +1771,16 @@ console.log('autoTime', autoTime)
                             });
                         };
                         if (this.status == 200) {
-                            successConfigFn(this.response);
-                            fin();
+                            var response = this.response
+                            QRC.getAppList(device.index).then(function(ret) {
+                                ret = ret.data;
+                                if(ret.results) {
+                                    vm.configure.AppSelect = "";
+                                    vm.configure.AppList = ret.results;
+                                }
+                                successConfigFn(response);
+                                fin();
+                            });
                         }
                         else {
                             errorConfigFn(this.response);
@@ -1818,6 +1843,24 @@ console.log('autoTime', autoTime)
                     };
                     $('body').append($msg.fadeIn());
                     xhr.send(data);
+                } else if (configKey == "AppUninstall") {
+                    QRC.setAppUninstall(vm.configure.AppUninstall, device.index)
+                           .then(function(data) {
+                            QRC.getAppList(device.index).then(function(ret) {
+                                ret = ret.data;
+                                if(ret.results) {
+                                    vm.configure.AppSelect = "";
+                                    vm.configure.AppList = ret.results;
+                                }
+                                successConfigFn(data);
+                            });
+                    }, errorConfigFn);
+                } else if (configKey == "AppStart") {
+                    QRC.setAppStart(vm.configure.AppStart, device.index)
+                           .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "AppStop") {
+                    QRC.setAppStop(vm.configure.AppStop, device.index)
+                           .then(successConfigFn, errorConfigFn);
                 } else {
                     printConfigureError("Un-recognized configKey:" + configKey);
                     readyForNextConfig(device, caseIdx, false);
@@ -2135,6 +2178,29 @@ console.log('autoTime', autoTime)
                 }
             }
         }
+        
+        function changeAppSelect() {
+            var status = false,
+                count = 0,
+                devIndex = -1;
+            for (var i in vm.scannedDevices) {
+                if (vm.scannedDevices[i].isSelected) {
+                    devIndex = i;
+                    ++count;
+                    status = true;
+                }
+            }
+            if(count == 1) {
+                delete vm.AppInfo;
+                QRC.getAppInfo(vm.configure.AppSelect.pkgname, devIndex).then(function(data) {
+                    data = data.data
+                    data.first_install_time = new Date(data.first_install_time).toLocaleString('en-US');
+                    data.last_update_time = new Date(data.last_update_time).toLocaleString('en-US');
+                    vm.AppInfo = data;
+                });
+            }
+        }
+        
         function changeExportMethod() {
             if (vm.remote_or_export=='remote') {
                 vm.startConfigString = 'Start Configuration';

@@ -70,6 +70,11 @@
             setTextMessageNone: setTextMessageNone,
             setEmergenMessage: setEmergenMessage,
             setBroadcastMessage: setBroadcastMessage,
+            setAppUninstall: setAppUninstall,
+            setAppStart: setAppStart,
+            setAppStop, setAppStop,
+            getAppList, getAppList,
+            getAppInfo, getAppInfo,
             buildUrl: buildUrl,
             postConfig: postConfig,
             rebootDevice: rebootDevice,
@@ -352,6 +357,38 @@
             }
             obj.data.options.direction = textMessage.direction;
             return $http.post(url, obj, getConfig(idx));
+        }
+        
+        function setAppUninstall(appUninstall, idx) {
+            var url = buildUrl("/v1/task/uninstall_app", idx);
+            var obj = {};
+            obj.pkgname = appUninstall.package;
+            return $http.post(url, obj, getConfig(idx));
+        }
+        
+        function setAppStart(appStart, idx) {
+            var url = buildUrl("/v1/task/start_app", idx);
+            var obj = {};
+            obj.pkgname = appStart.package;
+            obj.classname = appStart.class;
+            return $http.post(url, obj, getConfig(idx));
+        }
+        
+        function setAppStop(appStop, idx) {
+            var url =buildUrl("/v1/task/stop_app", idx);
+            var obj = {};
+            obj.pkgname = appStop.package;
+            return $http.post(url, obj, getConfig(idx));
+        }
+        
+        function getAppList(idx) {
+            var url = buildUrl("/v1/appinfo", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        
+        function getAppInfo(pkgname, idx) {
+            var url = buildUrl("/v1/appinfo/" + pkgname, idx);
+            return $http.get(url, getConfig(idx));
         }
         
         function rebootDevice(reasonStr, idx) {
