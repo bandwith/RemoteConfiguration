@@ -1004,6 +1004,34 @@ console.log(err);
                             </div>
                         </uib-accordion-group>
 
+                        <uib-accordion-group  is-open="vm.accordion.nfcOpen"
+                                             template-url="accordion-group.html">
+                            <uib-accordion-heading>
+                                Nfc<i class="pull-right glyphicon"
+                                               ng-class="{'glyphicon-chevron-down': vm.accordion.nfcOpen, 'glyphicon-chevron-right': !vm.accordion.proxyOpen}"></i>
+                            </uib-accordion-heading>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.NfcState"
+                                           ng-change="vm.checkInitConfig('NfcState', vm.useConfig.NfcState, 'enable')">
+                                    Enable Nfc
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="enable"
+                                           ng-disabled="!vm.useConfig.NfcState"
+                                           ng-model="vm.configure.NfcState" >
+                                        enable
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="disable"
+                                           ng-disabled="!vm.useConfig.NfcState"
+                                           ng-model="vm.configure.NfcState" >
+                                        disable
+                                    </label>
+                                </div>
+                            </div>
+                        </uib-accordion-group>
 
                         <uib-accordion-group  is-open="vm.accordion.audioOpen"
                                              template-url="accordion-group.html">

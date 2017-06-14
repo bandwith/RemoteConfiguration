@@ -95,6 +95,7 @@
             "SettingsProxy",
             "EthernetNetwork",
             "EthernetState",
+            "NfcState",
             "TextMessage",
             "FirmwareUpdate",
             "AppUpdate",
@@ -1081,6 +1082,13 @@ console.log(data);
                         });
                     });
                     steps.push(function(callback) {
+                        QRC.getNfcState(device.index).then(function(data) {
+                            console.log(data);
+                            vm.configure.NfcState = (data.data.value ? 'enable' :'disable');
+                            callback();
+                        });
+                    });
+                    steps.push(function(callback) {
                         QRC.getEmergencyMessage(device.index).then(function(data) {
                             data = data.data;
                             console.log(data);
@@ -1681,6 +1689,22 @@ console.log('autoTime', autoTime)
                     } else {
                         var url = QRC.buildUrl("/v1/net/proxy", device.index);
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":proxySetting};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "NfcState") {
+                    var nfcState;
+                    if (vm.configure.NfcState == "enable") {
+                        nfcState = true;
+                    } else {
+                        nfcState = false;
+                    }
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setNfcState(nfcState, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/nfc_enabled", device.index);
+                        var param = {"value": nfcState};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "TextMessage") { 

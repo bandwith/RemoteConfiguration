@@ -65,6 +65,8 @@
             setEth0State: setEth0State,
             getEth0Network: getEth0Network,
             setEth0Network: setEth0Network,
+            getNfcState: getNfcState,
+            setNfcState: setNfcState,
             getEmergencyMessage: getEmergencyMessage,
             getBroadcastMessage: getBroadcastMessage,
             setTextMessageNone: setTextMessageNone,
@@ -285,7 +287,15 @@
             var url = buildUrl("/v1/eth/0/network", idx);
             return $http.post(url, ethConfig, getConfig(idx));
         }
-        
+        function getNfcState(idx) {
+            var url = buildUrl("/v1/settings/nfc_enabled", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setNfcState(state, idx) {
+            var url = buildUrl("/v1/settings/nfc_enabled", idx);
+             var obj = {value: state};
+            return $http.post(url, obj, getConfig(idx));
+        }
         function getEmergencyMessage(idx) {
             var url = buildUrl("/v1/textmsg/1000", idx);
             return $http.get(url, getConfig(idx));
