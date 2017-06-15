@@ -634,6 +634,33 @@ console.log(err);
                                            class="form-control" ng-model="vm.configure.SettingsAppOtaXmlUrl" />
                                 </div>
                             </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.SettingsLogLocation"
+                                           ng-change="vm.checkInitConfig('SettingsLogLocation', vm.useConfig.SettingsLogLocation, '0')">
+                                    Log Location
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="3"
+                                               ng-disabled="!vm.useConfig.SettingsLogLocation"
+                                               ng-model="vm.configure.SettingsLogLocation" >
+                                        none
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="0"
+                                               ng-disabled="!vm.useConfig.SettingsLogLocation"
+                                               ng-model="vm.configure.SettingsLogLocation" >
+                                        internal storage
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="1"
+                                               ng-disabled="!vm.useConfig.SettingsLogLocation"
+                                               ng-model="vm.configure.SettingsLogLocation">
+                                        SD card
+                                    </label>
+                                </div>
+                            </div>
                         </uib-accordion-group>
                         <uib-accordion-group name="ethernetGroup" is-open="vm.accordion.ethernetOpen"
                                              template-url="accordion-group.html">

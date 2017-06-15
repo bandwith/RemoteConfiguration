@@ -103,6 +103,7 @@
             "AppUninstall",
             "AppStart",
             "AppStop",
+            "SettingsLogLocation",
             "DoneConfig",
         ];
         var vm = this;
@@ -1018,6 +1019,7 @@ console.log(data);
                             vm.configure.SettingsScreenOrientation = data.screen_orientation;
                             vm.configure.SettingsOtaXmlUrl = data.ota_xml_url;
                             vm.configure.SettingsAppOtaXmlUrl = data.app_ota_xml_url;
+                            vm.configure.SettingsLogLocation = data.log_location;
                             var drt = (data.reboot_time||'').split(':'),
                                 ddrt = new Date();
                             if (drt) ddrt.setHours(drt[0], drt[1], 0, 0);
@@ -1885,6 +1887,16 @@ console.log('autoTime', autoTime)
                 } else if (configKey == "AppStop") {
                     QRC.setAppStop(vm.configure.AppStop, device.index)
                            .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "SettingsLogLocation") { 
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("log_location", vm.configure.SettingsLogLocation, device.index)
+                        .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/log_location", device.index);
+                        var param = {"value": vm.configure.SettingsLogLocation};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else {
                     printConfigureError("Un-recognized configKey:" + configKey);
                     readyForNextConfig(device, caseIdx, false);
