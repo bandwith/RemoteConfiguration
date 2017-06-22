@@ -179,6 +179,7 @@
             vm.scanDevice = scanDevice;
             vm.checkLastResults = checkLastResults;
             vm.onScreenshotClick = onScreenshotClick;
+            vm.onLogClick = onLogClick;
             vm.onRemoveClick = onRemoveClick;
             vm.onRemoveAllClick = onRemoveAllClick;
             vm.saveScannedResult = saveScannedResult;
@@ -613,6 +614,164 @@
                 scannedDevices: vm.scannedDevices,
                 lastScannedSerialNum: vm.lastScannedSerialNum
             }));
+        }
+        
+        function onLogClick(row, inx) {
+            var index = vm.lastScannedSerialNum[row.serial_number],
+                device = vm.scannedDevices[index];
+            QRC.setTargetIpAddress(device.ip, device.index);
+            QRC.getToken((vm.current_password||'12345678'), device.index).then(function(data) {
+                    var accessToken = data.data.access_token;
+                    QRC.setTargetAuthToken(accessToken, device.index);
+                    QRC.getSettings("log_location", device.index)
+                            .then(function(data) {
+                                data = data.data;
+                                console.log(data);
+                                if (data.value == "0" || data.value == "1") {
+                                    var displayMsg;
+                                    if(data.value == 0) {
+                                        displayMsg = "Would you like to open log directory?";
+                                    } else {
+                                        displayMsg = "Would you like to open log directory?";
+                                    }
+                                    //save log to internal storage
+                                    $('body').append($('<div>')
+                                    .hide()
+                                    .attr('id', 'logdialog')
+                                    .append($('<div>')
+                                        .addClass('box')
+                                        .append($('<div>')
+                                                .addClass('form-group')
+                                                .append($('<label>')
+                                                .addClass('control-label-left')
+                                                .html(displayMsg)
+                                               )        
+                                        )
+                                        .append($('<button>')
+                                                .addClass('btn btn-primary')
+                                                .html("OK")
+                                                .on('click', function() { 
+                                                        if(data.value == "0") {                                                                                                                                             window.open('http://'+device.ip+':8080/mnt/internal_storage/_internal_debug_log/'); 
+                                                        } else {
+                                                            window.open('http://'+device.ip+':8080/mnt/external_sd/_sd_debug_log/');
+                                                        }
+                                                        $(logdialog).fadeOut(function() {
+                                                        $(logdialog).remove();
+                                                        })
+                                                    })
+                                        )
+                                        .append($('<button>')
+                                                .addClass('btn btn-primary pull-right')
+                                                .html("Cancel")
+                                                .on('click', function(e) { 
+                                                        $(logdialog).fadeOut(function() {
+                                                        $(logdialog).remove();
+                                                        })
+                                                })
+                                        )
+                                        .on('click', function(e) {
+                                        console.log(e);
+                                        e.stopPropagation();})
+                                    )               
+                                    .on('click', function() {
+                                        $(this).fadeOut(function() {
+                                            $(this).remove();
+                                        })
+                                    })
+                                    .fadeIn()
+                                    );
+                                } else if (data.value == "3") {
+                                    //Do save log
+                                    $('body').append($('<div>')
+                                        .hide()
+                                        .attr('id', 'progress')
+                                        .append($('<div>')
+                                            .addClass('box')
+                                            .html('Saving log...')
+                                        )
+                                        .on('click', function() {
+                                            $(this).fadeOut(function() {
+                                                $(this).remove();
+                                            })
+                                        })
+                                        .fadeIn()
+                                    );
+                                    var xhr = new XMLHttpRequest();
+                                    xhr.open('GET', ('http://'+device.ip+':8080/v1/task/log'), true);
+                                    xhr.setRequestHeader('Authorization', ('Bearer '+accessToken));
+                                    xhr.responseType = 'arraybuffer';
+                                    xhr.onload = function() {
+                                        var elementExists = document.getElementById("progress");
+                                        if(elementExists) {
+                                            $(progress).fadeOut(function() {
+                                                $(progress).remove();
+                                            })
+                                        }
+                                        var data = this.response;
+                                        var type = xhr.getResponseHeader('Content-Type');
+                                        var blob = new Blob([data], { type: type });
+                                        var curDate = new Date();
+                                        var month = curDate.getMonth() + 1;
+                                        if(month < 10) {
+                                            month = "0" + month;
+                                        }
+                                        var days = curDate.getDate();
+                                        if(days < 10) {
+                                            days = "0" + days;
+                                        }
+                                        saveAs(blob, "" + curDate.getFullYear() + month+days + "_" + curDate.getHours()+curDate.getMinutes()+curDate.getSeconds() + "_log.zip");
+                                    };
+                                    xhr.send();
+                                } else {
+                                    console.log("Unknown log location:" + data.value);
+                                    $('body').append($('<div>')
+                                    .hide()
+                                    .attr('id', 'progress')
+                                    .append($('<div>')
+                                        .addClass('box')
+                                        .html("Unknown log location:" + data.value)
+                                    )
+                                    .on('click', function() {
+                                        $(this).fadeOut(function() {
+                                            $(this).remove();
+                                        })
+                                    })
+                                    .fadeIn()
+                                    );
+                                }
+                            }, function(data) {
+                                data = data.data;
+                                $('body').append($('<div>')
+                                    .hide()
+                                    .attr('id', 'progress')
+                                    .append($('<div>')
+                                        .addClass('box')
+                                        .html(JSON.stringify(data))
+                                    )
+                                    .on('click', function() {
+                                        $(this).fadeOut(function() {
+                                            $(this).remove();
+                                        })
+                                    })
+                                    .fadeIn()
+                                );
+                            });
+            }, function(e) {
+                    $('body').append($('<div>')
+                        .hide()
+                        .attr('id', 'progress')
+                        .append($('<div>')
+                            .addClass('box')
+                            .html('Please set device password')
+                        )
+                        .on('click', function() {
+                            $(this).fadeOut(function() {
+                                $(this).remove();
+                            })
+                        })
+                        .fadeIn()
+                    );
+                });
         }
 
         function onScreenshotClick(row, inx) {
