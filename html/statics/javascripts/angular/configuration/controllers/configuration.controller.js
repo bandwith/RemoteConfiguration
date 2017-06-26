@@ -1888,16 +1888,16 @@ console.log('autoTime', autoTime)
                             playlistlogSetting.refreshInterval = vm.configure.SettingsPlaylistlogState.refreshInterval;
                         }
                         if (playlistlogSetting.action == 'WEB') {
-                            playlistlogSetting.action = playlistlogSetting.actionUrl;
+                            playlistlogSetting.action = vm.configure.SettingsPlaylistlogState.actionUrl;
                             if (vm.configure.SettingsPlaylistlogState.retryInterval != '' && vm.configure.SettingsPlaylistlogState.retryInterval>0 ) {
                                 playlistlogSetting.retryInterval = vm.configure.SettingsPlaylistlogState.retryInterval;
                             }
                         }
                     }
                     if(vm.remote_or_export=='remote') {
-                        console.log(playlistlogSetting);
+                        //console.log(playlistlogSetting);
                         console.log(data);
-                        QRC.setProxy(playlistlogSetting, device.index)
+                        QRC.setPlaylistlogState(playlistlogSetting, device.index)
                             .then(successConfigFn, errorConfigFn);
                     } else {
                         var url = QRC.buildUrl("/v1/player/playlistlog/state", device.index);
