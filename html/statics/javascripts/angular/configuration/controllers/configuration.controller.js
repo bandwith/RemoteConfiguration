@@ -104,6 +104,7 @@
             "AppStart",
             "AppStop",
             "SettingsLogLocation",
+            "SettingsPlaylistlogState",
             "DoneConfig",
         ];
         var vm = this;
@@ -174,6 +175,7 @@
             vm.isConfigClicked = false;
             vm.startConfigString = 'Start Configuration';
             vm.remoteReboot = remoteReboot;
+            vm.openPlaylistlogFolder = openPlaylistlogFolder;
 
             vm.countStatus = countStatus;
             vm.scanDevice = scanDevice;
@@ -931,6 +933,17 @@
             });
         }
 
+        function openPlaylistlogFolder() {
+            console.log('openPlaylistlogFolder');
+            for (var devIdx in vm.scannedDevices) {
+                if (vm.scannedDevices[devIdx].isSelected) {
+                    var url = QRC.buildUrl("/mnt/internal_storage/_internal_playlist_log/", devIdx);
+                    console.log(url);
+                    return window.open(url, '_blank');
+                }
+            }
+        }
+
         function clearInput() {
             vm.current_password = "";
             vm.configure = {};
@@ -1239,6 +1252,17 @@ console.log(data);
                             else if (data.proxy_static_host) data.type = 'static';
                             else data.type = 'none';
                             vm.configure.SettingsProxy = data;
+                            callback();
+                        });
+                    });
+                    steps.push(function(callback) {
+                        QRC.getPlaylistlogState(device.index).then(function(data) {
+                            data = data.data;
+                            if (data.action!='' && data.action!='INTERNAL' && data.action!='NOT_STORE') {
+                                data.actionUrl = data.action;
+                                data.action = 'WEB';
+                            }
+                            vm.configure.SettingsPlaylistlogState = data;
                             callback();
                         });
                     });
@@ -1850,6 +1874,34 @@ console.log('autoTime', autoTime)
                     } else {
                         var url = QRC.buildUrl("/v1/net/proxy", device.index);
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":proxySetting};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsPlaylistlogState") {
+                    var data = vm.configure.SettingsPlaylistlogState;
+                    var playlistlogSetting = {
+                        action: data.action,
+                        refreshInterval: data.refreshInterval,
+                        retryInterval: data.retryInterval
+                    }
+                    if (playlistlogSetting.action == 'INTERNAL' || playlistlogSetting.action == 'WEB') {
+                        if (vm.configure.SettingsPlaylistlogState.refreshInterval != '' && vm.configure.SettingsPlaylistlogState.refreshInterval>0 ) {
+                            playlistlogSetting.refreshInterval = vm.configure.SettingsPlaylistlogState.refreshInterval;
+                        }
+                        if (playlistlogSetting.action == 'WEB') {
+                            playlistlogSetting.action = playlistlogSetting.actionUrl;
+                            if (vm.configure.SettingsPlaylistlogState.retryInterval != '' && vm.configure.SettingsPlaylistlogState.retryInterval>0 ) {
+                                playlistlogSetting.retryInterval = vm.configure.SettingsPlaylistlogState.retryInterval;
+                            }
+                        }
+                    }
+                    if(vm.remote_or_export=='remote') {
+                        console.log(playlistlogSetting);
+                        console.log(data);
+                        QRC.setProxy(playlistlogSetting, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/player/playlistlog/state", device.index);
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":playlistlogSetting};
                         readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "NfcState") {

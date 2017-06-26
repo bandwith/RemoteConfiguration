@@ -6,7 +6,7 @@
         <title>Remote Configuration Center</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Remote Configuration Center" />
-        <meta name="versionName" value="v1.0.20170622" />
+        <meta name="versionName" value="v1.0.20170626" />
         <!--link rel="stylesheet" href="build/qrc-v0.0.1.css"-->
         <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="bower_components/angular-block-ui/dist/angular-block-ui.min.css">
@@ -1125,6 +1125,82 @@ console.log(err);
                                 </div>
                             </div>
                         </uib-accordion-group>
+
+                        <uib-accordion-group  is-open="vm.accordion.playlistlogOpen" template-url="accordion-group.html">
+                            <uib-accordion-heading>
+                                Playlist log<i class="pull-right glyphicon"
+                                               ng-class="{'glyphicon-chevron-down': vm.accordion.playlistlogOpen, 'glyphicon-chevron-right': !vm.accordion.playlistlogOpen}"></i>
+                            </uib-accordion-heading>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.SettingsPlaylistlogState"
+                                           ng-change="vm.checkInitConfig('SettingsPlaylistlogState', vm.useConfig.SettingsPlaylistlogState, vm.config.SettingsPlaylistlogState||{action:'NOT_STORE'}||{refreshInterval:'3600'}||{retryInterval:'3600'})">
+                                    Playlist log location
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="NOT_STORE"
+                                               ng-disabled="!vm.configure.SettingsPlaylistlogState"
+                                               ng-model="vm.configure.SettingsPlaylistlogState.action" >
+                                        none
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="INTERNAL"
+                                               ng-disabled="!vm.configure.SettingsPlaylistlogState"
+                                               ng-model="vm.configure.SettingsPlaylistlogState.action" >
+                                        internal storage
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="WEB"
+                                               ng-disabled="!vm.configure.SettingsPlaylistlogState"
+                                               ng-model="vm.configure.SettingsPlaylistlogState.action">
+                                        web url
+                                    </label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.SettingsPlaylistlogState.action=='WEB'">
+                                <label class="col-xs-3 control-label-left">Target web url</label>
+                                <div class="col-xs-9">
+                                    <input name="actionUrl" ng-required="vm.configure.SettingsPlaylistlogState.action=='WEB'"
+                                           class="form-control"
+                                           placeholder="ex, http://192.168.1.49/playlistlog/"
+                                           ng-disabled="!vm.useConfig.SettingsPlaylistlogState"
+                                           ng-model="vm.configure.SettingsPlaylistlogState.actionUrl" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.SettingsPlaylistlogState.action=='INTERNAL' || vm.configure.SettingsPlaylistlogState.action=='WEB'">
+                                <label class="col-xs-5 control-label-left">Upload frequency (seconds)</label>
+                                <div class="col-xs-7">
+                                    <input name="refreshInterval" ng-required="vm.configure.SettingsPlaylistlogState.action=='INTERNAL' || vm.configure.SettingsPlaylistlogState.action=='WEB'"
+                                           class="form-control"
+                                           placeholder="ex, 3600"
+                                           ng-disabled="!vm.useConfig.SettingsPlaylistlogState"
+                                           ng-model="vm.configure.SettingsPlaylistlogState.refreshInterval" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.SettingsPlaylistlogState.action=='WEB'">
+                                <label class="col-xs-5 control-label-left">Retry frequency if upload fail (seconds)</label>
+                                <div class="col-xs-7">
+                                    <input name="retryInterval" ng-required="vm.configure.SettingsPlaylistlogState.action=='WEB'"
+                                           class="form-control"
+                                           placeholder="ex, 3600"
+                                           ng-disabled="!vm.useConfig.SettingsPlaylistlogState"
+                                           ng-model="vm.configure.SettingsPlaylistlogState.retryInterval" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-12 control-label-slider">
+                                    <button type="button" ng-disabled="vm.selectDevCount!=1" class="btn btn-error pull-left" ng-click="vm.openPlaylistlogFolder();">View internal playlist log</button>
+                                </label>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-12 control-label-left" ng-show="vm.selectDevCount!=1">* Please select a single device before viewing playlist log files.</label>
+                            </div>
+                        </uib-accordion-group>
+
                         <uib-accordion-group is-open="vm.accordion.remoteControl" template-url="accordion-group.html">
                             <uib-accordion-heading>
                                 Remote Control<i class="pull-right glyphicon"

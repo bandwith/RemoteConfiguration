@@ -42,6 +42,9 @@
             getProxy: getProxy,
             setProxy: setProxy,
 
+            getPlaylistlogState: getPlaylistlogState,
+            setPlaylistlogState: setPlaylistlogState,
+
             setProp: setProp,
             listProp: listProp,
 
@@ -188,6 +191,15 @@
         }
         function setProxy(param, idx) {
             var url = buildUrl("/v1/net/proxy", idx);
+            return $http.post(url, param, getConfig(idx));
+        }
+
+        function getPlaylistlogState(idx) {
+            var url = buildUrl("/v1/player/playlistlog/state", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setPlaylistlogState(param, idx) {
+            var url = buildUrl("/v1/player/playlistlog/state", idx);
             return $http.post(url, param, getConfig(idx));
         }
 
