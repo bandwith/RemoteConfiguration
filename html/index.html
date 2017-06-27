@@ -6,7 +6,7 @@
         <title>Remote Configuration Center</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Remote Configuration Center" />
-        <meta name="versionName" value="v1.0.20170626" />
+        <meta name="versionName" value="v1.0.20170627" />
         <!--link rel="stylesheet" href="build/qrc-v0.0.1.css"-->
         <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="bower_components/angular-block-ui/dist/angular-block-ui.min.css">
@@ -1154,13 +1154,13 @@ console.log(err);
                                         <input type="radio" value="WEB"
                                                ng-disabled="!vm.configure.SettingsPlaylistlogState"
                                                ng-model="vm.configure.SettingsPlaylistlogState.action">
-                                        web url
+                                        server URL
                                     </label>
                                 </div>
                             </div>
                             <div show-errors class="form-group"
                                  ng-show="vm.configure.SettingsPlaylistlogState.action=='WEB'">
-                                <label class="col-xs-3 control-label-left">Target web url</label>
+                                <label class="col-xs-3 control-label-left">Server URL</label>
                                 <div class="col-xs-9">
                                     <input name="actionUrl" ng-required="vm.configure.SettingsPlaylistlogState.action=='WEB'"
                                            class="form-control"
@@ -1171,8 +1171,8 @@ console.log(err);
                             </div>
                             <div show-errors class="form-group"
                                  ng-show="vm.configure.SettingsPlaylistlogState.action=='INTERNAL' || vm.configure.SettingsPlaylistlogState.action=='WEB'">
-                                <label class="col-xs-5 control-label-left">Upload frequency (seconds)</label>
-                                <div class="col-xs-7">
+                                <label class="col-xs-6 control-label-left">Update interval (seconds)</label>
+                                <div class="col-xs-6">
                                     <input name="refreshInterval" ng-required="vm.configure.SettingsPlaylistlogState.action=='INTERNAL' || vm.configure.SettingsPlaylistlogState.action=='WEB'"
                                            class="form-control"
                                            placeholder="ex, 3600"
@@ -1182,8 +1182,8 @@ console.log(err);
                             </div>
                             <div show-errors class="form-group"
                                  ng-show="vm.configure.SettingsPlaylistlogState.action=='WEB'">
-                                <label class="col-xs-5 control-label-left">Retry frequency if upload fail (seconds)</label>
-                                <div class="col-xs-7">
+                                <label class="col-xs-6 control-label-left">Retry interval when failed to upload file (seconds)</label>
+                                <div class="col-xs-6">
                                     <input name="retryInterval" ng-required="vm.configure.SettingsPlaylistlogState.action=='WEB'"
                                            class="form-control"
                                            placeholder="ex, 3600"
