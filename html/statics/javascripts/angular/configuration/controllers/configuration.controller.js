@@ -1206,19 +1206,19 @@ console.log(data);
                             vm.configure.SettingsScheduleOff = (dsf ?ddsf :null);
 
                             callback();
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.getEth0State(device.index).then(function(data) {
                             vm.configure.EthernetState = (data.data.value==='enabled' ?'enable' :'disable');
                             callback();
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.getWifiState(device.index).then(function(data) {
                             vm.configure.WifiState = (data.data.value==='enabled' ?'enable' :'disable');
                             callback();
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.getEth0Network(device.index).then(function(data) {
@@ -1234,7 +1234,7 @@ console.log(data);
                                 +'.'+parseInt(str.substr(24, 8), 2)
                             );
                             callback();
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.listAudioVolume(device.index).then(function(data) {
@@ -1243,7 +1243,7 @@ console.log(data);
                             vm.configure.AudioStreamAlarm = data.stream_alarm;
                             vm.configure.AudioStreamNotification = data.stream_notification;
                             callback();
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.getProxy(device.index).then(function(data) {
@@ -1253,7 +1253,7 @@ console.log(data);
                             else data.type = 'none';
                             vm.configure.SettingsProxy = data;
                             callback();
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.getPlaylistlogState(device.index).then(function(data) {
@@ -1264,14 +1264,14 @@ console.log(data);
                             }
                             vm.configure.SettingsPlaylistlogState = data;
                             callback();
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.getNfcState(device.index).then(function(data) {
                             console.log(data);
                             vm.configure.NfcState = (data.data.value ? 'enable' :'disable');
                             callback();
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.getEmergencyMessage(device.index).then(function(data) {
@@ -1286,7 +1286,7 @@ console.log(data);
                             }
 
                             callback()
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.getBroadcastMessage(device.index).then(function(data) {
@@ -1316,7 +1316,7 @@ console.log(data);
                                 }
                             }
                             callback()
-                        });
+                        },callback);
                     });
                     steps.push(function(callback) {
                         QRC.getAppList(device.index).then(function(data) {
@@ -1326,7 +1326,7 @@ console.log(data);
                                 vm.configure.AppList = data.results;
                             }
                             callback()
-                        });
+                        },callback);
                     });
                     /*
                     steps.push(function(callback) {
