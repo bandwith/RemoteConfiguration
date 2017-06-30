@@ -103,6 +103,7 @@
             "AppUninstall",
             "AppStart",
             "AppStop",
+            "RemoteUploadFiles",
             "SettingsLogLocation",
             "SettingsPlaylistlogState",
             "DoneConfig",
@@ -198,6 +199,11 @@
             vm.onBootAnmicationFilesChange = function() {
                 console.log(vm.bootAnmicationFiles);
             }
+            vm.remoteUploadFiles;
+            vm.onRemoteUploadFilesChange = function() {
+                console.log(vm.remoteUploadFiles);
+            }
+            vm.downloadRRemoteFiles = downloadRRemoteFiles;
             //vm.localStorageName = 'lastResults';
             vm.hasLastScannedResults = false;
             vm.firstCome = true;
@@ -938,6 +944,17 @@
             for (var devIdx in vm.scannedDevices) {
                 if (vm.scannedDevices[devIdx].isSelected) {
                     var url = QRC.buildUrl("/mnt/internal_storage/_internal_playlist_log/", devIdx);
+                    console.log(url);
+                    return window.open(url, '_blank');
+                }
+            }
+        }
+
+        function downloadRRemoteFiles() {
+            console.log('downloadRRemoteFiles');
+            for (var devIdx in vm.scannedDevices) {
+                if (vm.scannedDevices[devIdx].isSelected) {
+                    var url = QRC.buildUrl("/mnt/internal_storage/remotefiles/", devIdx);
                     console.log(url);
                     return window.open(url, '_blank');
                 }
@@ -2098,6 +2115,53 @@ console.log('autoTime', autoTime)
                 } else if (configKey == "AppStop") {
                     QRC.setAppStop(vm.configure.AppStop, device.index)
                            .then(successConfigFn, errorConfigFn);
+                } else if (configKey == "RemoteUploadFiles") {
+                    var token = QRC.getTokenVal(device.index),
+                        xhr = new XMLHttpRequest(),
+                        data = new FormData(),
+                        $preg = $('<span>'),
+                        $msg = $('<div>')
+                            .attr('id', 'progress')
+                            .hide()
+                            .append($('<div>')
+                                .addClass('box')
+                                .append($('<span>').html('Remote Upload Files: '))
+                                .append($preg)
+                            );
+                    for(var i = 0; i < vm.remoteUploadFiles.length; i++) {
+                        data.append("file" + (i + 1), vm.remoteUploadFiles[i]);
+                    }
+                    xhr.open('POST', ('http://'+device.ip+':8080/v1/task/remote_upload_file'), true);
+                    //xhr.setRequestHeader('Content-Type', 'multipart/form-data');
+                    xhr.setRequestHeader('Authorization', ('Bearer '+token));
+                    xhr.upload.onprogress = function(e) {
+                        $preg.html(parseInt(100*e.loaded/e.total)+'%');
+                    };
+                    xhr.onreadystatechange = function(e) {
+                        if (this.readyState != 4) return;
+                        var fin = function() {
+                            $msg.fadeOut(function() {
+                                $(this).remove();
+                            });
+                        };
+                        if (this.status == 200) {
+                            successConfigFn(this.response);
+                            fin();
+                        }
+                        else {
+                            errorConfigFn(this.response);
+                            var data = '';
+                            try {
+                                data = ((JSON.parse(this.response)||{}).detail||'Unknow Error');
+                            }
+                            catch (e) {}
+                            $msg
+                                .on('click', fin)
+                                .find('.box').html('Remote Upload Files Failed: '+data);
+                        }
+                    };
+                    $('body').append($msg.fadeIn());
+                    xhr.send(data);
                 } else if (configKey == "SettingsLogLocation") { 
                     if(vm.remote_or_export=='remote') {
                         QRC.setSettings("log_location", vm.configure.SettingsLogLocation, device.index)
