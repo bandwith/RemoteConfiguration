@@ -1055,6 +1055,201 @@ console.log(err);
                             </div>
                         </uib-accordion-group>
 
+                        <uib-accordion-group  is-open="vm.accordion.beaconOpen"
+                                             template-url="accordion-group.html">
+                            <uib-accordion-heading>
+                                Beacon<i class="pull-right glyphicon"
+                                               ng-class="{'glyphicon-chevron-down': vm.accordion.beaconOpen, 'glyphicon-chevron-right': !vm.accordion.beaconOpen}"></i>
+                            </uib-accordion-heading>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.BeaconSettings"
+                                           ng-change="vm.checkInitConfig('BeaconSettings', vm.useConfig.BeaconSettings, {type:'ibeacon', action:'enable'})">
+                                    Beacon Settings
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="ibeacon"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.type" >
+                                        iBeacon
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="eddystone_uid"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.type" >
+                                        Eddystone-UID
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="eddystone_url"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.type" >
+                                        Eddystone-URL
+                                    </label>
+                                </div>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="enable"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.action" >
+                                        Start advertising
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="disable"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.action" >
+                                        Stop advertising
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.BeaconSettings.type=='ibeacon'&&vm.configure.BeaconSettings.action=='enable'">
+                                <label class="col-xs-3 control-label-left">iBeacon UUID</label>
+                                <div class="col-xs-9">
+                                    <input name="uuid"
+                                           class="form-control"
+                                           placeholder="Optional, default: fb0b57a2-8228-44cd-913a-94a122ba1206"
+                                           ng-pattern="vm.uuidPattern"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.uuid" />
+                                    <div ng-show="ConfigForm.uuid.$error.pattern" class="help-block">Format is incorrect</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.BeaconSettings.type=='ibeacon'&&vm.configure.BeaconSettings.action=='enable'">
+                                <label class="col-xs-3 control-label-left">Major Number</label>
+                                <div class="col-xs-9">
+                                    <input name="major"
+                                           ng-required="vm.configure.BeaconSettings.type=='ibeacon'&&vm.configure.BeaconSettings.action!='disable'"
+                                           class="form-control"
+                                           placeholder="MUST, Major number range: 0~65535"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.major" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.BeaconSettings.type=='ibeacon'&&vm.configure.BeaconSettings.action=='enable'">
+                                <label class="col-xs-3 control-label-left">Minor Number</label>
+                                <div class="col-xs-9">
+                                    <input name="minor"
+                                           ng-required="vm.configure.BeaconSettings.type=='ibeacon'&&vm.configure.BeaconSettings.action!='disable'"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           placeholder="MUST, Minor number range: 0~65535"
+                                           class="form-control"
+                                           ng-model="vm.configure.BeaconSettings.minor" />
+                                </div>
+                            </div>
+                            <div show-errors ng-show="vm.configure.BeaconSettings.type=='ibeacon'&&vm.configure.BeaconSettings.action=='enable'" class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    Advertise Mode
+                                </label>
+                                <div class="col-xs-9">
+                                    <select class="form-control" ng-disabled="!vm.useConfig.BeaconSettings"
+                                        ng-init="vm.configure.BeaconSettings.ibeacon_mode=vm.configure.BeaconSettings.ibeacon_mode?vm.configure.BeaconSettings.ibeacon_mode:'balanced'" ng-model="vm.configure.BeaconSettings.ibeacon_mode">
+                                        <option value="low_latency">Low Latency</option>
+                                        <option value="balanced">Balanced</option>
+                                        <option value="low_power">Low Power</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.BeaconSettings.type=='ibeacon'&&vm.configure.BeaconSettings.action=='enable'">
+                                <label class="col-xs-3 control-label-left">Power</label>
+                                <div class="col-xs-9">
+                                    <input ng-disabled="!vm.useConfig.BeaconSettings"
+                                           class="form-control"
+                                           placeholder="Optional, default: -40db"
+                                           ng-model="vm.configure.BeaconSettings.ibeacon_power" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.BeaconSettings.type=='eddystone_uid'&&vm.configure.BeaconSettings.action=='enable'">
+                                <label class="col-xs-3 control-label-left">Namespace</label>
+                                <div class="col-xs-9">
+                                    <input name="namespace"
+                                           class="form-control"
+                                           placeholder="Optional(20 hex chars), default: fb0b57a294a122ba1206"
+                                           ng-pattern="vm.nidPattern"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.namespace" />
+                                    <div ng-show="ConfigForm.namespace.$error.pattern" class="help-block">Format is incorrect</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.BeaconSettings.type=='eddystone_uid'&&vm.configure.BeaconSettings.action=='enable'">
+                                <label class="col-xs-3 control-label-left">Instance</label>
+                                <div class="col-xs-9">
+                                    <input name="instance"
+                                           ng-required="vm.configure.BeaconSettings.type=='eddystone-uid'&&vm.configure.BeaconSettings.action!='disable'"
+                                           class="form-control"
+                                           placeholder="Optional(12 hex chars), default: eth mac address"
+                                           ng-pattern="vm.bidPattern"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.instance" />
+                                    <div ng-show="ConfigForm.instance.$error.pattern" class="help-block">Format is incorrect</div>
+                                </div>
+                            </div>
+                            <div show-errors ng-show="vm.configure.BeaconSettings.type=='eddystone_uid'&&vm.configure.BeaconSettings.action=='enable'" class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    Advertise Mode
+                                </label>
+                                <div class="col-xs-9">
+                                    <select class="form-control" ng-disabled="!vm.useConfig.BeaconSettings"
+                                        ng-init="vm.configure.BeaconSettings.uid_mode=vm.configure.BeaconSettings.uid_mode?vm.configure.BeaconSettings.uid_mode:'balanced'" ng-model="vm.configure.BeaconSettings.uid_mode">
+                                        <option value="low_latency">Low Latency</option>
+                                        <option value="balanced">Balanced</option>
+                                        <option value="low_power">Low Power</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.BeaconSettings.type=='eddystone_uid'&&vm.configure.BeaconSettings.action=='enable'">
+                                <label class="col-xs-3 control-label-left">Power</label>
+                                <div class="col-xs-9">
+                                    <input ng-disabled="!vm.useConfig.BeaconSettings"
+                                           class="form-control"
+                                           placeholder="Optional, default: -40db"
+                                           ng-model="vm.configure.BeaconSettings.uid_power" />
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.BeaconSettings.type=='eddystone_url'&&vm.configure.BeaconSettings.action=='enable'">
+                                <label class="col-xs-3 control-label-left">URL</label>
+                                <div class="col-xs-9">
+                                    <input name="url"
+                                           class="form-control"
+                                           placeholder="Optional, default: https://www.qbictechnology.com"
+                                           ng-disabled="!vm.useConfig.BeaconSettings"
+                                           ng-model="vm.configure.BeaconSettings.url" />
+                                </div>
+                            </div>
+
+                            <div show-errors ng-show="vm.configure.BeaconSettings.type=='eddystone_url'&&vm.configure.BeaconSettings.action=='enable'" class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    Advertise Mode
+                                </label>
+                                <div class="col-xs-9">
+                                    <select class="form-control" ng-disabled="!vm.useConfig.BeaconSettings"
+                                        ng-init="vm.configure.BeaconSettings.url_mode=vm.configure.BeaconSettings.url_mode?vm.configure.BeaconSettings.url_mode:'balanced'" ng-model="vm.configure.BeaconSettings.url_mode">
+                                        <option value="low_latency">Low Latency</option>
+                                        <option value="balanced">Balanced</option>
+                                        <option value="low_power">Low Power</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group"
+                                 ng-show="vm.configure.BeaconSettings.type=='eddystone_url'&&vm.configure.BeaconSettings.action=='enable'">
+                                <label class="col-xs-3 control-label-left">Power</label>
+                                <div class="col-xs-9">
+                                    <input ng-disabled="!vm.useConfig.BeaconSettings"
+                                           class="form-control"
+                                           placeholder="Optional, default: -40db"
+                                           ng-model="vm.configure.BeaconSettings.url_power" />
+                                </div>
+                            </div>
+                        </uib-accordion-group>
+
                         <uib-accordion-group  is-open="vm.accordion.nfcOpen"
                                              template-url="accordion-group.html">
                             <uib-accordion-heading>

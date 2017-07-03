@@ -95,6 +95,7 @@
             "SettingsProxy",
             "EthernetNetwork",
             "EthernetState",
+            "BeaconSettings",
             "NfcState",
             "TextMessage",
             "FirmwareUpdate",
@@ -134,7 +135,9 @@
             }
 
             vm.ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-
+            vm.uuidPattern = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
+            vm.nidPattern = /^([0-9a-f]{20})$/;
+            vm.bidPattern = /^([0-9a-f]{12})$/;
             // For scan tab
             vm.isScanDisabled = true;
             vm.isScanning = false;
@@ -1170,6 +1173,8 @@
             var status = false,
                 count = 0,
                 devIndex = -1;
+            var beaconData = {};
+            var beaconState = false;
             for (var i in vm.scannedDevices) {
                 if (vm.scannedDevices[i].isSelected) {
                     devIndex = i;
@@ -1280,6 +1285,58 @@ console.log(data);
                                 data.action = 'WEB';
                             }
                             vm.configure.SettingsPlaylistlogState = data;
+                            callback();
+                        },callback);
+                    });
+                    steps.push(function(callback) {
+                        QRC.getEddystoneUrlSettings(device.index).then(function(data) {
+                            data = data.data;
+                            console.log(data);
+                            if (data.state == 'enabled') {
+                                beaconData.type = 'eddystone_url';
+                                beaconData.action = 'enable';
+                                beaconState = true;
+                            }
+                            beaconData.url = data.url;
+                            beaconData.url_mode = data.advertise_mode;
+                            beaconData.url_power = data.power;
+                            callback();
+                        },callback);
+                    });
+                    steps.push(function(callback) {
+                        QRC.getEddystoneUidSettings(device.index).then(function(data) {
+                            data = data.data;
+                            console.log(data);
+                            if (data.state == 'enabled') {
+                                beaconData.type = 'eddystone_uid';
+                                beaconData.action = 'enable';
+                                beaconState = true;
+                            }
+                            beaconData.namespace = data.namespace;
+                            beaconData.instance = data.instance;
+                            beaconData.uid_mode = data.advertise_mode;
+                            beaconData.uid_power = data.power;
+                            callback();
+                        },callback);
+                    });
+                    steps.push(function(callback) {
+                        QRC.getiBeaconSettings(device.index).then(function(data) {
+                            data = data.data;
+                            console.log(data);
+                            if (data.state == 'enabled') {
+                                beaconData.type = 'ibeacon';
+                                beaconData.action = 'enable';
+                                beaconState = true;
+                            } else if (beaconState == false) {
+                                beaconData.type = 'ibeacon';
+                                beaconData.action = 'disable';
+                            }
+                            beaconData.uuid = data.uuid;
+                            beaconData.major = data.major;
+                            beaconData.minor = data.minor;
+                            beaconData.ibeacon_mode = data.advertise_mode;
+                            beaconData.ibeacon_power = data.power;
+                            vm.configure.BeaconSettings=beaconData;
                             callback();
                         },callback);
                     });
@@ -1920,6 +1977,28 @@ console.log('autoTime', autoTime)
                         var url = QRC.buildUrl("/v1/player/playlistlog/state", device.index);
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":playlistlogSetting};
                         readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "BeaconSettings") {
+                    var beaconSettings = {
+                        type: vm.configure.BeaconSettings.type,
+                        action: vm.configure.BeaconSettings.action,
+                        uuid: vm.configure.BeaconSettings.uuid,
+                        major: vm.configure.BeaconSettings.major,
+                        minor: vm.configure.BeaconSettings.minor,
+                        ibeacon_mode: vm.configure.BeaconSettings.ibeacon_mode,
+                        ibeaconpower: vm.configure.BeaconSettings.ibeacon_power,
+                        namespace: vm.configure.BeaconSettings.namespace,
+                        instance: vm.configure.BeaconSettings.instance,
+                        uid_mode: vm.configure.BeaconSettings.uid_mode,
+                        uid_power: vm.configure.BeaconSettings.uid_power,
+                        url: vm.configure.BeaconSettings.eddystone_url,
+                        url_mode: vm.configure.BeaconSettings.url_mode,
+                        url_power: vm.configure.BeaconSettings.url_power
+                    }
+                    console.log('data', beaconSettings)
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setBeaconSettings(beaconSettings, device.index)
+                            .then(successConfigFn, errorConfigFn);
                     }
                 } else if (configKey == "NfcState") {
                     var nfcState;

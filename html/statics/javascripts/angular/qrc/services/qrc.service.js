@@ -68,6 +68,10 @@
             setEth0State: setEth0State,
             getEth0Network: getEth0Network,
             setEth0Network: setEth0Network,
+            setBeaconSettings: setBeaconSettings,
+            getiBeaconSettings: getiBeaconSettings,
+            getEddystoneUidSettings: getEddystoneUidSettings,
+            getEddystoneUrlSettings: getEddystoneUrlSettings,
             getNfcState: getNfcState,
             setNfcState: setNfcState,
             getEmergencyMessage: getEmergencyMessage,
@@ -299,13 +303,80 @@
             var url = buildUrl("/v1/eth/0/network", idx);
             return $http.post(url, ethConfig, getConfig(idx));
         }
+        function setBeaconSettings(beaconSettings, idx) {
+            var url;
+            console.log(beaconSettings);
+            var obj = {};
+            if (beaconSettings.action == "enable") {
+                obj.state = "enabled";
+            } else {
+                obj.state = "disabled";
+            }
+            if(beaconSettings.type == "ibeacon") {
+                url = buildUrl("/v1/net/beacon/ibeacon", idx);
+                if(beaconSettings.uuid) {
+                    obj.uuid = beaconSettings.uuid;
+                }
+                if(beaconSettings.major) {
+                    obj.major = beaconSettings.major;
+                }
+                if(beaconSettings.minor) {
+                    obj.minor = beaconSettings.minor;
+                }
+                if (beaconSettings.ibeacon_mode) {
+                    obj.advertise_mode = beaconSettings.ibeacon_mode;
+                }
+                if (beaconSettings.ibeacon_power) {
+                    obj.power = beaconSettings.ibeacon_power;
+                }
+            } else if (beaconSettings.type == "eddystone_uid") {
+                url = buildUrl("/v1/net/beacon/eddystone_uid", idx);
+                if(beaconSettings.namespace) {
+                    obj.namespace = beaconSettings.namespace;
+                }
+                if(beaconSettings.instance) {
+                    obj.instance = beaconSettings.instance;
+                }
+                if (beaconSettings.uid_mode) {
+                    obj.advertise_mode = beaconSettings.uid_mode;
+                }
+                if (beaconSettings.uid_power) {
+                    obj.power = beaconSettings.uid_power;
+                }
+            } else {
+                url = buildUrl("/v1/net/beacon/eddystone_url", idx);
+                if(beaconSettings.url) {
+                    obj.url = beaconSettings.url;
+                }
+                if (beaconSettings.url_mode) {
+                    obj.advertise_mode = beaconSettings.url_mode;
+                }
+                if (beaconSettings.url_power) {
+                    obj.power = beaconSettings.url_power;
+                }
+            }
+            console.log(obj);
+            return $http.post(url, obj, getConfig(idx));
+        }
+        function getiBeaconSettings(idx) {
+            var url = buildUrl("/v1/net/beacon/ibeacon", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function getEddystoneUidSettings(idx) {
+            var url = buildUrl("/v1/net/beacon/eddystone_uid", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function getEddystoneUrlSettings(idx) {
+            var url = buildUrl("/v1/net/beacon/eddystone_url", idx);
+            return $http.get(url, getConfig(idx));
+        }
         function getNfcState(idx) {
             var url = buildUrl("/v1/settings/nfc_enabled", idx);
             return $http.get(url, getConfig(idx));
         }
         function setNfcState(state, idx) {
             var url = buildUrl("/v1/settings/nfc_enabled", idx);
-             var obj = {value: state};
+            var obj = {value: state};
             return $http.post(url, obj, getConfig(idx));
         }
         function getEmergencyMessage(idx) {
