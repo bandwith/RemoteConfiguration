@@ -1991,7 +1991,7 @@ console.log('autoTime', autoTime)
                         instance: vm.configure.BeaconSettings.instance,
                         uid_mode: vm.configure.BeaconSettings.uid_mode,
                         uid_power: vm.configure.BeaconSettings.uid_power,
-                        url: vm.configure.BeaconSettings.eddystone_url,
+                        url: vm.configure.BeaconSettings.url,
                         url_mode: vm.configure.BeaconSettings.url_mode,
                         url_power: vm.configure.BeaconSettings.url_power
                     }
