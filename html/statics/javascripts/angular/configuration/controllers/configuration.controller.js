@@ -184,6 +184,7 @@
             vm.countStatus = countStatus;
             vm.scanDevice = scanDevice;
             vm.checkLastResults = checkLastResults;
+            vm.onDeviceInfoClick = onDeviceInfoClick;
             vm.onScreenshotClick = onScreenshotClick;
             vm.onLogClick = onLogClick;
             vm.onRemoveClick = onRemoveClick;
@@ -610,6 +611,7 @@
                 var info = vm.scannedDevices[vm.lastScannedSerialNum[serial_number]];
                 info.player_name = result.player_name;
                 info.ip = ipAddress;
+                info.restful_api_version = result.restful_api_version;
             }
         }
 
@@ -750,6 +752,136 @@
                                     .fadeIn()
                                     );
                                 }
+                            }, function(data) {
+                                data = data.data;
+                                $('body').append($('<div>')
+                                    .hide()
+                                    .attr('id', 'progress')
+                                    .append($('<div>')
+                                        .addClass('box')
+                                        .html(JSON.stringify(data))
+                                    )
+                                    .on('click', function() {
+                                        $(this).fadeOut(function() {
+                                            $(this).remove();
+                                        })
+                                    })
+                                    .fadeIn()
+                                );
+                            });
+            }, function(e) {
+                    $('body').append($('<div>')
+                        .hide()
+                        .attr('id', 'progress')
+                        .append($('<div>')
+                            .addClass('box')
+                            .html('Please set device password')
+                        )
+                        .on('click', function() {
+                            $(this).fadeOut(function() {
+                                $(this).remove();
+                            })
+                        })
+                        .fadeIn()
+                    );
+                });
+        }
+
+        function onDeviceInfoClick(row, inx) {
+            var index = vm.lastScannedSerialNum[row.serial_number],
+                device = vm.scannedDevices[index];
+            QRC.setTargetIpAddress(device.ip, device.index);
+            QRC.getToken((vm.current_password||'12345678'), device.index).then(function(data) {
+                    var accessToken = data.data.access_token;
+                    QRC.setTargetAuthToken(accessToken, device.index);
+                    QRC.getInfo(device.index)
+                            .then(function(data) {
+                                data = data.data.results;
+                                console.log(data);
+                                $('body').append($('<div>')
+                                    .hide()
+                                    .attr('id', 'progress')
+                                    .append($('<div>')
+                                        .addClass('box')
+                                        .append($('<table>')
+                                            .append($('<tr>')
+                                                .append($('<td>').html("Item--------------------------------- "))
+                                                .append($('<td>').html("Value---------------------------------"))
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("Device model:"))
+                                                .append($('<td>').html(data.model_id))
+                                                [data.model_id ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("OS type:"))
+                                                .append($('<td>').html(data.os_type))
+                                                [data.os_type ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("Firmware version:"))
+                                                .append($('<td>').html(data.fw_version))
+                                                [data.fw_version ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("RESTful APIs version:"))
+                                                .append($('<td>').html(data.restful_api_version))
+                                                [data.restful_api_version ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("Serial number:"))
+                                                .append($('<td>').html(data.serial_number))
+                                                [data.serial_number ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("ETH MAC:"))
+                                                .append($('<td>').html(data.eth_mac))
+                                                [data.eth_mac ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("WIFI MAC:"))
+                                                .append($('<td>').html(data.wifi_mac))
+                                                [data.wifi_mac ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("UUID:"))
+                                                .append($('<td>').html(data.device_uuid))
+                                                [data.device_uuid ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("CPU usage:"))
+                                                .append($('<td>').html(data.cpu_usage_percent))
+                                                [data.cpu_usage_percent ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("Memory(free/total):"))
+                                                .append($('<td>').html(data.available_memory_size_mb + "/" + data.total_memory_size_mb + " MB"))
+                                                [data.available_memory_size_mb ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("Storage(free/total):"))
+                                                .append($('<td>').html(data.available_storage_size_mb + "/" + data.total_storage_size_mb + " MB"))
+                                                [data.available_storage_size_mb ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("IP address:"))
+                                                .append($('<td>').html(data.ip_address))
+                                                [data.ip_address ?'show' :'hide']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("Up time:"))
+                                                .append($('<td>').html(data.up_time))
+                                                [data.up_time ?'show' :'hide']()
+                                            )
+                                        )
+                                    )
+                                    .on('click', function() {
+                                        $(this).fadeOut(function() {
+                                            $(this).remove();
+                                        })
+                                    })
+                                    .fadeIn()
+                                );
                             }, function(data) {
                                 data = data.data;
                                 $('body').append($('<div>')
