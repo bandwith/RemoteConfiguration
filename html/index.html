@@ -1064,7 +1064,7 @@ console.log(err);
                             <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.BeaconSettings"
-                                           ng-change="vm.checkInitConfig('BeaconSettings', vm.useConfig.BeaconSettings, {type:'ibeacon', action:'enable'})">
+                                           ng-change="vm.checkInitConfig('BeaconSettings', vm.useConfig.BeaconSettings, vm.configure.BeaconSettings||{type:'ibeacon', action:'enable'})">
                                     Beacon Settings
                                 </label>
                                 <div class="col-xs-9">
