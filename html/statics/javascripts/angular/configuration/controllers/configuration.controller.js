@@ -2415,6 +2415,7 @@ console.log('autoTime', autoTime)
             }
 
             function realConfigWifiNetwork() {
+                vm.configure.WifiNetwork.method = "connect";
                 if (vm.configure.WifiNetwork.hasOwnProperty("advanced")) {
                     if (vm.configure.WifiNetwork.advanced.hasOwnProperty("ip_assignment") &&
                         vm.configure.WifiNetwork.advanced.ip_assignment == "static") {
