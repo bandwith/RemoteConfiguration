@@ -587,8 +587,10 @@
 
         function appendScannedDevice(data, ipAddress) {
             var result = data.data.results;
+            var model_name = result.model_name;
             var serial_number = result.serial_number;
             var isInModelIdArray = false;
+            result.model_id = model_name ? model_name : result.model_id;
             for (var i in vm.scannedModelId) {
                 if (vm.scannedModelId[i] == result.model_id){
                     isInModelIdArray = true;
@@ -811,7 +813,12 @@
                                             .append($('<tr>')
                                                 .append($('<td>').html("Device model:"))
                                                 .append($('<td>').html(data.model_id))
-                                                [data.model_id ?'show' :'hide']()
+                                                [data.model_name ?'hide' :'show']()
+                                            )
+                                            .append($('<tr>')
+                                                .append($('<td>').html("Device model:"))
+                                                .append($('<td>').html(data.model_name))
+                                                [data.model_name ?'show' :'hide']()
                                             )
                                             .append($('<tr>')
                                                 .append($('<td>').html("OS type:"))
