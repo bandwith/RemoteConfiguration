@@ -478,7 +478,7 @@ console.log(err);
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsSmilContentUrl"
                                            ng-change="vm.checkInitConfig('SettingsSmilContentUrl', vm.useConfig.SettingsSmilContentUrl)">
-                                    SMIL Player URL
+                                    Content URL
                                 </label>
                                 <div class="col-xs-9">
                                     <input
@@ -1377,7 +1377,7 @@ console.log(err);
                                 <div class="col-xs-6">
                                     <input name="refreshInterval" ng-required="vm.configure.SettingsPlaylistlogState.action=='INTERNAL' || vm.configure.SettingsPlaylistlogState.action=='WEB'"
                                            class="form-control"
-                                           placeholder="ex, 3600"
+                                           placeholder="ex, 3600(MUST be greater than or equal to 300)"
                                            ng-disabled="!vm.useConfig.SettingsPlaylistlogState"
                                            ng-model="vm.configure.SettingsPlaylistlogState.refreshInterval" />
                                 </div>
@@ -1388,7 +1388,7 @@ console.log(err);
                                 <div class="col-xs-6">
                                     <input name="retryInterval" ng-required="vm.configure.SettingsPlaylistlogState.action=='WEB'"
                                            class="form-control"
-                                           placeholder="ex, 3600"
+                                           placeholder="ex, 3600(MUST be greater than or equal to 300)"
                                            ng-disabled="!vm.useConfig.SettingsPlaylistlogState"
                                            ng-model="vm.configure.SettingsPlaylistlogState.retryInterval" />
                                 </div>
