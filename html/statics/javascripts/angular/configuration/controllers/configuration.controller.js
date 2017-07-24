@@ -2126,7 +2126,7 @@ console.log('autoTime', autoTime)
                         major: vm.configure.BeaconSettings.major,
                         minor: vm.configure.BeaconSettings.minor,
                         ibeacon_mode: vm.configure.BeaconSettings.ibeacon_mode,
-                        ibeaconpower: vm.configure.BeaconSettings.ibeacon_power,
+                        ibeacon_power: vm.configure.BeaconSettings.ibeacon_power,
                         namespace: vm.configure.BeaconSettings.namespace,
                         instance: vm.configure.BeaconSettings.instance,
                         uid_mode: vm.configure.BeaconSettings.uid_mode,
