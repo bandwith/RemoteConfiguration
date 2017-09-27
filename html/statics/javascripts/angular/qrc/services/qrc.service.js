@@ -104,7 +104,8 @@
         }
         function setTargetIpAddress(ip_address, idx) {
             if (!idx) idx = 0;
-            ipAddress[idx] = ip_address + ":8080";
+            var port = ('http:'===window.location.protocol ?8080 :8443);
+            ipAddress[idx] = (ip_address+":"+port);
         }
 
         function setTargetAuthToken(token, idx) {
