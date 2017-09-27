@@ -494,7 +494,7 @@
             var url = "";
             if (!idx) idx = 0;
             if (ipAddress[idx] != null) {
-                url = "http://" + ipAddress[idx] + path;
+                url = (window.location.protocol+"//"+ipAddress[idx]+path);
             } else {
                 console.error("Target ipAddress is null.");
             }
