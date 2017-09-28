@@ -104,7 +104,8 @@
         }
         function setTargetIpAddress(ip_address, idx) {
             if (!idx) idx = 0;
-            ipAddress[idx] = ip_address + ":8080";
+            var port = ('http:'===window.location.protocol ?8080 :8443);
+            ipAddress[idx] = (ip_address+":"+port);
         }
 
         function setTargetAuthToken(token, idx) {
@@ -493,7 +494,7 @@
             var url = "";
             if (!idx) idx = 0;
             if (ipAddress[idx] != null) {
-                url = "http://" + ipAddress[idx] + path;
+                url = (window.location.protocol+"//"+ipAddress[idx]+path);
             } else {
                 console.error("Target ipAddress is null.");
             }
