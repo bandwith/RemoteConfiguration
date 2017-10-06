@@ -147,6 +147,8 @@
             vm.addNewRange = addNewRange;
             vm.removeRange = removeRange;
             vm.startScan = startScan;
+            vm.hasAndroidDevice = false;
+            vm.hasWindowsDevice = false;
             vm.goConfigDev = goConfigDev;
             vm.foundIPs = [];
             vm.scannedDevices = [];
@@ -168,6 +170,7 @@
             vm.checkEthernetConfig = checkEthernetConfig;
             vm.checkInitWifiConfig = checkInitWifiConfig;
             vm.changeExportMethod = changeExportMethod;
+            vm.changeConfigDevice = changeConfigDevice;
             vm.changeAppSelect = changeAppSelect;
             vm.displayScannedDevices = [];
             vm.selectedScannedDevices = [];
@@ -539,6 +542,8 @@
         function initScan() {
             vm.isScanning = true;
             vm.isNextShow = false;
+            vm.hasAndroidDevice = false;
+            vm.hasWindowsDevice = false;
             vm.foundIPs = vm.scannedDevices.map(function(dev) { return dev.ip; });
             scanRequestsTimer = [];
             scanRequestCaller = [];
@@ -591,6 +596,24 @@
             var serial_number = result.serial_number;
             var isInModelIdArray = false;
             result.model_id = model_name ? model_name : result.model_id;
+            
+            try {
+                var rest_version = parseInt(result.restful_api_version.split('.')[0], 2);
+                if(rest_version &　0x01) {
+                    console.log(result.model_id, "Android device");
+                    result.os_type = 'android';
+                    vm.hasAndroidDevice = true;
+                } else if(rest_version & 0x02) {
+                    console.log(result.model_id, "Windows device");
+                    result.os_type = 'windows';
+                    vm.hasWindowsDevice = true;
+                } else {
+                    console.log(result.model_id, "Unknow device");
+                }
+            } catch (error) {
+                console.log(error);
+            }
+            
             for (var i in vm.scannedModelId) {
                 if (vm.scannedModelId[i] == result.model_id){
                     isInModelIdArray = true;
@@ -1325,20 +1348,10 @@
             vm.selectDevCount = count;
             vm.isStartConfigureDisabled = !status;
             vm.configure = {};
-            if (1 === count) {
-                var device = vm.scannedDevices[devIndex];
-                QRC.setTargetIpAddress(device.ip, device.index);
-                QRC.getToken((vm.current_password||'12345678'), device.index).then(function(data) {
-                    QRC.setTargetAuthToken(data.data.access_token, device.index);
-                    var steps = [],
-                        nextStep = function() {
-                            if (!steps.length) return;
-                            steps.shift()(nextStep);
-                        };
-                    steps.push(function(callback) {
+            function getAndroidDeviceConfiguration(steps) {
+                steps.push(function(callback) {
                         QRC.getSettings('', device.index).then(function(data) {
                             data = data.data.results;
-console.log(data);
                             vm.configure.Timezone = data.timezone;
                             vm.configure.SettingsAutoTime = (data.auto_time_enabled ?'enable' :'disable');
                             vm.configure.SettingsTimeFormat = (data['24_time_format']=='enabled' ?'enable' :'disable');
@@ -1542,6 +1555,27 @@ console.log(data);
                             callback()
                         },callback);
                     });
+            }
+            
+            function getWindowsDeviceConfiguration(steps) {
+                //TODO: get windows device configuration
+            }
+            
+            if (1 === count) {
+                var device = vm.scannedDevices[devIndex];
+                QRC.setTargetIpAddress(device.ip, device.index);
+                QRC.getToken((vm.current_password||'12345678'), device.index).then(function(data) {
+                    QRC.setTargetAuthToken(data.data.access_token, device.index);
+                    var steps = [],
+                        nextStep = function() {
+                            if (!steps.length) return;
+                            steps.shift()(nextStep);
+                        };
+                    if(device.os_type == 'android') {
+                        getAndroidDeviceConfiguration(steps);
+                    } else if(device.os_type == 'windows') {
+                        getWindowsDeviceConfiguration(steps);
+                    }
                     /*
                     steps.push(function(callback) {
                         console.log(vm.configure)
@@ -2742,6 +2776,14 @@ console.log('autoTime', autoTime)
             }
             console.log("changeExportMethod:" + vm.remote_or_export);
         }
+        
+        function changeConfigDevice() {
+            console.log("changeConfigDevice()");
+            for(var idx in vm.displayScannedDevices) {
+                vm.displayScannedDevices[idx].isSelected = false;
+            }
+        }
+
         function watchScannedDevices() {
             $scope.$watch(
                 'vm.displayScannedDevices', function(newValue) {

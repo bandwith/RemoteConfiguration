@@ -275,6 +275,7 @@ console.log(err);
                                             <td class="text-center">
                                                 <input type="checkbox"
                                                     ng-change="vm.onSTableClick(row);"
+                                                    ng-disabled="row.os_type!=vm.config_device_os"
                                                     ng-model="row.isSelected"/>
                                             </td>
                                             <td class="text-center device-highlight">
@@ -331,7 +332,24 @@ console.log(err);
                         </div>
                     </div>
                     <hr class="divider"/>
+                    <div class="form-group" ng-show="vm.hasWindowsDevice">
+                        <div class="col-xs-12">
+                            <label class="radio-inline">
+                                <input type="radio" value="android"
+                                       ng-change="vm.changeConfigDevice();"
+                                       ng-init="vm.config_device_os='android'"
+                                       ng-model="vm.config_device_os" >
+                                Config Android device
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="windows"
+                                       ng-change="vm.changeConfigDevice();"
+                                       ng-model="vm.config_device_os" >
+                                Config Windows device
+                            </label>
 
+                        </div>
+                    </div>
                     <uib-accordion close-others="false">
                         <uib-accordion-group  is-open="vm.accordion.settingsOpen"
                                              template-url="accordion-group.html">
@@ -355,7 +373,7 @@ console.log(err);
                                     <div ng-show="ConfigForm.Timezone.$error.required" class="help-block">* Required</div>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsAutoTime"
                                            ng-change="vm.checkInitConfig('SettingsAutoTime', vm.useConfig.SettingsAutoTime, 'enable')">
@@ -376,7 +394,7 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsTimeFormat"
                                            ng-change="vm.checkInitConfig('SettingsTimeFormat', vm.useConfig.SettingsTimeFormat, 'enable');">
@@ -461,7 +479,7 @@ console.log(err);
                                     <div ng-show="ConfigForm.securityPassword.$error.maxlength" class="help-block">Too long</div>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsNtpServer"
                                            ng-change="vm.checkInitConfig('SettingsNtpServer', vm.useConfig.SettingsNtpServer)">
@@ -474,7 +492,7 @@ console.log(err);
                                            class="form-control" ng-model="vm.configure.SettingsNtpServer" />
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsSmilContentUrl"
                                            ng-change="vm.checkInitConfig('SettingsSmilContentUrl', vm.useConfig.SettingsSmilContentUrl)">
@@ -488,7 +506,7 @@ console.log(err);
                                            ng-model="vm.configure.SettingsSmilContentUrl" />
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsAdbEnabled"
                                            ng-change="vm.checkInitConfig('SettingsAdbEnabled', vm.useConfig.SettingsAdbEnabled, 'enable');vm.deleteConfig('SettingsAdbOverTcp');vm.useConfig.SettingsAdbOverTcp=false">
@@ -510,7 +528,7 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsAdbOverTcp"
                                            ng-disabled="vm.configure.SettingsAdbEnabled!='enable'"
@@ -532,7 +550,7 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsRebootMode">
                                     Schedule Reboot Mode
@@ -553,7 +571,7 @@ console.log(err);
                                 </div>
                             </div>
                             <div show-errors class="form-group" 
-                                 ng-show="vm.configure.SettingsRebootMode=='DailyReboot'">
+                                 ng-show="vm.configure.SettingsRebootMode=='DailyReboot' && vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">Reboot Time</label>
                                 <div class="col-xs-9">
                                     <input ng-required="vm.useConfig.SettingsRebootMode&&vm.configure.SettingsRebootMode=='DailyReboot'"
@@ -564,7 +582,7 @@ console.log(err);
                                 </div>
                             </div>
                             <div show-errors class="form-group" 
-                                 ng-show="vm.configure.SettingsRebootMode=='ScheduleOnOff'">
+                                 ng-show="vm.configure.SettingsRebootMode=='ScheduleOnOff' && vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">Schedule On</label>
                                 <div class="col-xs-9">
                                     <input ng-required="vm.useConfig.SettingsRebootMode&&vm.configure.SettingsRebootMode=='ScheduleOnOff'"
@@ -575,7 +593,7 @@ console.log(err);
                                 </div>
                             </div>
                             <div show-errors class="form-group" 
-                                 ng-show="vm.configure.SettingsRebootMode=='ScheduleOnOff'">
+                                 ng-show="vm.configure.SettingsRebootMode=='ScheduleOnOff' && vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">Schedule Off</label>
                                 <div class="col-xs-9">
                                     <input ng-required="vm.useConfig.SettingsRebootMode&&vm.configure.SettingsRebootMode=='ScheduleOnOff'"
@@ -585,7 +603,7 @@ console.log(err);
                                     <div ng-show="ConfigForm.scheduleOff.$error.time" class="help-block">Invalid time format</div>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsRebootTimeOptimized"
                                            ng-change="vm.checkInitConfig('SettingsRebootTimeOptimized', vm.useConfig.SettingsRebootTimeOptimized, 'enable')">
@@ -606,7 +624,7 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsScreenOrientation"
                                            ng-change="vm.checkInitConfig('SettingsScreenOrientation', vm.useConfig.SettingsScreenOrientation, '0')">
@@ -639,7 +657,7 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsOtaXmlUrl"
                                            ng-change="vm.checkInitConfig('SettingsOtaXmlUrl', vm.useConfig.SettingsOtaXmlUrl)">
@@ -652,7 +670,7 @@ console.log(err);
                                            class="form-control" ng-model="vm.configure.SettingsOtaXmlUrl" />
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsAppOtaXmlUrl"
                                            ng-change="vm.checkInitConfig('SettingsAppOtaXmlUrl', vm.useConfig.SettingsAppOtaXmlUrl)">
@@ -665,7 +683,7 @@ console.log(err);
                                            class="form-control" ng-model="vm.configure.SettingsAppOtaXmlUrl" />
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsLogLocation"
                                            ng-change="vm.checkInitConfig('SettingsLogLocation', vm.useConfig.SettingsLogLocation, '0')">
@@ -693,7 +711,7 @@ console.log(err);
                                 </div>
                             </div>
                         </uib-accordion-group>
-                        <uib-accordion-group name="ethernetGroup" is-open="vm.accordion.ethernetOpen"
+                        <uib-accordion-group name="ethernetGroup" is-open="vm.accordion.ethernetOpen" ng-show="vm.config_device_os=='android'"
                                              template-url="accordion-group.html">
                             <uib-accordion-heading>
                                 Ethernet <i class="pull-right glyphicon" 
@@ -721,7 +739,7 @@ console.log(err);
                                     </label>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.EthernetNetwork"
                                            ng-change="vm.checkEthernetConfig(vm.useConfig.EthernetNetwork)">
@@ -825,7 +843,7 @@ console.log(err);
                                         ng-class="{'glyphicon-chevron-down': vm.accordion.wifiOpen, 'glyphicon-chevron-right': !vm.accordion.wifiOpen}"></i>
                             </uib-accordion-heading>
                             <div class="alert alert-warning">Remotely changing Wifi configuration may cause error while configuring devices if the connection is lost. Never use this configuration if you're using Wifi of your target device.</div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.WifiState"
                                            ng-change="vm.checkInitConfig('WifiState', vm.useConfig.WifiState, 'enable');vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false">
@@ -852,7 +870,7 @@ console.log(err);
                             <div show-errors class="form-group" >
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.WifiNetwork"
-                                           ng-disabled="vm.configure.WifiState!='enable'"
+                                           ng-disabled="vm.configure.WifiState!='enable' && vm.config_device_os=='android'"
                                            ng-change="vm.checkInitWifiConfig(vm.useConfig.WifiNetwork)">
                                     SSID
                                 </label>
@@ -863,7 +881,7 @@ console.log(err);
                                            ng-model="vm.configure.WifiNetwork.ssid" />
                                 </div>
                             </div>
-                            <div show-errors ng-show="vm.useConfig.WifiNetwork" class="form-group">
+                            <div show-errors ng-show="vm.useConfig.WifiNetwork && vm.config_device_os=='android'" class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     Security
                                 </label>
@@ -875,7 +893,8 @@ console.log(err);
                                     </select>
                                 </div>
                             </div>
-                            <div ng-show="vm.configure.WifiNetwork.security && vm.configure.WifiNetwork.security!='none'"show-errors class="form-group" >
+                            <div ng-show="(vm.configure.WifiNetwork.security && vm.configure.WifiNetwork.security!='none') || vm.config_device_os=='windows'"
+                                 show-errors class="form-group" >
                                 <label class="col-xs-3 control-label-left">
                                     Password
                                 </label>
@@ -891,7 +910,7 @@ console.log(err);
                                     <div ng-show="ConfigForm.wifiPassword.$error.minlength" class="help-block">Too short</div>
                                 </div>
                             </div>
-                            <div show-errors ng-show="vm.useConfig.WifiNetwork" class="form-group">
+                            <div show-errors ng-show="vm.useConfig.WifiNetwork && vm.config_device_os=='android'" class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     IP Settings
                                 </label>
@@ -1062,7 +1081,7 @@ console.log(err);
                             </div>
                         </uib-accordion-group>
 
-                        <uib-accordion-group  is-open="vm.accordion.beaconOpen"
+                        <uib-accordion-group  is-open="vm.accordion.beaconOpen" ng-show="vm.config_device_os=='android'"
                                              template-url="accordion-group.html">
                             <uib-accordion-heading>
                                 Beacon<i class="pull-right glyphicon"
@@ -1257,7 +1276,7 @@ console.log(err);
                             </div>
                         </uib-accordion-group>
 
-                        <uib-accordion-group  is-open="vm.accordion.nfcOpen"
+                        <uib-accordion-group  is-open="vm.accordion.nfcOpen" ng-show="vm.config_device_os=='android'"
                                              template-url="accordion-group.html">
                             <uib-accordion-heading>
                                 Nfc<i class="pull-right glyphicon"
@@ -1292,8 +1311,8 @@ console.log(err);
                                 Audio Volume<i class="pull-right glyphicon"
                                                ng-class="{'glyphicon-chevron-down': vm.accordion.audioOpen, 'glyphicon-chevron-right': !vm.accordion.audioOpen}"></i>
                             </uib-accordion-heading>
-                            <div class="alert alert-warning">Audio volume you set is an approximate value, depend on the target device's volume granularity.</div>
-                            <div show-errors class="form-group">
+                            <div class="alert alert-warning" ng-show="vm.config_device_os=='android'">Audio volume you set is an approximate value, depend on the target device's volume granularity.</div>
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-slider">
                                     <input type="checkbox" ng-model="vm.useConfig.AudioStreamMusic"
                                            ng-change="vm.checkInitConfig('AudioStreamMusic', vm.useConfig.AudioStreamMusic, vm.configure.AudioStreamMusic||50)">
@@ -1304,7 +1323,7 @@ console.log(err);
                                               rz-slider-model="vm.configure.AudioStreamMusic"></rzslider>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-slider">
                                     <input type="checkbox" ng-model="vm.useConfig.AudioStreamAlarm"
                                            ng-change="vm.checkInitConfig('AudioStreamAlarm', vm.useConfig.AudioStreamAlarm, vm.configure.AudioStreamAlarm||50)">
@@ -1315,7 +1334,7 @@ console.log(err);
                                               rz-slider-model="vm.configure.AudioStreamAlarm"></rzslider>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-slider">
                                     <input type="checkbox" ng-model="vm.useConfig.AudioStreamNotification"
                                            ng-change="vm.checkInitConfig('AudioStreamNotification', vm.useConfig.AudioStreamNotification, vm.configure.AudioStreamNotification||50)">
@@ -1326,9 +1345,20 @@ console.log(err);
                                               rz-slider-model="vm.configure.AudioStreamNotification"></rzslider>
                                 </div>
                             </div>
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='windows'">
+                                <label class="col-xs-3 control-label-slider">
+                                    <input type="checkbox" ng-model="vm.useConfig.AudioStreamSystem"
+                                           ng-change="vm.checkInitConfig('AudioStreamSystem', vm.useConfig.AudioStreamSystem, vm.configure.AudioStreamSystem||50)">
+                                    System
+                                </label>
+                                <div class="col-xs-9">
+                                    <rzslider rz-slider-options="{floor: 0, ceil: 100, translate:vm.translateStreamVolume, disabled:!vm.useConfig.AudioStreamSystem}"
+                                              rz-slider-model="vm.configure.AudioStreamSystem"></rzslider>
+                                </div>
+                            </div>
                         </uib-accordion-group>
 
-                        <uib-accordion-group  is-open="vm.accordion.playlistlogOpen" template-url="accordion-group.html">
+                        <uib-accordion-group  is-open="vm.accordion.playlistlogOpen" ng-show="vm.config_device_os=='android'" template-url="accordion-group.html">
                             <uib-accordion-heading>
                                 Playlist log<i class="pull-right glyphicon"
                                                ng-class="{'glyphicon-chevron-down': vm.accordion.playlistlogOpen, 'glyphicon-chevron-right': !vm.accordion.playlistlogOpen}"></i>
@@ -1409,7 +1439,7 @@ console.log(err);
                                                ng-class="{'glyphicon-chevron-down': vm.accordion.remoteControl, 'glyphicon-chevron-right': !vm.accordion.remoteControl}"></i>
                             </uib-accordion-heading>
                             <div class="alert alert-warning">Remote control devices.</div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.TextMessage">
                                     Text Message
@@ -1582,7 +1612,7 @@ console.log(err);
                                     <button type="button" ng-disabled="(vm.isStartConfigureDisabled)" class="btn btn-error pull-left" ng-click="vm.remoteReboot();">Remote Reboot</button>
                                 </label>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.FirmwareUpdate">
                                     Firmware Update
@@ -1594,7 +1624,7 @@ console.log(err);
                                            class="form-control" ng-model="vm.firmwareFile" ng-change="vm.onFirmwareFileChange()" />
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.BootAnimationUpdate">
                                     Boot Animation Update
@@ -1607,7 +1637,7 @@ console.log(err);
                                            multiple />
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.AppUpdate">
                                     App Install/Update
@@ -1620,7 +1650,7 @@ console.log(err);
                                            multiple />
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.AppUninstall">
                                     App Uninstall
@@ -1633,13 +1663,13 @@ console.log(err);
                                     <div ng-show="ConfigForm.appUninstall.$error.required" class="help-block">* Required</div>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-12 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.AppStart">
                                     App Start
                                 </label>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     Package Name
                                 </label>
@@ -1651,7 +1681,7 @@ console.log(err);
                                     <div ng-show="ConfigForm.appStartPackage.$error.required" class="help-block">* Required</div>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     Class Name
                                 </label>
@@ -1676,7 +1706,7 @@ console.log(err);
                                     <div ng-show="ConfigForm.appStopPackage.$error.required" class="help-block">* Required</div>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.RemoteUploadFiles">
                                     Remote Upload Files
@@ -1690,7 +1720,7 @@ console.log(err);
                                     <span>Files will be uploaded into "remotefiles" folder in device <a href="https://developer.android.com/reference/android/os/Environment.html#getExternalStorageDirectory()" target="_blank">internal storage</a>.</span>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-slider">
                                     <button type="button" ng-disabled="(vm.isStartConfigureDisabled)" class="btn btn-error pull-left" ng-click="vm.downloadRRemoteFiles();">Download Remote Files</button>
                                 </label>
