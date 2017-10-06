@@ -104,7 +104,7 @@
         }
         function setTargetIpAddress(ip_address, idx) {
             if (!idx) idx = 0;
-            var port = ('http:'===window.location.protocol ?8080 :8443);
+            var port = ('https:'===window.location.protocol ?8443 :8080);
             ipAddress[idx] = (ip_address+":"+port);
         }
 

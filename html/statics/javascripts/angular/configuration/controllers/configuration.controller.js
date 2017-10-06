@@ -2,7 +2,7 @@
     'use strict';
 
     function getProtocol() { return window.location.protocol; }
-    function getPort() { return ('http:'===getProtocol() ?8080 :8443); }
+    function getPort() { return ('https:'===getProtocol() ?8443 :8080); }
 
     angular
         .module('qrc-center.configuration.controllers')
