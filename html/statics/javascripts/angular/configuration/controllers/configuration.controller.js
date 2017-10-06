@@ -1,9 +1,6 @@
 (function () {
     'use strict';
 
-    function getProtocol() { return window.location.protocol; }
-    function getPort() { return ('http:'===getProtocol() ?8080 :8443); }
-
     angular
         .module('qrc-center.configuration.controllers')
         .controller('ConfigurationController', ConfigurationController)
@@ -391,7 +388,8 @@
 
                     var req = $timeout(function(scanIp) {
                         var caller = $q.defer();
-                        $http.get((getProtocol()+"//"+scanIp+":"+getPort()+"/v1/public/info?key="+key), {
+
+                        $http.get(("http://"+scanIp+":8080/v1/public/info?key="+key), {
                             timeout: SCAN_TIMEOUT
                         }).then(successScanFn, errorScanFn);
                         $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
@@ -436,7 +434,7 @@
                             var req = $timeout(function(scanIp) {
                                 var caller = $q.defer();
 
-                                $http.get(getProtocol()+"//" + scanIp + ":"+getPort()+"/v1/public/info?key=" + key,
+                                $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
                                           {timeout: caller.promise}).then(successScanFn, errorScanFn);
                                 $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
                                 scanRequestCaller.push(caller);
@@ -480,7 +478,7 @@
                 if (vm.isScanning && (++scannedIPs[ip] < RETRY_TIMES)) {
                     var req = $timeout(function(scanIp) {
                         var caller = $q.defer();
-                        $http.get(getProtocol()+"//" + scanIp + ":"+getPort()+"/v1/public/info?key=" + key,
+                        $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
                             {timeout: caller.promise}).then(successScanFn, errorScanFn);
                         $timeout(function(caller) {caller.resolve()}, SCAN_TIMEOUT, true, caller);
                         scanRequestCaller.push(caller);
@@ -565,7 +563,7 @@
             $timeout(function(scanIp) {
                 var caller = $q.defer();
 
-                $http.get((getProtocol()+"//"+scanIp+":"+getPort()+"/v1/public/info?key="+key),
+                $http.get("http://" + scanIp + ":8080/v1/public/info?key=" + key,
                     {timeout: caller.promise}).then(function(data) {
                         if (data && data.data && data.data.results &&
                             data.data.results.hash_code == myHashCode) {
@@ -669,15 +667,14 @@
                                                 .addClass('btn btn-primary')
                                                 .html("OK")
                                                 .on('click', function() { 
-                                                    if(data.value == "0") {
-                                                        window.open(getProtocol()+'//'+device.ip+':'+getPort()+'/mnt/internal_storage/_internal_debug_log/'); 
-                                                    } else {
-                                                        window.open(getProtocol()+'//'+device.ip+':'+getPort()+'/mnt/external_sd/_sd_debug_log/');
-                                                    }
-                                                    $(logdialog).fadeOut(function() {
-                                                    $(logdialog).remove();
+                                                        if(data.value == "0") {                                                                                                                                             window.open('http://'+device.ip+':8080/mnt/internal_storage/_internal_debug_log/'); 
+                                                        } else {
+                                                            window.open('http://'+device.ip+':8080/mnt/external_sd/_sd_debug_log/');
+                                                        }
+                                                        $(logdialog).fadeOut(function() {
+                                                        $(logdialog).remove();
+                                                        })
                                                     })
-                                                })
                                         )
                                         .append($('<button>')
                                                 .addClass('btn btn-primary pull-right')
@@ -716,7 +713,7 @@
                                         .fadeIn()
                                     );
                                     var xhr = new XMLHttpRequest();
-                                    xhr.open('GET', (getProtocol()+'//'+device.ip+':'+getPort()+'/v1/task/log'), true);
+                                    xhr.open('GET', ('http://'+device.ip+':8080/v1/task/log'), true);
                                     xhr.setRequestHeader('Authorization', ('Bearer '+accessToken));
                                     xhr.responseType = 'arraybuffer';
                                     xhr.onload = function() {
@@ -943,7 +940,7 @@
                         .fadeIn()
                     );
                     var xhr = new XMLHttpRequest();
-                    xhr.open('GET', (getProtocol()+'//'+device.ip+':'+getPort()+'/v1/task/screenshot'), true);
+                    xhr.open('GET', ('http://'+device.ip+':8080/v1/task/screenshot'), true);
                     xhr.setRequestHeader('Authorization', ('Bearer '+data.data.access_token));
                     xhr.responseType = 'arraybuffer';
                     xhr.onload = function() {
@@ -2186,7 +2183,7 @@ console.log('autoTime', autoTime)
                                 .append($preg)
                             );
                     data.append('file', vm.firmwareFile);
-                    xhr.open('POST', (getProtocol()+'//'+device.ip+':'+getPort()+'/v1/task/update_firmware'), true);
+                    xhr.open('POST', ('http://'+device.ip+':8080/v1/task/update_firmware'), true);
                     //xhr.setRequestHeader('Content-Type', 'multipart/form-data');
                     xhr.setRequestHeader('Authorization', ('Bearer '+token));
                     xhr.upload.onprogress = function(e) {
@@ -2233,7 +2230,7 @@ console.log('autoTime', autoTime)
                     for(var i = 0; i < vm.appFiles.length; i++) {
                         data.append("file" + (i + 1), vm.appFiles[i]);
                     }
-                    xhr.open('POST', (getProtocol()+'//'+device.ip+':'+getPort()+'/v1/task/update_app'), true);
+                    xhr.open('POST', ('http://'+device.ip+':8080/v1/task/update_app'), true);
                     //xhr.setRequestHeader('Content-Type', 'multipart/form-data');
                     xhr.setRequestHeader('Authorization', ('Bearer '+token));
                     xhr.upload.onprogress = function(e) {
@@ -2288,7 +2285,7 @@ console.log('autoTime', autoTime)
                     for(var i = 0; i < vm.bootAnmicationFiles.length; i++) {
                         data.append("file" + (i + 1), vm.bootAnmicationFiles[i]);
                     }
-                    xhr.open('POST', (getProtocol()+'//'+device.ip+':'+getPort()+'/v1/task/update_boot_animation'), true);
+                    xhr.open('POST', ('http://'+device.ip+':8080/v1/task/update_boot_animation'), true);
                     //xhr.setRequestHeader('Content-Type', 'multipart/form-data');
                     xhr.setRequestHeader('Authorization', ('Bearer '+token));
                     xhr.upload.onprogress = function(e) {
@@ -2353,7 +2350,7 @@ console.log('autoTime', autoTime)
                     for(var i = 0; i < vm.remoteUploadFiles.length; i++) {
                         data.append("file" + (i + 1), vm.remoteUploadFiles[i]);
                     }
-                    xhr.open('POST', (getProtocol()+'//'+device.ip+':'+getPort()+'/v1/task/remote_upload_file'), true);
+                    xhr.open('POST', ('http://'+device.ip+':8080/v1/task/remote_upload_file'), true);
                     //xhr.setRequestHeader('Content-Type', 'multipart/form-data');
                     xhr.setRequestHeader('Authorization', ('Bearer '+token));
                     xhr.upload.onprogress = function(e) {
