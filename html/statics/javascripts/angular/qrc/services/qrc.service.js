@@ -2,6 +2,9 @@
     'use strict';
     angular.module('qrc.services').factory('QRC', QRC);
 
+    function getProtocol() { return ('https:'===window.location.protocol ?'https:' :'http:'); }
+    function getPort() { return ('https:'===getProtocol() ?8443 :8080); }
+
     QRC.$inject = ['$http', '$q'/*, 'QRCTokenInjector'*/];
     function QRC($http, $q/*, QRCTokenInjector*/) {
         var ipAddress = {};
@@ -104,7 +107,7 @@
         }
         function setTargetIpAddress(ip_address, idx) {
             if (!idx) idx = 0;
-            var port = ('https:'===window.location.protocol ?8443 :8080);
+            var port = ('https:'===getProtocol() ?8443 :8080);
             ipAddress[idx] = (ip_address+":"+port);
         }
 
@@ -494,7 +497,7 @@
             var url = "";
             if (!idx) idx = 0;
             if (ipAddress[idx] != null) {
-                url = (window.location.protocol+"//"+ipAddress[idx]+path);
+                url = (getProtocol()+"//"+ipAddress[idx]+path);
             } else {
                 console.error("Target ipAddress is null.");
             }

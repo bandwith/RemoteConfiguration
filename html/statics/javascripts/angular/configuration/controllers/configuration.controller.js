@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    function getProtocol() { return window.location.protocol; }
+    function getProtocol() { return ('https:'===window.location.protocol ?'https:' :'http:'); }
     function getPort() { return ('https:'===getProtocol() ?8443 :8080); }
 
     angular
