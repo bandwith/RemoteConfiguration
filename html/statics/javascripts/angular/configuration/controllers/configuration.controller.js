@@ -1578,7 +1578,17 @@
                             callback();
                         },callback);
                     });
-                
+
+                steps.push(function(callback) {
+                    QRC.getProxy(device.index).then(function(data) {
+                        data = data.data;
+                        if (data.proxy_static_host) data.type = 'static';
+                        else data.type = 'none';
+                        vm.configure.SettingsProxy = data;
+                        callback();
+                    },callback);
+                });
+
                 steps.push(function(callback) {
                     QRC.getAppList(device.index).then(function(data) {
                         data = data.data;

@@ -1029,7 +1029,7 @@ console.log(err);
                                            ng-model="vm.configure.SettingsProxy.type" >
                                         static
                                     </label>
-                                    <label class="radio-inline">
+                                    <label class="radio-inline" ng-show="vm.config_device_os=='android'">
                                         <input type="radio" value="pac"
                                            ng-disabled="!vm.useConfig.SettingsProxy"
                                            ng-model="vm.configure.SettingsProxy.type" >
