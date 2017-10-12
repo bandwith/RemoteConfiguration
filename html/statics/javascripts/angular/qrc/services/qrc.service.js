@@ -38,6 +38,7 @@
             setWifiState: setWifiState,
             getWifiNetwork: getWifiNetwork,
             setWifiNetwork: setWifiNetwork,
+            setNetWifiNetwork: setNetWifiNetwork,
 
             getProxy: getProxy,
             setProxy: setProxy,
@@ -185,6 +186,10 @@
         }
         function setWifiNetwork(wifiConfig, idx) {
             var url = buildUrl("/v1/wifi/network", idx);
+            return $http.post(url, wifiConfig, getConfig(idx));
+        }
+        function setNetWifiNetwork(wifiConfig, idx) {
+            var url = buildUrl("/v1/net/wifi/network", idx);
             return $http.post(url, wifiConfig, getConfig(idx));
         }
 

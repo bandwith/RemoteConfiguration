@@ -82,6 +82,7 @@
             "AudioStreamMusic",
             "AudioStreamNotification",
             "AudioStreamAlarm",
+            "AudioStreamSystem",
             "Timezone",
             "SettingsAutoTime",
             "SettingsTimeFormat",
@@ -1559,6 +1560,39 @@
             
             function getWindowsDeviceConfiguration(steps) {
                 //TODO: get windows device configuration
+                steps.push(function(callback) {
+                        QRC.getSettings('', device.index).then(function(data) {
+                            data = data.data.results;
+                            vm.configure.Timezone = data.timezone;
+                            vm.configure.SettingsPlayerName = data.player_name;
+                            vm.configure.SettingsPlayGroup = data.play_group;
+                            vm.configure.SettingsLogLocation = data.log_location;
+                            callback();
+                        },callback);
+                    });
+                
+                steps.push(function(callback) {
+                        QRC.listAudioVolume(device.index).then(function(data) {
+                            data = data.data.results;
+                            vm.configure.AudioStreamSystem = data.stream_system;
+                            callback();
+                        },callback);
+                    });
+                
+                steps.push(function(callback) {
+                    QRC.getAppList(device.index).then(function(data) {
+                        data = data.data;
+                        if(data.results) {
+                            for(var key in data.results) {
+                                data.results[key].label = data.results[key].pkgname + " " + data.results[key].PID;
+                            }
+                            vm.configure.AppSelect = "";
+                            vm.configure.AppList = data.results;
+                        }
+
+                        callback()
+                    },callback);
+                });
             }
             
             if (1 === count) {
@@ -2018,6 +2052,21 @@ console.log('autoTime', autoTime)
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
                     }
+                } else if (configKey == "AudioStreamSystem") {
+                    if (vm.configure[configKey] == -1 || isNaN(vm.configure[configKey])) {
+                        readyForNextConfig(device, caseIdx, true);
+                        return;
+                    }
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setAudioVolume(
+                        "stream_system", vm.configure[configKey], device.index)
+                        .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/audio/volume/stream_system", device.index);
+                        var param = {"value": vm.configure[configKey]};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
                 } else if (configKey == "EthernetState") {
                     var state;
                     if (vm.configure.EthernetState == "enable") {
@@ -2081,10 +2130,17 @@ console.log('autoTime', autoTime)
                         readyForNextConfig(device, caseIdx, true);
                     }
                 } else if (configKey == "WifiNetwork") {
-                    // Make sure wifi is enabled before config it,
-                    // otherwise configuration will not take effect.
                     if(vm.remote_or_export=='remote') {
-                        QRC.getWifiState(device.index).then(success1stWifiFn, errorConfigFn);
+                        if(vm.config_device_os=='android') {
+                            // Make sure wifi is enabled before config it,
+                            // otherwise configuration will not take effect.
+                            QRC.getWifiState(device.index).then(success1stWifiFn, errorConfigFn);
+                        } else {
+                            // for windows
+                            vm.configure.WifiNetwork.method = "connect";
+                            QRC.setNetWifiNetwork(vm.configure.WifiNetwork, device.index)
+                                .then(successConfigFn, errorConfigFn);
+                        }
                     } else {
                         if (vm.configure.WifiNetwork.hasOwnProperty("advanced")) {
                             if (vm.configure.WifiNetwork.advanced.hasOwnProperty("ip_assignment") &&
@@ -2757,12 +2813,16 @@ console.log('autoTime', autoTime)
             }
             if(count == 1) {
                 delete vm.AppInfo;
-                QRC.getAppInfo(vm.configure.AppSelect.pkgname, devIndex).then(function(data) {
-                    data = data.data
-                    data.first_install_time = new Date(data.first_install_time).toLocaleString('en-US');
-                    data.last_update_time = new Date(data.last_update_time).toLocaleString('en-US');
-                    vm.AppInfo = data;
-                });
+                if(vm.config_device_os=='android') {
+                     QRC.getAppInfo(vm.configure.AppSelect.pkgname, devIndex).then(function(data) {
+                        data = data.data
+                        data.first_install_time = new Date(data.first_install_time).toLocaleString('en-US');
+                        data.last_update_time = new Date(data.last_update_time).toLocaleString('en-US');
+                        vm.AppInfo = data;
+                    });   
+                } else {
+                    vm.AppInfo = vm.configure.AppSelect;
+                }
             }
         }
         
@@ -2782,6 +2842,9 @@ console.log('autoTime', autoTime)
             for(var idx in vm.displayScannedDevices) {
                 vm.displayScannedDevices[idx].isSelected = false;
             }
+            delete vm.configure.AppList;
+            delete vm.configure.AppSelect;
+            delete vm.AppInfo;
         }
 
         function watchScannedDevices() {

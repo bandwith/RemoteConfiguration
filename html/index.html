@@ -1748,6 +1748,7 @@ console.log(err);
                                 </div>
                             </div>
                             <div show-errors class="form-group" ng-show="vm.AppInfo" >
+                                <div ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left" >Package Name </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.pkgname}}</label>
                                 <label class="col-xs-3 control-label-left" >Label </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.label}}</label>
                                 <label class="col-xs-3 control-label-left" >Version Name </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.version_name}}</label>
@@ -1770,6 +1771,12 @@ console.log(err);
                                         <label class="col-xs-3 control-label-left"></label>
                                         <label class="col-xs-9 control-label-left">{{item.name}}</label>
                                 </div>
+                                </div>
+                                </div>
+                                <div ng-show="vm.config_device_os=='windows'">
+                                    <label class="col-xs-3 control-label-left" >Process Name </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.pkgname}}</label>
+                                    <label class="col-xs-3 control-label-left" >PID </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.PID}}</label>
+                                    <label class="col-xs-3 control-label-left" >Memory Usage </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.Memory_Usage}}</label>
                                 </div>
                             </div>
                         </uib-accordion-group>
