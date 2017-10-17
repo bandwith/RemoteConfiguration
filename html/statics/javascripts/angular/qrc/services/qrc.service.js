@@ -475,7 +475,11 @@
         function setAppStop(appStop, idx) {
             var url =buildUrl("/v1/task/stop_app", idx);
             var obj = {};
-            obj.pkgname = appStop.package;
+            if(/[^0-9]/.test(appStop.package)) {
+                obj.pkgname = appStop.package;
+            } else {
+                obj.pid = appStop.package;
+            }
             return $http.post(url, obj, getConfig(idx));
         }
         

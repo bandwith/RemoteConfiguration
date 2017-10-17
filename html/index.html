@@ -1776,7 +1776,7 @@ console.log(err);
                                 <div ng-show="vm.config_device_os=='windows'">
                                     <label class="col-xs-3 control-label-left" >Process Name </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.pkgname}}</label>
                                     <label class="col-xs-3 control-label-left" >PID </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.PID}}</label>
-                                    <label class="col-xs-3 control-label-left" >Memory Usage </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.Memory_Usage}}</label>
+                                    <label class="col-xs-3 control-label-left" >Memory Usage </label> <label class="col-xs-9 control-label-left">{{(vm.AppInfo.Memory_Usage/1024)}} KB</label>
                                 </div>
                             </div>
                         </uib-accordion-group>
