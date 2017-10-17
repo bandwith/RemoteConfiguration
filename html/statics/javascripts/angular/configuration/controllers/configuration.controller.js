@@ -1567,6 +1567,21 @@
                             vm.configure.SettingsPlayerName = data.player_name;
                             vm.configure.SettingsPlayGroup = data.play_group;
                             vm.configure.SettingsLogLocation = data.log_location;
+                            switch(data.screen_orientation) {
+                                case 0:
+                                data.screen_orientation = "0";
+                                break;
+                                case 90:
+                                data.screen_orientation = "1";
+                                break;
+                                case 180:
+                                data.screen_orientation = "2";
+                                break;
+                                case 270:
+                                data.screen_orientation = "3";
+                                break;
+                            }
+                            vm.configure.SettingsScreenOrientation = data.screen_orientation;
                             callback();
                         },callback);
                     });
