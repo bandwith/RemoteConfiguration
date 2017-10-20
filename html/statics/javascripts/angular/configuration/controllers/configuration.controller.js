@@ -1587,6 +1587,13 @@
                     });
                 
                 steps.push(function(callback) {
+                        QRC.getWifiState(device.index).then(function(data) {
+                            vm.configure.WifiState = (data.data.value==='enabled' ?'enable' :'disable');
+                            callback();
+                        },callback);
+                    });
+                
+                steps.push(function(callback) {
                         QRC.listAudioVolume(device.index).then(function(data) {
                             data = data.data.results;
                             vm.configure.AudioStreamSystem = data.stream_system;
@@ -2145,8 +2152,13 @@ console.log('autoTime', autoTime)
                         wifistate = 0;
                     }
                     if(vm.remote_or_export=='remote') {
-                        QRC.setWifiState(wifistate, device.index)
-                            .then(successConfigFn, errorConfigFn);
+                        if(vm.config_device_os=='android') {
+                            QRC.setWifiState(wifistate, device.index)
+                                .then(successConfigFn, errorConfigFn);
+                        } else {
+                            QRC.setNetWifiState(wifistate, device.index)
+                                .then(successConfigFn, errorConfigFn);
+                        }
                     } else {
                         var stateStr = (state != 0)? "enabled" : "disabled";
                         var url = QRC.buildUrl("/v1/wifi/state", device.index);

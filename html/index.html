@@ -843,7 +843,7 @@ console.log(err);
                                         ng-class="{'glyphicon-chevron-down': vm.accordion.wifiOpen, 'glyphicon-chevron-right': !vm.accordion.wifiOpen}"></i>
                             </uib-accordion-heading>
                             <div class="alert alert-warning">Remotely changing Wifi configuration may cause error while configuring devices if the connection is lost. Never use this configuration if you're using Wifi of your target device.</div>
-                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
+                            <div show-errors class="form-group">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.WifiState"
                                            ng-change="vm.checkInitConfig('WifiState', vm.useConfig.WifiState, 'enable');vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false">
@@ -858,7 +858,7 @@ console.log(err);
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="disable"
-                                               ng-change="vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false"
+                                               ng-change="vm.deleteConfig('WifiNetwork');vm.useConfig.WifiNetwork=false; vm.configure.WifiNetwork.password=''"
                                                ng-disabled="!vm.useConfig.WifiState"
                                                ng-model="vm.configure.WifiState">
                                         disable
@@ -870,7 +870,7 @@ console.log(err);
                             <div show-errors class="form-group" >
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.WifiNetwork"
-                                           ng-disabled="vm.configure.WifiState!='enable' && vm.config_device_os=='android'"
+                                           ng-disabled="vm.configure.WifiState!='enable'"
                                            ng-change="vm.checkInitWifiConfig(vm.useConfig.WifiNetwork)">
                                     SSID
                                 </label>
@@ -893,7 +893,7 @@ console.log(err);
                                     </select>
                                 </div>
                             </div>
-                            <div ng-show="(vm.configure.WifiNetwork.security && vm.configure.WifiNetwork.security!='none') || vm.config_device_os=='windows'"
+                            <div ng-show="(vm.configure.WifiNetwork.security && vm.configure.WifiNetwork.security!='none') || (vm.config_device_os=='windows' && vm.useConfig.WifiNetwork)"
                                  show-errors class="form-group" >
                                 <label class="col-xs-3 control-label-left">
                                     Password
