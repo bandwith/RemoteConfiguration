@@ -1140,7 +1140,7 @@
         }
 
         function onSTableClick(row) {
-            if (row.status !== 'online') {
+            if ((row.status !== 'online') || (row.os_type != vm.config_device_os)) {
                 row.isSelected = false;
                 return;
             }

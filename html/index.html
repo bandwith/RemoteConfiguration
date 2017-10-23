@@ -214,7 +214,7 @@ console.log(err);
                         <div class="col-xs-12">
                             <label class="control-label" for="configurate__target_devices" uib-tooltip="">Scanned Devices <span uib-tooltip="All scanned devices are showing in the following table. Click devices to select them to do the configuration." class="glyphicon glyphicon-info-sign"></span></label>
                             <div class="table-container" ng-style="vm.STableStyle">
-                                <table st-safe-src="vm.scannedDevices" st-table="vm.displayScannedDevices" class="table">
+                                <table config_mode="{{vm.config_device_os}}" st-safe-src="vm.scannedDevices" st-table="vm.displayScannedDevices" class="table">
                                     <col width="5%">
                                     <col width="5%">
                                     <col width="5%">
@@ -270,7 +270,7 @@ console.log(err);
                                         <tr ng-repeat="row in vm.displayScannedDevices track by $index"
                                             ng-click="vm.onSTableClick(row);" 
                                             ng-class="{info: row.isSelected}" 
-                                            class="device-row" status="{{row.status}}" 
+                                            class="device-row" status="{{row.status}}" os_type="{{row.os_type}}" 
                                             after-render="vm.checkLastResults();">
                                             <td class="text-center">
                                                 <input type="checkbox"
