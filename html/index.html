@@ -1693,7 +1693,7 @@ console.log(err);
                                     <div ng-show="ConfigForm.appStartClass.$error.required" class="help-block">* Required</div>
                                 </div>
                             </div>
-                            <div show-errors class="form-group">
+                            <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.AppStop">
                                     App Stop
