@@ -2882,6 +2882,7 @@ console.log('autoTime', autoTime)
             delete vm.configure.AppList;
             delete vm.configure.AppSelect;
             delete vm.AppInfo;
+            checkReadyToConfigure();
         }
 
         function watchScannedDevices() {
