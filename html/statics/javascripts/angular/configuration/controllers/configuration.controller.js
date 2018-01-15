@@ -75,6 +75,8 @@
             "SettingsRebootTime",
             "SettingsScheduleOn",
             "SettingsScheduleOff",
+            "SettingsScheduleOffDays",
+            "SettingsScheduleSyncLcd",
             "SettingsRebootTimeOptimized",
             "SettingsScreenOrientation",
             "SettingsOtaXmlUrl",
@@ -112,6 +114,7 @@
         ];
         var vm = this;
             vm.configure = {};
+            vm.configure.SettingsScheduleOffDays = {};
         
         var getVm = function() { return vm; }
 
@@ -1368,6 +1371,12 @@
                             vm.configure.SettingsOtaXmlUrl = data.ota_xml_url;
                             vm.configure.SettingsAppOtaXmlUrl = data.app_ota_xml_url;
                             vm.configure.SettingsLogLocation = data.log_location;
+                            vm.configure.SettingsScheduleOffDays = data.schedule_off_days;
+                            if(data.schedule_led_off) {
+                                vm.configure.SettingsScheduleSyncLcd = "true";
+                            } else {
+                                vm.configure.SettingsScheduleSyncLcd = "false";
+                            }
                             var drt = (data.reboot_time||'').split(':'),
                                 ddrt = new Date();
                             if (drt) ddrt.setHours(drt[0], drt[1], 0, 0);
@@ -1808,11 +1817,15 @@
                         vm.useConfig.SettingsRebootTime = true;
                         delete vm.useConfig.SettingsScheduleOn;
                         delete vm.useConfig.SettingsScheduleOff;
+                        delete vm.useConfig.SettingsScheduleOffDays;
+                        delete vm.useConfig.SettingsScheduleSyncLcd;
                     }
                     else {
                         delete vm.useConfig.SettingsRebootTime;
                         vm.useConfig.SettingsScheduleOn = true;
                         vm.useConfig.SettingsScheduleOff = true;
+                        vm.useConfig.SettingsScheduleOffDays = true;
+                        vm.useConfig.SettingsScheduleSyncLcd = true;
                     }
                     if (vm.remote_or_export=='remote') {
                         QRC.setSettings("schedule_reboot_mode",
@@ -1853,6 +1866,37 @@
                     } else {
                         var url = QRC.buildUrl("/v1/settings/schedule_off_time", device.index);
                         var param = {"value": timeStr};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                }  else if (configKey == "SettingsScheduleOffDays") {
+                    var offDaysObj = vm.configure[configKey];
+                    if (!offDaysObj) {
+                        readyForNextConfig(device, caseIdx, true);
+                        return false;
+                    }
+                    if (vm.remote_or_export=='remote') {
+                        QRC.setSettings("schedule_off_days", offDaysObj, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/schedule_off_days", device.index);
+                        var param = {"value": offDaysObj};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                }  else if (configKey == "SettingsScheduleSyncLcd") {
+                    var syncLcd = vm.configure[configKey];
+                    if(syncLcd == "true") {
+                        syncLcd = true;
+                    } else {
+                        syncLcd = false;
+                    }
+                    if (vm.remote_or_export=='remote') {
+                        QRC.setSettings("schedule_led_off", syncLcd, device.index)
+                            .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/schedule_led_off", device.index);
+                        var param = {"value": syncLcd};
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
                     }
@@ -2795,7 +2839,15 @@ console.log('autoTime', autoTime)
         }
         function checkInitConfig(configKey, isChecked, value, isInitRebootTime) {
             if (isChecked) {
-                if (isInitRebootTime) {
+                if (configKey == "SettingsScheduleOffDays") {
+                    vm.configure[configKey].sunday = value;
+                    vm.configure[configKey].monday = value;
+                    vm.configure[configKey].tuesday = value;
+                    vm.configure[configKey].wednesday = value;
+                    vm.configure[configKey].thursday = value;
+                    vm.configure[configKey].friday = value;
+                    vm.configure[configKey].saturday = value;
+                } else if (isInitRebootTime) {
                     var d = new Date("January 1, 1972 04:00:00");
                     vm.configure[configKey] = d;
                 } else if (typeof value == 'undefined') {

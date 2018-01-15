@@ -603,6 +603,80 @@ console.log(err);
                                     <div ng-show="ConfigForm.scheduleOff.$error.time" class="help-block">Invalid time format</div>
                                 </div>
                             </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.SettingsRebootMode=='ScheduleOnOff' && vm.config_device_os=='android'">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.SettingsScheduleOffDays"
+                                           ng-change="vm.checkInitConfig('SettingsScheduleOffDays', vm.useConfig.SettingsScheduleOffDays, false)">
+                                    Schedule Off Days
+                                </label>
+                                <div class="col-xs-9">
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" ng-model="vm.configure.SettingsScheduleOffDays.sunday"
+                                           ng-disabled="!vm.useConfig.SettingsScheduleOffDays"
+                                           >
+                                    Sunday
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" ng-model="vm.configure.SettingsScheduleOffDays.monday"
+                                           ng-disabled="!vm.useConfig.SettingsScheduleOffDays"
+                                           >
+                                    Monday
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" ng-model="vm.configure.SettingsScheduleOffDays.tuesday"
+                                           ng-disabled="!vm.useConfig.SettingsScheduleOffDays"
+                                           >
+                                    Tuesday
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" ng-model="vm.configure.SettingsScheduleOffDays.wednesday"
+                                           ng-disabled="!vm.useConfig.SettingsScheduleOffDays"
+                                           >
+                                    Wednesday
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" ng-model="vm.configure.SettingsScheduleOffDays.thursday"
+                                           ng-disabled="!vm.useConfig.SettingsScheduleOffDays"
+                                           >
+                                    Thursday
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" ng-model="vm.configure.SettingsScheduleOffDays.friday"
+                                           ng-disabled="!vm.useConfig.SettingsScheduleOffDays"
+                                           >
+                                    Friday
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" ng-model="vm.configure.SettingsScheduleOffDays.saturday"
+                                           ng-disabled="!vm.useConfig.SettingsScheduleOffDays"
+                                           >
+                                    Saturday
+                                </label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" 
+                                 ng-show="vm.configure.SettingsRebootMode=='ScheduleOnOff' && vm.config_device_os=='android'">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.SettingsScheduleSyncLcd"
+                                           ng-change="vm.checkInitConfig('SettingsScheduleSyncLcd', vm.useConfig.SettingsScheduleSyncLcd, 'false')">
+                                    Keep Led Off
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="true"
+                                               ng-disabled="!vm.useConfig.SettingsScheduleSyncLcd"
+                                               ng-model="vm.configure.SettingsScheduleSyncLcd" >
+                                        enable
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="false"
+                                               ng-disabled="!vm.useConfig.SettingsScheduleSyncLcd"
+                                               ng-model="vm.configure.SettingsScheduleSyncLcd">
+                                        disable
+                                    </label>
+                                </div>
+                            </div>
                             <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.SettingsRebootTimeOptimized"
