@@ -465,7 +465,6 @@ console.log(err);
                                 </div>
                             </div>
                             <div show-errors class="form-group" ng-show="vm.useConfig.SecurityPasswordEnabled&&vm.configure.SecurityPasswordEnabled=='enable'">
-
                                 <label class="col-xs-3 control-label-left">
                                     Security Password
                                 </label>
@@ -477,6 +476,15 @@ console.log(err);
                                     <div ng-show="ConfigForm.securityPassword.$error.required" class="help-block">* Required</div>
                                     <div ng-show="ConfigForm.securityPassword.$error.minlength" class="help-block">Too short</div>
                                     <div ng-show="ConfigForm.securityPassword.$error.maxlength" class="help-block">Too long</div>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group" ng-show="vm.useConfig.SecurityPasswordEnabled&&vm.configure.SecurityPasswordEnabled=='enable'">
+
+                                <label class="col-xs-3 control-label-left">
+                                </label>
+                                <div class="col-xs-9">
+                                    <input type="checkbox" ng-model="vm.ExportEncryptPassword" />
+                                    Encrypt password when export
                                 </div>
                             </div>
                             <div show-errors class="form-group" ng-show="vm.config_device_os=='android'">
