@@ -262,7 +262,12 @@ angular.module('usbConfig', [])
                     exportConfigs.push(data.exportConfig[num]);
                 }
             }
-
+            exportConfigs.sort(function(a,b) {
+            if(a.key == "SettingsSmilContentUrl") {
+                return true;
+            }
+            return false;
+            });
             if(exportConfigs.length > 0) {
                 runConfigCase();
             }

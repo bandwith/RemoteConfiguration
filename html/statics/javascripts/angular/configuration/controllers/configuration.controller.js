@@ -65,6 +65,22 @@
 
         var configTimeStart;
 
+        var localeLabel = {
+            de_DE:"Deutsch",
+            en_AU:"English (Australia)",
+            en_GB:"English (United Kingdom)",
+            en_US:"English (United States)",
+            es_ES:"Español",
+            fr_FR:"Français",
+            it_IT:"Italiano",
+            pt_PT:"Português",
+            ru_RU:"Русский",
+            ko_KR:"한국어",
+            zh_CN:"中文 (简体)",
+            zh_TW:"中文 (繁體)",
+            ja_JP:"日本語"
+            }
+
         var configureCases = [
             "GetToken",
             "SettingsPlayerName",
@@ -109,6 +125,7 @@
             "AppStop",
             "RemoteUploadFiles",
             "SettingsLogLocation",
+            "SettingsLocale",
             "SettingsPlaylistlogState",
             "DoneConfig",
         ];
@@ -252,6 +269,18 @@
                 catch (e) {
                     console.warn('Read local storage error. Clear local storage data');
                     localStorage.removeItem(vm.localStorageName);
+                }
+            }
+            
+            vm.localeLabel = localeLabel;
+			vm.localeList = [];
+
+            for (var key in localeLabel) {
+                if (localeLabel.hasOwnProperty(key)) {
+                    vm.localeList.push({
+                        locale:key,
+                        label:localeLabel[key]
+                    });    
                 }
             }
 
@@ -1335,6 +1364,43 @@
             }
             return false;
         }
+        
+        function getSystemLocale(locales) {
+            console.log("getSystemLocale");
+            var ret_locale = undefined;
+            for (var key in locales) {
+                if (locales.hasOwnProperty(key)) {
+                    var find_locale = undefined;
+                    for (var prop in vm.localeList) {
+                      if (vm.localeList.hasOwnProperty(prop)) { 
+                            if(vm.localeList[prop].locale === key) {
+                                find_locale = vm.localeList[prop];
+                            }
+                      }
+                    }
+                    if(find_locale == undefined) {
+                        console.log("find_locale", find_locale);
+                        //add current key to localeList
+                        var lang = key.split("_");
+                        if(lang.length == 2) {
+                            var new_locale = {
+                                locale:key,
+                                label:isoLangs[lang[0]].nativeName
+                            }
+                            console.log("push new locale", new_locale);
+                            vm.localeList.push(new_locale);
+                            find_locale = new_locale;
+                        }
+                    }
+                    if(locales[key]) {
+                        //current system locale settings
+                        ret_locale = find_locale;
+                    }  
+                }
+            }
+            console.log(ret_locale);
+            return ret_locale;
+        }
 
         function checkReadyToConfigure() {
             var status = false,
@@ -1371,6 +1437,10 @@
                             vm.configure.SettingsOtaXmlUrl = data.ota_xml_url;
                             vm.configure.SettingsAppOtaXmlUrl = data.app_ota_xml_url;
                             vm.configure.SettingsLogLocation = data.log_location;
+                            var current_locale = getSystemLocale(data.locale);
+                            if(current_locale) {
+                                vm.configure.SettingsLocale = current_locale;
+                            }
                             vm.configure.SettingsScheduleOffDays = data.schedule_off_days;
                             if(data.schedule_led_off) {
                                 vm.configure.SettingsScheduleSyncLcd = "true";
@@ -2778,6 +2848,16 @@ console.log('autoTime', autoTime)
                     } else {
                         var url = QRC.buildUrl("/v1/settings/log_location", device.index);
                         var param = {"value": vm.configure.SettingsLogLocation};
+                        vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                        readyForNextConfig(device, caseIdx, true);
+                    }
+                } else if (configKey == "SettingsLocale") {
+                    if(vm.remote_or_export=='remote') {
+                        QRC.setSettings("locale", vm.configure.SettingsLocale.locale, device.index)
+                        .then(successConfigFn, errorConfigFn);
+                    } else {
+                        var url = QRC.buildUrl("/v1/settings/locale", device.index);
+                        var param = {"value": vm.configure.SettingsLocale.locale};
                         vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
                         readyForNextConfig(device, caseIdx, true);
                     }

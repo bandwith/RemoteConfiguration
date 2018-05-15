@@ -20,6 +20,7 @@
         <link rel="stylesheet" href="statics/stylesheets/style.css">
 
         <!--script src="build/qrc-v0.0.1.js.gz"></script-->
+        <script src="langs.json"></script>
         <script src="bower_components/jquery/dist/jquery.min.js"></script>
         <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
         <script src="bower_components/angular/angular.min.js"></script>
@@ -790,6 +791,19 @@ console.log(err);
                                                ng-model="vm.configure.SettingsLogLocation">
                                         SD card
                                     </label>
+                                </div>
+                            </div>
+                            <div show-errors class="form-group">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.SettingsLocale">
+                                    Language
+                                </label>
+                                <div class="col-xs-9">
+                                <select class="form-control" 
+                                        name="localeList" 
+                                        ng-model="vm.configure.SettingsLocale"
+                                        ng-options="data.label for data in vm.localeList | orderBy:'label'"">
+                                </select>
                                 </div>
                             </div>
                         </uib-accordion-group>
