@@ -1851,7 +1851,15 @@ console.log(err);
                                 <label class="col-xs-3 control-label-left" >Version Code </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.version_code}}</label>
                                 <label class="col-xs-3 control-label-left" >First Install Time </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.first_install_time}}</label>
                                 <label class="col-xs-3 control-label-left" >Last Update Time </label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.last_update_time}}</label>
-                                <label class="col-xs-3 control-label-left" >Memory Info</label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.meminfo.pss}}</label>                                                                                                    
+                                <label class="col-xs-3 control-label-left" >Memory Info</label> <label class="col-xs-9 control-label-left">{{vm.AppInfo.meminfo.pss}}</label>
+                                <div ng-show="(vm.AppInfo.entries != 'undefined' && vm.AppInfo.entries.length > 0)">
+                                <label class="col-xs-3 control-label-left" >Launch entries</label>
+                                <label class="col-xs-9 control-label-left"></label>
+                                <div ng-repeat="item in vm.AppInfo.entries">
+                                        <label class="col-xs-3 control-label-left"></label>
+                                        <label class="col-xs-9 control-label-left">{{item.name}}</label>
+                                </div>
+                                </div>
                                 <div ng-show="vm.AppInfo.activities.length > 0">
                                 <label class="col-xs-3 control-label-left">Activities:</label>
                                 <label class="col-xs-9 control-label-left"></label>
