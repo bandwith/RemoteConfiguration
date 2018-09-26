@@ -1442,6 +1442,10 @@
                                 vm.configure.SettingsLocale = current_locale;
                             }
                             vm.configure.SettingsScheduleOffDays = data.schedule_off_days;
+                            if(vm.configure.SettingsScheduleOffDays == undefined) {
+
+                                vm.configure.SettingsScheduleOffDays = {};
+                            }
                             if(data.schedule_led_off) {
                                 vm.configure.SettingsScheduleSyncLcd = "true";
                             } else {
@@ -2113,8 +2117,8 @@
                         delete vm.useConfig.SettingsRebootTime;
                         vm.useConfig.SettingsScheduleOn = true;
                         vm.useConfig.SettingsScheduleOff = true;
-                        vm.useConfig.SettingsScheduleOffDays = true;
-                        vm.useConfig.SettingsScheduleSyncLcd = true;
+                        //vm.useConfig.SettingsScheduleOffDays = true;
+                        //vm.useConfig.SettingsScheduleSyncLcd = true;
                     }
                     if (vm.remote_or_export=='remote') {
                         QRC.setSettings("schedule_reboot_mode",
