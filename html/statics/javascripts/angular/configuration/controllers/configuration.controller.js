@@ -630,7 +630,9 @@
                 vm.hasAndroidDevice = true;
               }
           } catch (error) {
-              console.log(error);
+              console.log(ipAddress, error, result);
+              result.os_type = 'android';
+              vm.hasAndroidDevice = true;
           }
           
           for (var i in vm.scannedModelId) {
