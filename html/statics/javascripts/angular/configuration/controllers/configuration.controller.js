@@ -249,6 +249,16 @@
                           var dev = scannedData.scannedDevices[i];
                           dev.status = 'offline';
                           dev.isSelected = false;
+                          try {
+                              var rest_version = parseInt(dev.restful_api_version.split('.')[0], 2);
+                              if(rest_version & 0x02) {
+                                dev.os_type = 'windows';
+                              } else {
+                                dev.os_type = 'android';
+                              }
+                          } catch (error) {
+                              dev.os_type = 'android';
+                          }
                           vm.scannedDevices.push(dev);
                       }
                       vm.ipCandidates = (scannedData.ipCandidates||[]).map(function(ip, index) {
