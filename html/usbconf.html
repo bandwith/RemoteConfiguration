@@ -153,8 +153,9 @@ angular.module('usbConfig', [])
     }
 
     function getWifiStatus() {
-        var RETRY_DELAY = 1000;
+        var RETRY_DELAY = 2000;
         var MAX_RETRY = 20;
+        var retryWifi = 0;
 
         $.ajax({
             url: "http://localhost:8080/v1/wifi/state",
@@ -181,15 +182,17 @@ angular.module('usbConfig', [])
             if (data.value == "enabled") {
                 //Wifi is enabled and then setup wifi network
                 realConfigWifiNetwork();
-            } else {
+            } else if (data.value == "disabled") {
                 //Enable Wifi
                 printResult("wifi is disable, try enable wifi first...");
+                var param_obj = {};
+                prram_obj.value = "enabled";
                 $.ajax({
-                    url: "http://localhost:8080//v1/wifi/state",
+                    url: "http://localhost:8080/v1/wifi/state",
                     method: "POST",
                     dataType :"text",
                     contentType:"application/json",
-                    data: {"value": "enabled"}
+                    data: JSON.stringify(param_obj)
                 })
                 .done(function() {
                     printResult("enable wifi command success");
@@ -197,12 +200,16 @@ angular.module('usbConfig', [])
                     setTimeout(tryConfigWifiNetwork, RETRY_DELAY);
                 })
                 .fail(failConfig)
+            } else {
+                retryWifi++;
+                printResult("retry to check wifi status count:" + retryWifi);
+                setTimeout(tryConfigWifiNetwork, RETRY_DELAY);
             }
         }
 
         function tryConfigWifiNetwork() {
             $.ajax({
-            url: "http://localhost:8080//v1/wifi/state",
+            url: "http://localhost:8080/v1/wifi/state",
             method: "GET",
             contentType:"application/json",
             dataType: 'json',
@@ -211,14 +218,15 @@ angular.module('usbConfig', [])
             .fail(failConfig)
 
             function successWifiFn(data) {
-                printResult("successWifiFn");
-                if (data.data.value == "enabled") {
+                printResult("successWifiFn:" + JSON.stringify(data));
+                if (data.value == "enabled") {
                     realConfigWifiNetwork();
                 } else if (retryWifi >= MAX_RETRY) {
                     printErrResult("Get wifi status fail: over MAX_ERTRY");
                     runNextConfig();
                 } else {
                     retryWifi++;
+                    printResult("retry to check wifi status count:" + retryWifi);
                     setTimeout(tryConfigWifiNetwork, RETRY_DELAY);
                 }
             }
