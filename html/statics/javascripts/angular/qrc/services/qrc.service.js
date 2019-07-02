@@ -76,6 +76,20 @@
             getEddystoneUrlSettings: getEddystoneUrlSettings,
             getNfcState: getNfcState,
             setNfcState: setNfcState,
+            getNfcCardType: getNfcCardType,
+            setNfcCardType: setNfcCardType,
+            getNfcReverse: getNfcReverse,
+            setNfcReverse: setNfcReverse,
+            getNfcUuidFormat: getNfcUuidFormat,
+            setNfcUuidFormat: setNfcUuidFormat,
+            getNfcUuidUpperCase: getNfcUuidUpperCase,
+            setNfcUuidUpperCase: setNfcUuidUpperCase,
+            getNfcByteAligned: getNfcByteAligned,
+            setNfcByteAligned: setNfcByteAligned,
+            getNfcStripLeading: getNfcStripLeading,
+            setNfcStripLeading: setNfcStripLeading,
+            getNfcStripTrailing: getNfcStripTrailing,
+            setNfcStripTrailing: setNfcStripTrailing,
             getEmergencyMessage: getEmergencyMessage,
             getBroadcastMessage: getBroadcastMessage,
             setTextMessageNone: setTextMessageNone,
@@ -389,6 +403,69 @@
         }
         function setNfcState(state, idx) {
             var url = buildUrl("/v1/settings/nfc_enabled", idx);
+            var obj = {value: state};
+            return $http.post(url, obj, getConfig(idx));
+        }
+        function getNfcCardType(idx) {
+            var url = buildUrl("/v1/prop/persist.sys.smatfid_freq", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setNfcCardType(state, idx) {
+            var url = buildUrl("/v1/prop/persist.sys.smatfid_freq", idx);
+            var obj = {value: state};
+            return $http.post(url, obj, getConfig(idx));
+        }
+        function getNfcReverse(idx) {
+            var url = buildUrl("/v1/prop/persist.sys.smatfid_reverse", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setNfcReverse(state, idx) {
+            var url = buildUrl("/v1/prop/persist.sys.smatfid_reverse", idx);
+            var obj = {value: state};
+            return $http.post(url, obj, getConfig(idx));
+        }
+        function getNfcUuidFormat(idx) {
+            var url = buildUrl("/v1/prop/persist.sys.smatfid_format", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setNfcUuidFormat(state, idx) {
+            var url = buildUrl("/v1/prop/persist.sys.smatfid_format", idx);
+            var obj = {value: state};
+            return $http.post(url, obj, getConfig(idx));
+        }
+        function getNfcUuidUpperCase(idx) {
+            var url = buildUrl("/v1/prop/persist.sys.nfc_uppercase", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setNfcUuidUpperCase(state, idx) {
+            var url = buildUrl("/v1/prop/persist.sys.nfc_uppercase", idx);
+            var obj = {value: state};
+            return $http.post(url, obj, getConfig(idx));
+        }
+        function getNfcByteAligned(idx) {
+            var url = buildUrl("/v1/prop/persist.sys.nfc_bytealigned", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setNfcByteAligned(state, idx) {
+            var url = buildUrl("/v1/prop/persist.sys.nfc_bytealigned", idx);
+            var obj = {value: state};
+            return $http.post(url, obj, getConfig(idx));
+        }
+        function getNfcStripLeading(idx) {
+            var url = buildUrl("/v1/prop/persist.sys.strip_leading", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setNfcStripLeading(state, idx) {
+            var url = buildUrl("/v1/prop/persist.sys.strip_leading", idx);
+            var obj = {value: state};
+            return $http.post(url, obj, getConfig(idx));
+        }
+        function getNfcStripTrailing(idx) {
+            var url = buildUrl("/v1/prop/persist.sys.strip_trailing", idx);
+            return $http.get(url, getConfig(idx));
+        }
+        function setNfcStripTrailing(state, idx) {
+            var url = buildUrl("/v1/prop/persist.sys.strip_trailing", idx);
             var obj = {value: state};
             return $http.post(url, obj, getConfig(idx));
         }

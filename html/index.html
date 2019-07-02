@@ -1387,18 +1387,174 @@ console.log(err);
                                 <div class="col-xs-9">
                                     <label class="radio-inline">
                                         <input type="radio" value="enable"
-                                           ng-disabled="!vm.useConfig.NfcState"
+                                           ng-disabled="!vm.supportNfc||!vm.useConfig.NfcState"
                                            ng-model="vm.configure.NfcState" >
                                         enable
                                     </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="disable"
-                                           ng-disabled="!vm.useConfig.NfcState"
+                                           ng-disabled="!vm.supportNfc||!vm.useConfig.NfcState"
                                            ng-model="vm.configure.NfcState" >
                                         disable
                                     </label>
                                 </div>
                             </div>
+
+                            <!-- Nfc card type -->
+                            <div show-errors class="form-group" ng-show="vm.supportNfc">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.NfcCardType"
+                                           ng-change="vm.checkInitConfig('NfcCardType', vm.useConfig.NfcCardType, 'all')">
+                                    Card types
+                                </label>
+                                <div class="col-xs-9">
+                                    <div class="alert alert-warning">
+                                        Only support HID version devices.
+                                    </div>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="all"
+                                          ng-disabled="!vm.useConfig.NfcCardType"
+                                          ng-model="vm.configure.NfcCardType" >
+                                        Both 125kHz and 13.56MHz RFID
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="low"
+                                           ng-disabled="!vm.useConfig.NfcCardType"
+                                           ng-model="vm.configure.NfcCardType" >
+                                        only 125kHz RFID
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="high"
+                                           ng-disabled="!vm.useConfig.NfcCardType"
+                                           ng-model="vm.configure.NfcCardType" >
+                                        only 13.56MHz RFID
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Nfc reverse -->
+                            <div show-errors class="form-group" ng-show="vm.supportNfc">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.NfcReverse"
+                                           ng-change="vm.checkInitConfig('NfcReverse', vm.useConfig.NfcReverse, 'enable')">
+                                    Reverse
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="enable"
+                                          ng-disabled="!vm.useConfig.NfcReverse"
+                                          ng-model="vm.configure.NfcReverse" >
+                                        enable
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="disable"
+                                           ng-disabled="!vm.useConfig.NfcReverse"
+                                           ng-model="vm.configure.NfcReverse" >
+                                        disable
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Nfc uuid format -->
+                            <div show-errors class="form-group" ng-show="vm.supportNfc">
+                                <label class="col-xs-3 control-label-left">
+                                    <input type="checkbox" ng-model="vm.useConfig.NfcUuidFormat"
+                                           ng-change="vm.checkInitConfig('NfcUuidFormat', vm.useConfig.NfcUuidFormat, 'hex')">
+                                    uuid data format
+                                </label>
+                                <div class="col-xs-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" value="hex"
+                                          ng-disabled="!vm.useConfig.NfcUuidFormat"
+                                          ng-model="vm.configure.NfcUuidFormat" >
+                                        hexadecimal
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="dec"
+                                           ng-disabled="!vm.useConfig.NfcUuidFormat"
+                                           ng-model="vm.configure.NfcUuidFormat" >
+                                        decimal
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Nfc uuid uppercase -->
+                            <div show-errors class="form-group" ng-show="vm.supportNfc">
+                              <label class="col-xs-3 control-label-left">
+                                  <input type="checkbox" ng-model="vm.useConfig.NfcUuidUpperCase"
+                                         ng-change="vm.checkInitConfig('NfcUuidUpperCase', vm.useConfig.NfcUuidUpperCase, 'disable')">
+                                  uuid upper case
+                              </label>
+                              <div class="col-xs-9">
+                                  <label class="radio-inline">
+                                      <input type="radio" value="enable"
+                                        ng-disabled="!vm.useConfig.NfcUuidUpperCase"
+                                        ng-model="vm.configure.NfcUuidUpperCase" >
+                                      enable
+                                  </label>
+                                  <label class="radio-inline">
+                                      <input type="radio" value="disable"
+                                         ng-disabled="!vm.useConfig.NfcUuidUpperCase"
+                                         ng-model="vm.configure.NfcUuidUpperCase" >
+                                      disable
+                                  </label>
+                              </div>
+                          </div>
+
+                          <!-- Nfc byte aligned -->
+                            <div show-errors class="form-group" ng-show="vm.supportNfc">
+                              <label class="col-xs-3 control-label-left">
+                                  <input type="checkbox" ng-model="vm.useConfig.NfcByteAligned"
+                                         ng-change="vm.checkInitConfig('NfcByteAligned', vm.useConfig.NfcByteAligned, 'disable')">
+                                  byte aligned
+                              </label>
+                              <div class="col-xs-9">
+                                  <label class="radio-inline">
+                                      <input type="radio" value="enable"
+                                        ng-disabled="!vm.useConfig.NfcByteAligned"
+                                        ng-model="vm.configure.NfcByteAligned" >
+                                      enable
+                                  </label>
+                                  <label class="radio-inline">
+                                      <input type="radio" value="disable"
+                                         ng-disabled="!vm.useConfig.NfcByteAligned"
+                                         ng-model="vm.configure.NfcByteAligned" >
+                                      disable
+                                  </label>
+                              </div>
+                          </div>
+
+                          <!-- Nfc strip leading -->
+                          <div show-errors class="form-group" ng-show="vm.supportNfc">
+                              <label class="col-xs-3 control-label-left">
+                                  <input type="checkbox" ng-model="vm.useConfig.NfcStripLeading"
+                                        ng-change="vm.checkInitConfig('NfcStripLeading', vm.useConfig.NfcStripLeading, 0)">
+                                  byte aligned
+                              </label>
+                              <div class="col-xs-9">
+                                  <input ng-required="vm.useConfig.NfcStripLeading"
+                                    name="nfcStripLeading" class="form-control"
+                                    type="number" min="0" max="99"
+                                    ng-disabled="!vm.useConfig.NfcStripLeading"
+                                    ng-model="vm.configure.NfcStripLeading" />
+                              </div>
+                          </div>
+
+                          <!-- Nfc strip trailing -->
+                          <div show-errors class="form-group" ng-show="vm.supportNfc">
+                              <label class="col-xs-3 control-label-left">
+                                  <input type="checkbox" ng-model="vm.useConfig.NfcStripTrailing"
+                                        ng-change="vm.checkInitConfig('NfcStripTrailing', vm.useConfig.NfcStripTrailing, 0)">
+                                  byte aligned
+                              </label>
+                              <div class="col-xs-9">
+                                  <input ng-required="vm.useConfig.NfcStripTrailing"
+                                    name="nfcStripTrailing" class="form-control"
+                                    type="number" min="0" max="99"
+                                    ng-disabled="!vm.useConfig.NfcStripTrailing"
+                                    ng-model="vm.configure.NfcStripTrailing" />
+                              </div>
+                          </div>
                         </uib-accordion-group>
 
                         <uib-accordion-group  is-open="vm.accordion.audioOpen"
