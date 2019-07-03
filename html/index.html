@@ -1509,6 +1509,9 @@ console.log(err);
                                   byte aligned
                               </label>
                               <div class="col-xs-9">
+                                  <div class="alert alert-warning">
+                                      Only support HID version devices.
+                                  </div>
                                   <label class="radio-inline">
                                       <input type="radio" value="enable"
                                         ng-disabled="!vm.useConfig.NfcByteAligned"
@@ -1529,7 +1532,7 @@ console.log(err);
                               <label class="col-xs-3 control-label-left">
                                   <input type="checkbox" ng-model="vm.useConfig.NfcStripLeading"
                                         ng-change="vm.checkInitConfig('NfcStripLeading', vm.useConfig.NfcStripLeading, 0)">
-                                  byte aligned
+                                  strip leading
                               </label>
                               <div class="col-xs-9">
                                   <input ng-required="vm.useConfig.NfcStripLeading"
@@ -1545,7 +1548,7 @@ console.log(err);
                               <label class="col-xs-3 control-label-left">
                                   <input type="checkbox" ng-model="vm.useConfig.NfcStripTrailing"
                                         ng-change="vm.checkInitConfig('NfcStripTrailing', vm.useConfig.NfcStripTrailing, 0)">
-                                  byte aligned
+                                  strip trailing
                               </label>
                               <div class="col-xs-9">
                                   <input ng-required="vm.useConfig.NfcStripTrailing"
