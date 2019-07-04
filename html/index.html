@@ -1404,7 +1404,7 @@ console.log(err);
                             <div show-errors class="form-group" ng-show="vm.supportNfc">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.NfcCardType"
-                                           ng-change="vm.checkInitConfig('NfcCardType', vm.useConfig.NfcCardType, 'all')">
+                                           ng-change="vm.checkInitConfig('NfcCardType', vm.useConfig.NfcCardType, vm.configure.NfcCardType||'all')">
                                     Card types
                                 </label>
                                 <div class="col-xs-9">
@@ -1413,6 +1413,12 @@ console.log(err);
                                         <br/>
                                         <b>Reset to default:</b> Reboot device to apply both 125kHZ and 13.56MHZ RFID
                                     </div>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="all"
+                                           ng-disabled="true"
+                                           ng-model="vm.configure.NfcCardType" >
+                                        Both 125kHz and 13.56MHz RFID
+                                    </label>
                                     <label class="radio-inline">
                                         <input type="radio" value="low"
                                            ng-disabled="!vm.useConfig.NfcCardType"
@@ -1438,7 +1444,7 @@ console.log(err);
                             <div show-errors class="form-group" ng-show="vm.supportNfc">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.NfcReverse"
-                                           ng-change="vm.checkInitConfig('NfcReverse', vm.useConfig.NfcReverse, 'enable')">
+                                           ng-change="vm.checkInitConfig('NfcReverse', vm.useConfig.NfcReverse, vm.configure.NfcReverse||'enable')">
                                     Reverse
                                 </label>
                                 <div class="col-xs-9">
@@ -1461,7 +1467,7 @@ console.log(err);
                             <div show-errors class="form-group" ng-show="vm.supportNfc">
                                 <label class="col-xs-3 control-label-left">
                                     <input type="checkbox" ng-model="vm.useConfig.NfcUuidFormat"
-                                           ng-change="vm.checkInitConfig('NfcUuidFormat', vm.useConfig.NfcUuidFormat, 'hex')">
+                                           ng-change="vm.checkInitConfig('NfcUuidFormat', vm.useConfig.NfcUuidFormat, vm.configure.NfcUuidFormat||'hex')">
                                     uuid data format
                                 </label>
                                 <div class="col-xs-9">
@@ -1484,7 +1490,7 @@ console.log(err);
                             <div show-errors class="form-group" ng-show="vm.supportNfc">
                               <label class="col-xs-3 control-label-left">
                                   <input type="checkbox" ng-model="vm.useConfig.NfcUuidUpperCase"
-                                         ng-change="vm.checkInitConfig('NfcUuidUpperCase', vm.useConfig.NfcUuidUpperCase, 'disable')">
+                                         ng-change="vm.checkInitConfig('NfcUuidUpperCase', vm.useConfig.NfcUuidUpperCase, vm.configure.NfcUuidUpperCase||'disable')">
                                   uuid upper case
                               </label>
                               <div class="col-xs-9">
@@ -1507,7 +1513,7 @@ console.log(err);
                             <div show-errors class="form-group" ng-show="vm.supportNfc">
                               <label class="col-xs-3 control-label-left">
                                   <input type="checkbox" ng-model="vm.useConfig.NfcByteAligned"
-                                         ng-change="vm.checkInitConfig('NfcByteAligned', vm.useConfig.NfcByteAligned, 'disable')">
+                                         ng-change="vm.checkInitConfig('NfcByteAligned', vm.useConfig.NfcByteAligned, vm.configure.NfcByteAligned||'disable')">
                                   byte aligned
                               </label>
                               <div class="col-xs-9">
@@ -1533,7 +1539,7 @@ console.log(err);
                           <div show-errors class="form-group" ng-show="vm.supportNfc">
                               <label class="col-xs-3 control-label-left">
                                   <input type="checkbox" ng-model="vm.useConfig.NfcStripLeading"
-                                        ng-change="vm.checkInitConfig('NfcStripLeading', vm.useConfig.NfcStripLeading, 0)">
+                                        ng-change="vm.checkInitConfig('NfcStripLeading', vm.useConfig.NfcStripLeading, vm.configure.NfcStripLeading||0)">
                                   strip leading
                               </label>
                               <div class="col-xs-9">
@@ -1549,7 +1555,7 @@ console.log(err);
                           <div show-errors class="form-group" ng-show="vm.supportNfc">
                               <label class="col-xs-3 control-label-left">
                                   <input type="checkbox" ng-model="vm.useConfig.NfcStripTrailing"
-                                        ng-change="vm.checkInitConfig('NfcStripTrailing', vm.useConfig.NfcStripTrailing, 0)">
+                                        ng-change="vm.checkInitConfig('NfcStripTrailing', vm.useConfig.NfcStripTrailing, vm.configure.NfcStripTrailing||0)">
                                   strip trailing
                               </label>
                               <div class="col-xs-9">

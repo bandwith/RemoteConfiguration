@@ -1628,9 +1628,7 @@
                               vm.configure.NfcCardType = 'all';
                           }
                           callback();
-                      }).catch(function(err) {
-                        console.warn(32, err);
-                      });
+                      }, callback);
                   });
                   steps.push(function(callback) {
                       QRC.getNfcReverse(device.index).then(function(data) {
