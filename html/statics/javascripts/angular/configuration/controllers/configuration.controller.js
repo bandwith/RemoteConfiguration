@@ -210,6 +210,7 @@
           vm.isConfigClicked = false;
           vm.startConfigString = 'Start Configuration';
           vm.remoteReboot = remoteReboot;
+          vm.remoteResetNfcCardTypesAndReboot = remoteResetNfcCardTypesAndReboot;
           vm.openPlaylistlogFolder = openPlaylistlogFolder;
 
           vm.countStatus = countStatus;
@@ -1141,6 +1142,27 @@
                       QRC.setTargetAuthToken(data.data.access_token, device.index);
                       QRC.reboot(device.index);
                   }, function(e) { console.error(e); });
+          });
+      }
+
+      function remoteResetNfcCardTypesAndReboot() {
+          var devices = [];
+          for (var devIdx in vm.scannedDevices) {
+              if (vm.scannedDevices[devIdx].isSelected) {
+                  devices.push(vm.scannedDevices[devIdx]);
+              }
+          }
+          devices.forEach(function(device) {
+              QRC.setTargetIpAddress(device.ip, device.index);
+              QRC.getToken((vm.current_password||'12345678'), device.index)
+                  .then(function(data) {
+                      QRC.setTargetAuthToken(data.data.access_token, device.index);
+                      return QRC.setNfcCardType(0, device.index);
+                  })
+                  .then(function() {
+                      return QRC.reboot(device.index);
+                  })
+                  .catch(function(e) { console.error(e); });
           });
       }
 
