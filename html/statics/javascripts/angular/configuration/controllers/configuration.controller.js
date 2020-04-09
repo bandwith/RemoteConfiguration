@@ -116,6 +116,13 @@
           "EthernetState",
           "BeaconSettings",
           "NfcState",
+          "NfcCardType",
+          "NfcReverse",
+          "NfcUuidFormat",
+          "NfcUuidUpperCase",
+          "NfcByteAligned",
+          "NfcStripLeading",
+          "NfcStripTrailing",
           "TextMessage",
           "FirmwareUpdate",
           "AppUpdate",
@@ -203,6 +210,7 @@
           vm.isConfigClicked = false;
           vm.startConfigString = 'Start Configuration';
           vm.remoteReboot = remoteReboot;
+          vm.remoteResetNfcCardTypesAndReboot = remoteResetNfcCardTypesAndReboot;
           vm.openPlaylistlogFolder = openPlaylistlogFolder;
 
           vm.countStatus = countStatus;
@@ -1137,6 +1145,27 @@
           });
       }
 
+      function remoteResetNfcCardTypesAndReboot() {
+          var devices = [];
+          for (var devIdx in vm.scannedDevices) {
+              if (vm.scannedDevices[devIdx].isSelected) {
+                  devices.push(vm.scannedDevices[devIdx]);
+              }
+          }
+          devices.forEach(function(device) {
+              QRC.setTargetIpAddress(device.ip, device.index);
+              QRC.getToken((vm.current_password||'12345678'), device.index)
+                  .then(function(data) {
+                      QRC.setTargetAuthToken(data.data.access_token, device.index);
+                      return QRC.setNfcCardType(0, device.index);
+                  })
+                  .then(function() {
+                      return QRC.reboot(device.index);
+                  })
+                  .catch(function(e) { console.error(e); });
+          });
+      }
+
       function openPlaylistlogFolder() {
           console.log('openPlaylistlogFolder');
           for (var devIdx in vm.scannedDevices) {
@@ -1578,10 +1607,100 @@
                   });
                   steps.push(function(callback) {
                       QRC.getNfcState(device.index).then(function(data) {
-                          console.log(data);
+                          console.log('NfcState', data);
+                          vm.supportNfc = true;
                           vm.configure.NfcState = (data.data.value ? 'enable' :'disable');
                           callback();
-                      },callback);
+                      }, function(err) {
+                          vm.supportNfc = false;
+                          callback(err);
+                      });
+                  });
+                  steps.push(function(callback) {
+                      QRC.getNfcCardType(device.index).then(function(data) {
+                          data = data.data.value;
+                          console.log('NfcCardType', data);
+                          if (data == 1) {
+                              vm.configure.NfcCardType = 'low';
+                          } else if (data == 2) {
+                              vm.configure.NfcCardType = 'high';
+                          } else {
+                              vm.configure.NfcCardType = 'all';
+                          }
+                          callback();
+                      }, callback);
+                  });
+                  steps.push(function(callback) {
+                      QRC.getNfcReverse(device.index).then(function(data) {
+                          data = data.data.value;
+                          console.log('NfcReverse', data);
+                          if (data == 1) {
+                              vm.configure.NfcReverse = 'enable';
+                          } else {
+                              vm.configure.NfcReverse = 'disable';
+                          }
+                          callback();
+                      }, callback);
+                  });
+                  steps.push(function(callback) {
+                      QRC.getNfcUuidFormat(device.index).then(function(data) {
+                          data = data.data.value;
+                          console.log('NfcUuidFormat', data);
+                          if (data == 1) {
+                              vm.configure.NfcUuidFormat = 'dec';
+                          } else {
+                              vm.configure.NfcUuidFormat = 'hex';
+                          }
+                          callback();
+                      }, callback);
+                  });
+                  steps.push(function(callback) {
+                      QRC.getNfcUuidUpperCase(device.index).then(function(data) {
+                          data = data.data.value;
+                          console.log('NfcUuidUpperCase', data);
+                          if (data == 1) {
+                              vm.configure.NfcUuidUpperCase = 'enable';
+                          } else {
+                              vm.configure.NfcUuidUpperCase = 'disable';
+                          }
+                          callback();
+                      }, callback);
+                  });
+                  steps.push(function(callback) {
+                      QRC.getNfcByteAligned(device.index).then(function(data) {
+                          data = data.data.value;
+                          console.log('NfcByteAligned', data);
+                          if (data == 1) {
+                              vm.configure.NfcByteAligned = 'enable';
+                          } else {
+                              vm.configure.NfcByteAligned = 'disable';
+                          }
+                          callback();
+                      }, callback);
+                  });
+                  steps.push(function(callback) {
+                      QRC.getNfcStripLeading(device.index).then(function(data) {
+                          data = data.data.value;
+                          console.log('NfcStripLeading', data);
+                          if (0 < data) {
+                              vm.configure.NfcStripLeading = parseInt(data);
+                          } else {
+                              vm.configure.NfcStripLeading = 0;
+                          }
+                          callback();
+                      }, callback);
+                  });
+                  steps.push(function(callback) {
+                      QRC.getNfcStripTrailing(device.index).then(function(data) {
+                          data = data.data.value;
+                          console.log('NfcStripTrailing', data);
+                          if (0 < data) {
+                              vm.configure.NfcStripTrailing = parseInt(data);
+                          } else {
+                              vm.configure.NfcStripTrailing = 0;
+                          }
+                          callback();
+                      }, callback);
                   });
                   steps.push(function(callback) {
                       QRC.getEmergencyMessage(device.index).then(function(data) {
@@ -2617,6 +2736,106 @@ console.log('autoTime', autoTime)
                       var url = QRC.buildUrl("/v1/settings/nfc_enabled", device.index);
                       var param = {"value": nfcState};
                       vm.exportConfig[caseIdx] = {"key":configKey, "url":url, "param":param};
+                      readyForNextConfig(device, caseIdx, true);
+                  }
+              } else if (configKey == 'NfcCardType') {
+                  var nfcCardType = 0;
+                  if (vm.configure.NfcCardType == 'low') {
+                    nfcCardType = 1;
+                  } else if (vm.configure.NfcCardType == 'high') {
+                    nfcCardType = 2;
+                  }
+                  if (vm.remote_or_export == 'remote') {
+                      QRC.setNfcCardType(nfcCardType, device.index)
+                          .then(successConfigFn, errorConfigFn);
+                  } else {
+                      var url = QRC.buildUrl("/v1/prop/persist.sys.smatfid_freq", device.index);
+                      var param = { value: nfcCardType };
+                      vm.exportConfig[caseIdx] = { key: configKey, url: url, param: param };
+                      readyForNextConfig(device, caseIdx, true);
+                  }
+              } else if (configKey == 'NfcReverse') {
+                  var nfcReverse = 0;
+                  if (vm.configure.NfcReverse == 'enable') {
+                      nfcReverse = 1;
+                  }
+                  if (vm.remote_or_export == 'remote') {
+                      QRC.setNfcReverse(nfcReverse, device.index)
+                          .then(successConfigFn, errorConfigFn);
+                  } else {
+                      var url = QRC.buildUrl("/v1/prop/persist.sys.smartfid_reverse", device.index);
+                      var param = { value: nfcReverse };
+                      vm.exportConfig[caseIdx] = { key: configKey, url: url, param: param };
+                      readyForNextConfig(device, caseIdx, true);
+                  }
+              } else if (configKey == 'NfcUuidFormat') {
+                  var nfcUuidFormat = 0;
+                  if (vm.configure.NfcUuidFormat == 'dec') {
+                      nfcUuidFormat = 1;
+                  }
+                  if (vm.remote_or_export == 'remote') {
+                      QRC.setNfcUuidFormat(nfcUuidFormat, device.index)
+                          .then(successConfigFn, errorConfigFn);
+                  } else {
+                      var url = QRC.buildUrl("/v1/prop/persist.sys.smatfid_format", device.index);
+                      var param = { value: nfcUuidFormat };
+                      vm.exportConfig[caseIdx] = { key: configKey, url: url, param: param };
+                      readyForNextConfig(device, caseIdx, true);
+                  }
+              } else if (configKey == 'NfcUuidUpperCase') {
+                  var nfcUuidUpperCase = 0;
+                  if (vm.configure.NfcUuidUpperCase == 'enable') {
+                      nfcUuidUpperCase = 1;
+                  }
+                  if (vm.remote_or_export == 'remote') {
+                      QRC.setNfcUuidUpperCase(nfcUuidUpperCase, device.index)
+                          .then(successConfigFn, errorConfigFn);
+                  } else {
+                      var url = QRC.buildUrl("/v1/prop/persist.sys.nfc_uppercase", device.index);
+                      var param = { value: nfcUuidUpperCase };
+                      vm.exportConfig[caseIdx] = { key: configKey, url: url, param: param };
+                      readyForNextConfig(device, caseIdx, true);
+                  }
+              } else if (configKey == 'NfcByteAligned') {
+                  var nfcByteAligned = 0;
+                  if (vm.configure.NfcByteAligned == 'enable') {
+                      nfcByteAligned = 1;
+                  }
+                  if (vm.remote_or_export == 'remote') {
+                      QRC.setNfcByteAligned(nfcByteAligned, device.index)
+                          .then(successConfigFn, errorConfigFn);
+                  } else {
+                      var url = QRC.buildUrl("/v1/prop/persist.sys.nfc_bytealigned", device.index);
+                      var param = { value: nfcByteAligned };
+                      vm.exportConfig[caseIdx] = { key: configKey, url: url, param: param };
+                      readyForNextConfig(device, caseIdx, true);
+                  }
+              } else if (configKey == 'NfcStripLeading') {
+                  var nfcStripLeading = 0;
+                  if (0 < vm.configure.NfcStripLeading) {
+                      nfcStripLeading = vm.configure.NfcStripLeading;
+                  }
+                  if (vm.remote_or_export == 'remote') {
+                      QRC.setNfcStripLeading(nfcStripLeading, device.index)
+                          .then(successConfigFn, errorConfigFn);
+                  } else {
+                      var url = QRC.buildUrl("/v1/prop/persist.sys.strip_leading", device.index);
+                      var param = { value: nfcStripLeading };
+                      vm.exportConfig[caseIdx] = { key: configKey, url: url, param: param };
+                      readyForNextConfig(device, caseIdx, true);
+                  }
+              } else if (configKey == 'NfcStripTrailing') {
+                  var nfcStripTrailing = 0;
+                  if (0 < vm.configure.NfcStripTrailing) {
+                      nfcStripTrailing = vm.configure.NfcStripTrailing;
+                  }
+                  if (vm.remote_or_export == 'remote') {
+                      QRC.setNfcStripTrailing(nfcStripTrailing, device.index)
+                          .then(successConfigFn, errorConfigFn);
+                  } else {
+                      var url = QRC.buildUrl("/v1/prop/persist.sys.strip_trailing", device.index);
+                      var param = { value: nfcStripTrailing };
+                      vm.exportConfig[caseIdx] = { key: configKey, url: url, param: param };
                       readyForNextConfig(device, caseIdx, true);
                   }
               } else if (configKey == "TextMessage") { 
