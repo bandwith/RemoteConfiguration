@@ -4,7 +4,9 @@
   "description": "AngularJS timezone selector",
   "main": "dist/angular-timezone-selector.min.js",
   "scripts": {
-    "test": "./node_modules/.bin/standard"
+    "test": "./node_modules/.bin/standard",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -35,7 +37,8 @@
     "grunt-autoprefixer": "^3.0.3",
     "grunt-contrib-copy": "^0.8.0",
     "grunt-contrib-cssmin": "^0.14.0",
-    "grunt-contrib-less": "^1.0.1"
+    "grunt-contrib-less": "^1.0.1",
+    "snyk": "^1.316.1"
   },
   "standard": {
     "ignore": [
@@ -43,5 +46,6 @@
       "build/**",
       "dist/**"
     ]
-  }
+  },
+  "snyk": true
 }
